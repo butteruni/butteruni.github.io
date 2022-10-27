@@ -93,7 +93,39 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h1 id="这是一个并查集的模板"><a href="#这是一个并查集的模板" class="headerlink" title="这是一个并查集的模板"></a>这是一个并查集的模板</h1><p>#include &lt;stdio.h&gt;<br>int bin[1002];<br>int findx(int x)         &#x2F;&#x2F;返回一个元素的父元素;<br>{<br>    int r &#x3D; x;<br>    while(bin[r] !&#x3D; r){r &#x3D; bin[r];}<br>    return r;<br>}<br>void merge(int x,int y)<br>{<br>    int fx,fy;<br>    fx &#x3D; findx(x);      &#x2F;&#x2F;找这两个元素的父元素;<br>    fy &#x3D; findx(y);<br>    if (fx !&#x3D; fy ){bin[fx] &#x3D; fy;} &#x2F;&#x2F;若两个元素的父元素不一样，则令一个元素成为另一元素父元素(一样则成环);<br>}<br>int main()<br>{<br>    int n,m,i,x,y,count;<br>    while(scanf(“%d”,&amp;n),n)<br>    {<br>        for ( i &#x3D; 1; i &lt;&#x3D; n; i++){bin[i] &#x3D; i;} &#x2F;&#x2F;先令所有元素成为自身父元素(先假定所有元素均为根元素);<br>        for ( scanf(“%d”,&amp;m);m &gt; 0;m–)<br>        {<br>            scanf(“%d %d”,&amp;x,&amp;y);   &#x2F;&#x2F;读入两个相连元素;<br>            merge(x,y);<br>        }                           &#x2F;&#x2F;此循环结束后形成x个树(即x个存在一个根元素的集合)；<br>        for (count &#x3D; -1, i &#x3D; 1;i &lt;&#x3D; n; i++)<br>        {if(bin[i] &#x3D;&#x3D; i) count++;}   &#x2F;&#x2F;若有n个根元素，则返回n - 1;<br>        printf(“%d\n”,count);<br>    }<br>    return 0;<br>}</p>
+        <h1 id="这是一个并查集的模板"><a href="#这是一个并查集的模板" class="headerlink" title="这是一个并查集的模板"></a>这是一个并查集的模板</h1><pre><code>#include &lt;stdio.h&gt;
+int bin[1002];
+int findx(int x)         //回一个元素的父元素;
+&#123;
+    int r = x;
+    while(bin[r] != r)&#123;r = bin[r];&#125;
+    return r;
+&#125;
+void merge(int x,int y) 
+&#123;
+    int fx,fy;
+    fx = findx(x);      //找这两个元素的父元素;
+    fy = findx(y);
+    if (fx != fy )&#123;bin[fx] = fy;&#125; //若两个元素的父元素不一样，则令一个元素成为另一元素父元素(一样则成环);
+&#125;
+int main()
+&#123;
+    int n,m,i,x,y,count;
+    while(scanf(&quot;%d&quot;,&amp;n),n)  
+&#123;
+    for ( i = 1; i &lt;= n; i++)&#123;bin[i] = i;&#125; //先令所有元素成为自身父元素(先假定所有元素均为根元素);
+    for ( scanf(&quot;%d&quot;,&amp;m);m &gt; 0;m--)    
+    &#123;
+        scanf(&quot;%d %d&quot;,&amp;x,&amp;y);   //读入两个相连元素;
+        merge(x,y);
+    &#125;                           //此循环结束后形成x个树(即x个存在一个根元素的集合)；
+    for (count = -1, i = 1;i &lt;= n; i++)
+    &#123;if(bin[i] == i) count++;&#125;   //若有n个根元素，则返回n - 1;
+    printf(&quot;%d\n&quot;,count);
+&#125;
+return 0;
+&#125;
+</code></pre>
 
       
     </div>
