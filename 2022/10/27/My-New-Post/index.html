@@ -87,7 +87,7 @@
 <meta property="og:description" content="基础算法 并查集 引入 并查集，主要作于处理元素分组问题，一般操作为两个不同集合的合并或查找两元素是否在同一集合。">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2022-10-26T17:58:13.000Z">
-<meta property="article:modified_time" content="2022-11-26T15:39:15.907Z">
+<meta property="article:modified_time" content="2022-11-26T17:32:15.242Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
 
@@ -417,7 +417,38 @@ void init(int n)
         return tree[x];
     &#125;
 &#125;</code></pre>
-<h4 id="按秩合并">按秩合并</h4>
+<h4 id="按秩合并启发式合并">按秩合并/启发式合并</h4>
+<p>路径压缩被用于优化较深的并查集结构，同样，在合并两个并查集树时，我们希望高度低的树并入高度高的树，使生成的新树高度低些。</p>
+<p>思路：对节点 i 有 rank[i] 表示以 i 为根节点的树的高度；</p>
+<pre><code>void init(int n)
+&#123;
+    for(int i = 1; i &lt;= n; ++i)
+    &#123;
+        tree[i] = i;
+        rank[i] = 1;
+    &#125;
+&#125;
+int find(int x)
+&#123;
+    while(tree[x] != x)
+        x = tree[x];
+    return x; 
+&#125;
+void merge(int x,int y)
+&#123;
+    int sx = find[x];
+    int sy = finf[y];
+    if(rank[x] &lt; rank[y])  //一高一矮则新树高度和高树相等，相等则新树高度为原树+1
+        tree[x] = y;
+    else
+    &#123;
+        tree[y] = x;
+        if(rank[x] == rank[y])rank[x]++;
+    &#125;
+&#125;</code></pre>
+<p>其实还有一种启发式合并是将元素少的树合并到元素多的树上，但由于代码高度相似，故省去</p>
+<h3 id="让我们再深入些">让我们再深入些</h3>
+<h4 id="section"></h4>
 
       
     </div>
@@ -557,7 +588,7 @@ void init(int n)
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9F%BA%E7%A1%80%E7%AE%97%E6%B3%95"><span class="nav-number">1.</span> <span class="nav-text">基础算法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B9%B6%E6%9F%A5%E9%9B%86"><span class="nav-number">1.1.</span> <span class="nav-text">并查集</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%95%E5%85%A5"><span class="nav-number">1.1.1.</span> <span class="nav-text">引入</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0"><span class="nav-number">1.1.2.</span> <span class="nav-text">如何实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AE%80%E5%8D%95%E7%9A%84%E4%BC%98%E5%8C%96"><span class="nav-number">1.1.3.</span> <span class="nav-text">简单的优化</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%B7%AF%E5%BE%84%E5%8E%8B%E7%BC%A9"><span class="nav-number">1.1.3.1.</span> <span class="nav-text">路径压缩</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8C%89%E7%A7%A9%E5%90%88%E5%B9%B6"><span class="nav-number">1.1.3.2.</span> <span class="nav-text">按秩合并</span></a></li></ol></li></ol></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9F%BA%E7%A1%80%E7%AE%97%E6%B3%95"><span class="nav-number">1.</span> <span class="nav-text">基础算法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B9%B6%E6%9F%A5%E9%9B%86"><span class="nav-number">1.1.</span> <span class="nav-text">并查集</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%95%E5%85%A5"><span class="nav-number">1.1.1.</span> <span class="nav-text">引入</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0"><span class="nav-number">1.1.2.</span> <span class="nav-text">如何实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AE%80%E5%8D%95%E7%9A%84%E4%BC%98%E5%8C%96"><span class="nav-number">1.1.3.</span> <span class="nav-text">简单的优化</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%B7%AF%E5%BE%84%E5%8E%8B%E7%BC%A9"><span class="nav-number">1.1.3.1.</span> <span class="nav-text">路径压缩</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8C%89%E7%A7%A9%E5%90%88%E5%B9%B6%E5%90%AF%E5%8F%91%E5%BC%8F%E5%90%88%E5%B9%B6"><span class="nav-number">1.1.3.2.</span> <span class="nav-text">按秩合并&#x2F;启发式合并</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%A9%E6%88%91%E4%BB%AC%E5%86%8D%E6%B7%B1%E5%85%A5%E4%BA%9B"><span class="nav-number">1.1.4.</span> <span class="nav-text">让我们再深入些</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#section"><span class="nav-number">1.1.4.1.</span> <span class="nav-text"></span></a></li></ol></li></ol></li></ol></li></ol></div>
             
 
           </div>
