@@ -229,125 +229,6 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/11/26/My-New-post-0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Hexo">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2022/11/26/My-New-post-0/" itemprop="url">My New post</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2022-11-26T21:18:30+08:00">
-                2022-11-26
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://example.com/2022/10/27/My-New-Post/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -419,15 +300,82 @@
       
         
           
-            <h1 id="基础算法"><a href="#基础算法" class="headerlink" title="基础算法"></a>基础算法</h1><h2 id="并查集"><a href="#并查集" class="headerlink" title="并查集"></a>并查集</h2><h3 id="引入"><a href="#引入" class="headerlink" title="引入"></a>引入</h3><p>并查集，主要作于处理元素分组问题，一般操作为两个不同集合的合并或查找两元素是否在同一集合。如果觉得这种说法过于抽象，那不妨看看下面这题。</p>
-<p><a target="_blank" rel="noopener" href="https://www.luogu.com.cn/problem/P1551">洛谷 P1551</a></p>
-<blockquote>
-<h4 id="题目背景"><a href="#题目背景" class="headerlink" title="题目背景"></a>题目背景</h4><p>若某个家族人员过于庞大，要判断两个是否是亲戚，确实还很不容易，现在给出某个亲戚关系图，求任意给出的两个人是否具有亲戚关系。</p>
-<h4 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h4><p>规定：$x$ 和 $y$ 是亲戚，$y$ 和 $z$ 是亲戚，那么 $x$ 和 $z$ 也是亲戚。如果 $x$，$y$ 是亲戚，那么 $x$ 的亲戚都是 $y$ 的亲戚，$y$ 的亲戚也都是 $x$ 的亲戚。</p>
-<h4 id="输入格式"><a href="#输入格式" class="headerlink" title="输入格式"></a>输入格式</h4><p>第一行：三个整数n,m,p，（n&lt;&#x3D;5000,m&lt;&#x3D;5000,p&lt;&#x3D;5000），分别表示有n个人，m个亲戚关系，询问p对亲戚关系。<br>以下m行：每行两个数Mi，Mj，1&lt;&#x3D;Mi，Mj&lt;&#x3D;N，表示Mi和Mj具有亲戚关系。<br>接下来p行：每行两个数Pi，Pj，询问Pi和Pj是否具有亲戚关系。</p>
-<h4 id="输出格式"><a href="#输出格式" class="headerlink" title="输出格式"></a>输出格式</h4><p>P行，每行一个’Yes’或’No’。表示第i个询问的答案为“具有”或“不具有”亲戚关系。</p>
-</blockquote>
+            <h1 id="基础算法">基础算法</h1>
+<h2 id="并查集">并查集</h2>
+<h3 id="引入">引入</h3>
+<p>并查集，主要作于处理元素分组问题，一般操作为两个不同集合的合并或查找两元素是否在同一集合。如果觉得这种说法过于抽象，那不妨看看下面这题。</p>
+<p><a target="_blank" rel="noopener" href="https://www.luogu.com.cn/problem/P1551">洛谷 P1551</a>
+&gt;#### 题目背景
+&gt;若某个家族人员过于庞大，要判断两个是否是亲戚，确实还很不容易，现在给出某个亲戚关系图，求任意给出的两个人是否具有亲戚关系。
+&gt;#### 题目描述 &gt;规定：<span class="math inline">\(x\)</span> 和
+<span class="math inline">\(y\)</span> 是亲戚，<span
+class="math inline">\(y\)</span> 和 <span
+class="math inline">\(z\)</span> 是亲戚，那么 <span
+class="math inline">\(x\)</span> 和 <span
+class="math inline">\(z\)</span> 也是亲戚。如果 <span
+class="math inline">\(x\)</span>，<span class="math inline">\(y\)</span>
+是亲戚，那么 <span class="math inline">\(x\)</span> 的亲戚都是 <span
+class="math inline">\(y\)</span> 的亲戚，<span
+class="math inline">\(y\)</span> 的亲戚也都是 <span
+class="math inline">\(x\)</span> 的亲戚。 &gt;#### 输入格式
+&gt;第一行：三个整数n,m,p，（n&lt;=5000,m&lt;=5000,p&lt;=5000），分别表示有n个人，m个亲戚关系，询问p对亲戚关系。
+以下m行：每行两个数Mi，Mj，1&lt;=Mi，Mj&lt;=N，表示Mi和Mj具有亲戚关系。
+接下来p行：每行两个数Pi，Pj，询问Pi和Pj是否具有亲戚关系。 &gt;####
+输出格式
+&gt;P行，每行一个’Yes’或’No’。表示第i个询问的答案为“具有”或“不具有”亲戚关系。</p>
 <p>如果互为亲戚的一组人看作同一集合中的元素，解决这个问题的实际操作也就只有两个：把互为亲戚的两人放入同一集合，查询两人是否在同一集合。于是想到使用并查集构造数据结构。</p>
+<h3 id="如何实现">如何实现</h3>
+<p>在讨论具体代码之前，不妨回到问题本身，对于任何一个 “亲戚集合”
+我们都可以找出其中 “最大" 的一个人，通过比较两个人所属 “亲戚集合”
+的最大元素是否相同，就可以判断两个人是否属于同一 “亲戚集合”</p>
+<p>而对于读入数据，我们可以先将每个人所属 “亲戚集合” 的 “最大元素”
+定为自身，每次读到两个两个属于同一 “亲戚集合” 的两个人，则比较两人所属
+“亲戚集合” 的 “最大元素” ，如果不同，就将其中一个人所属 “亲戚集合” 的
+“最大元素” 指向另一 “亲戚集合” 的 “最大元素”</p>
+<p>这样，就可以写出最基本的并查集代码。</p>
+<p><strong>初始化</strong></p>
+<pre><code>int tree[1000]; 
+void init(int n)
+&#123;
+    tree[i] = i; //让每个人所属集合的最大元素为自身
+&#125;</code></pre>
+<p><strong>查找最大元素</strong></p>
+<pre><code>int find(int x)
+&#123;
+    while(tree[x] != x)
+    &#123;
+        x = tree[x]; //一直寻找，直到找到最大元素并返回
+    &#125;
+    return x;
+&#125;</code></pre>
+<p><strong>合并</strong></p>
+<pre><code>void merge(int x,int y)
+&#123;
+    int fx,fy;          //比较最大元素，不同则将其中一个最大元素和它所属的整个集合并入另一个集合
+    fx = findx(x);
+    fy = findx(y);
+    if (fy != fx)
+        relation[fy] = fx;        
+&#125;</code></pre>
+<p>写到这里，就完成了一个最简单的并查集代码。距离完成题目只剩下读入数据并比较。</p>
+<h3 id="简单的优化">简单的优化</h3>
+<h4 id="路径压缩">路径压缩</h4>
+<p>对于最简单的并查集，数组 tree[i] 中存储的只是元素 i
+指向的上一级元素，因此，随着合并次数的增加，寻找 “最大元素”
+花费的时间也越来越多。我们希望每次访问数组都可以快速找到元素 i
+所属集合的 “最大元素” ，而这也很好实现，只要在查询的过程中，把
+<strong>沿途元素的上级元素设为 “最大元素”</strong>
+即可。代码上使用递归实现</p>
+<pre><code>int find(int x)
+&#123;
+    if(x == tree[x])
+        return x;
+    else
+    &#123;
+        tree[x] = find(tree[x]);
+        return tree[x];
+    &#125;
+&#125;</code></pre>
 
           
         
@@ -509,7 +457,7 @@
               
                 <a href="/archives/%20%7C%7C%20archive">
               
-                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-count">1</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
