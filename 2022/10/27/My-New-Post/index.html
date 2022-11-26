@@ -5,7 +5,7 @@
   
 
 
-<html class="theme-next muse use-motion" lang="en">
+<html class="theme-next muse use-motion" lang="zh-CN">
 <head>
   <meta charset="UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -79,15 +79,15 @@
 
 
 
-<meta name="description" content="基础算法 并查集 引入 并查集，主要作于处理元素分组问题，一般操作为两个不同集合的合并或查找两元素是否在同一集合。如果觉得这种说法过于抽象，那不妨看看下面这题。 洛谷 P1551 &gt;#### 题目背景 &gt;若某个家族人员过于庞大，要判断两个是否是亲戚，确实还很不容易，现在给出某个亲戚关系图，求任意给出的两个人是否具有亲戚关系。 &gt;#### 题目描述 &gt;规定：\(">
+<meta name="description" content="基础算法 并查集 引入 并查集，主要作于处理元素分组问题，一般操作为两个不同集合的合并或查找两元素是否在同一集合。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="基础算法————并查集">
 <meta property="og:url" content="http://example.com/2022/10/27/My-New-Post/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="基础算法 并查集 引入 并查集，主要作于处理元素分组问题，一般操作为两个不同集合的合并或查找两元素是否在同一集合。如果觉得这种说法过于抽象，那不妨看看下面这题。 洛谷 P1551 &gt;#### 题目背景 &gt;若某个家族人员过于庞大，要判断两个是否是亲戚，确实还很不容易，现在给出某个亲戚关系图，求任意给出的两个人是否具有亲戚关系。 &gt;#### 题目描述 &gt;规定：\(">
-<meta property="og:locale" content="en_US">
+<meta property="og:description" content="基础算法 并查集 引入 并查集，主要作于处理元素分组问题，一般操作为两个不同集合的合并或查找两元素是否在同一集合。">
+<meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2022-10-26T17:58:13.000Z">
-<meta property="article:modified_time" content="2022-11-26T15:13:26.202Z">
+<meta property="article:modified_time" content="2022-11-26T15:39:15.907Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
 
@@ -99,7 +99,7 @@
     root: '',
     scheme: 'Muse',
     version: '5.1.4',
-    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":"ture","onmobile":false},
     fancybox: true,
     tabs: true,
     motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
@@ -137,7 +137,7 @@
 
 <meta name="generator" content="Hexo 6.3.0"></head>
 
-<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
 
   
   
@@ -186,6 +186,26 @@
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
             Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            Tags
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            Categories
           </a>
         </li>
       
@@ -272,6 +292,28 @@
           </span>
 
           
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/algorithm/" itemprop="url" rel="index">
+                    <span itemprop="name">algorithm</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
 
           
             
@@ -302,7 +344,7 @@
         <h1 id="基础算法">基础算法</h1>
 <h2 id="并查集">并查集</h2>
 <h3 id="引入">引入</h3>
-<p>并查集，主要作于处理元素分组问题，一般操作为两个不同集合的合并或查找两元素是否在同一集合。如果觉得这种说法过于抽象，那不妨看看下面这题。</p>
+<p>并查集，主要作于处理元素分组问题，一般操作为两个不同集合的合并或查找两元素是否在同一集合。<span id="more"></span>如果觉得这种说法过于抽象，那不妨看看下面这题。</p>
 <p><a target="_blank" rel="noopener" href="https://www.luogu.com.cn/problem/P1551">洛谷 P1551</a>
 &gt;#### 题目背景
 &gt;若某个家族人员过于庞大，要判断两个是否是亲戚，确实还很不容易，现在给出某个亲戚关系图，求任意给出的两个人是否具有亲戚关系。
@@ -375,6 +417,7 @@ void init(int n)
         return tree[x];
     &#125;
 &#125;</code></pre>
+<h4 id="按秩合并">按秩合并</h4>
 
       
     </div>
@@ -475,6 +518,15 @@ void init(int n)
             
 
             
+              
+              
+              <div class="site-state-item site-state-categories">
+                
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">categories</span>
+                
+              </div>
+            
 
             
 
@@ -505,7 +557,7 @@ void init(int n)
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9F%BA%E7%A1%80%E7%AE%97%E6%B3%95"><span class="nav-number">1.</span> <span class="nav-text">基础算法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B9%B6%E6%9F%A5%E9%9B%86"><span class="nav-number">1.1.</span> <span class="nav-text">并查集</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%95%E5%85%A5"><span class="nav-number">1.1.1.</span> <span class="nav-text">引入</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0"><span class="nav-number">1.1.2.</span> <span class="nav-text">如何实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AE%80%E5%8D%95%E7%9A%84%E4%BC%98%E5%8C%96"><span class="nav-number">1.1.3.</span> <span class="nav-text">简单的优化</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%B7%AF%E5%BE%84%E5%8E%8B%E7%BC%A9"><span class="nav-number">1.1.3.1.</span> <span class="nav-text">路径压缩</span></a></li></ol></li></ol></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9F%BA%E7%A1%80%E7%AE%97%E6%B3%95"><span class="nav-number">1.</span> <span class="nav-text">基础算法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B9%B6%E6%9F%A5%E9%9B%86"><span class="nav-number">1.1.</span> <span class="nav-text">并查集</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%95%E5%85%A5"><span class="nav-number">1.1.1.</span> <span class="nav-text">引入</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0"><span class="nav-number">1.1.2.</span> <span class="nav-text">如何实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AE%80%E5%8D%95%E7%9A%84%E4%BC%98%E5%8C%96"><span class="nav-number">1.1.3.</span> <span class="nav-text">简单的优化</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%B7%AF%E5%BE%84%E5%8E%8B%E7%BC%A9"><span class="nav-number">1.1.3.1.</span> <span class="nav-text">路径压缩</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8C%89%E7%A7%A9%E5%90%88%E5%B9%B6"><span class="nav-number">1.1.3.2.</span> <span class="nav-text">按秩合并</span></a></li></ol></li></ol></li></ol></li></ol></div>
             
 
           </div>
@@ -534,9 +586,9 @@ void init(int n)
   
 </div>
 
-
+<!-- 
   <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
-
+ -->
 
 
   <span class="post-meta-divider">|</span>
@@ -563,6 +615,8 @@ void init(int n)
     
       <div class="back-to-top">
         <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
         
       </div>
     
