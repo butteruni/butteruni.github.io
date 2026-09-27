@@ -1,5 +1,6 @@
 ---
 title: nodes on number theory
+date: 2024-09-16
 tags:
 mathjax : true
 ---

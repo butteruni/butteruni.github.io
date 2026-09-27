@@ -5,7 +5,6 @@
   "scripts": {
     "build": "hexo generate",
     "clean": "hexo clean",
-    "deploy": "hexo deploy",
     "server": "hexo server"
   },
   "hexo": {
@@ -14,7 +13,6 @@
   "dependencies": {
     "acorn": "^8.12.1",
     "hexo": "^6.3.0",
-    "hexo-deployer-git": "^3.0.0",
     "hexo-filter-mathjax": "^0.9.0",
     "hexo-generator-archive": "^2.0.0",
     "hexo-generator-category": "^2.0.0",
@@ -27,6 +25,7 @@
     "hexo-renderer-stylus": "^2.1.0",
     "hexo-renderer-swig": "^2.0.0",
     "hexo-server": "^3.0.0",
-    "hexo-theme-landscape": "^0.0.3"
+    "hexo-theme-landscape": "^0.0.3",
+    "hexo-theme-next": "7.8.0"
   }
 }
