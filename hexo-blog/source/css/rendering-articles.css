@@ -1,0 +1,64 @@
+.rendering-article .rendering-figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 18px;
+  margin: 1.5em 0 1em;
+  align-items: start;
+}
+
+.rendering-article .rendering-figures figure {
+  min-width: 0;
+  margin: 0;
+}
+
+.rendering-article .rendering-figures a {
+  display: block;
+  border: 0;
+}
+
+.rendering-article .rendering-figures img {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.rendering-article .rendering-figures figcaption {
+  padding-top: 0.6em;
+  font-size: 0.85em;
+  line-height: 1.7;
+  color: #555;
+  text-align: left;
+}
+
+.rendering-article table {
+  font-size: 0.9em;
+  line-height: 1.8;
+}
+
+.rendering-article th,
+.rendering-article td {
+  vertical-align: top;
+  min-width: 5em;
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+
+.rendering-article .math.display {
+  display: block;
+  overflow-x: auto;
+  padding: 0.5em 0;
+}
+
+.rendering-article .highlight .gutter {
+  display: none;
+}
+
+@media (max-width: 560px) {
+  .rendering-article .rendering-figures {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}

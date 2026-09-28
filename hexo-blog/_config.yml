@@ -98,6 +98,11 @@ ignore:
 ## Plugins: https://hexo.io/plugins/
 ## Themes: https://hexo.io/themes/
 theme: next
+theme_config:
+  math:
+    per_page: true
+    mathjax:
+      enable: true
 # Local search  
 search:
   path: search.xml
