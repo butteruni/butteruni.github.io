@@ -1,0 +1,89 @@
+Shader hash ba0bba9b-5525027c-3380cd73-f35fb1f9
+
+ps_5_0
+      dcl_globalFlags refactoringAllowed
+      dcl_resource_texture2d (uint,uint,uint,uint) t0
+      dcl_resource_structured t1, 4
+      dcl_input_ps linear v1.xy
+      dcl_output oDepth
+      dcl_temps 5
+   0: ftou r0.xy, v1.xyxx
+   1: ushr r1.xy, r0.xyxx, l(5, 5, 0, 0)
+   2: resinfo_indexable(texture2d)(uint,uint,uint,uint)_uint r0.zw, l(0), t0.zwxy
+   3: ishl r0.zw, r0.zzzw, l(0, 0, 5, 5)
+   4: utof r0.zw, r0.zzzw
+   5: div r0.zw, l(1.000000, 1.000000, 1.000000, 1.000000), r0.zzzw
+   6: mov r1.zw, l(0, 0, 0, 0)
+   7: ld_indexable(texture2d)(uint,uint,uint,uint) r1.x, r1.xyzw, t0.xyzw
+   8: and r1.y, r1.x, l(0.000000)
+   9: ushr r1.x, r1.x, l(24)
+  10: iadd r1.x, r1.x, l(1)
+  11: ult r1.z, l(1), r1.x
+  12: if_nz r1.z
+  13:   ubfe r1.zw, l(0, 0, 4, 4), l(0, 0, 1, 1), r0.xxxy
+  14:   iadd r1.x, r1.x, r1.y
+  15:   ld_structured_indexable(structured_buffer, stride=4)(mixed,mixed,mixed,mixed) r2.x, r1.x, l(0), t1.xxxx
+  16:   and r2.x, r2.x, l(1023)
+  17:   mov r2.y, r2.x
+  18:   mov r2.z, l(0)
+  19:   loop
+  20:     and r2.w, r2.y, l(1)
+  21:     ieq r2.w, r2.w, l(1)
+  22:     ushr r3.x, r2.y, l(1)
+  23:     ine r3.y, r3.x, l(0)
+  24:     and r2.w, r2.w, r3.y
+  25:     breakc_z r2.w
+  26:     iadd r2.z, r2.z, l(1)
+  27:     ult r2.w, l(4), r2.z
+  28:     if_nz r2.w
+  29:       break
+  30:     endif
+  31:     iadd r2.w, -r2.z, l(4)
+  32:     ushr r3.yz, r1.zzwz, r2.wwww
+  33:     bfi r2.w, l(1), l(1), r3.z, l(0)
+  34:     bfi r2.w, l(1), l(0), r3.y, r2.w
+  35:     iadd r2.w, r2.w, r3.x
+  36:     udiv r3.x, r4.x, r2.w, l(3)
+  37:     iadd r2.w, r1.x, r3.x
+  38:     ld_structured_indexable(structured_buffer, stride=4)(mixed,mixed,mixed,mixed) r2.w, r2.w, l(0), t1.xxxx
+  39:     and r3.x, r2.w, l(1023)
+  40:     ieq r3.yz, r4.xxxx, l(0, 1, 2, 0)
+  41:     ubfe r4.yz, l(0, 10, 10, 0), l(0, 10, 20, 0), r2.wwww
+  42:     movc r2.w, r3.z, r4.z, l(1)
+  43:     movc r2.w, r3.y, r4.y, r2.w
+  44:     movc r2.y, r4.x, r2.w, r3.x
+  45:   endloop
+  46:   ubfe r1.x, l(8), l(1), r2.y
+  47: else
+  48:   mov r1.x, l(0)
+  49: endif
+  50: iadd r1.x, r1.x, r1.y
+  51: ld_structured_indexable(structured_buffer, stride=4)(mixed,mixed,mixed,mixed) r1.x, r1.x, l(0), t1.xxxx
+  52: and r1.y, r1.x, l(1)
+  53: ieq r1.y, r1.y, l(1)
+  54: and r2.xyzw, r0.xyxy, l(1, 1, -32, -32)
+  55: utof r1.zw, r2.zzzw
+  56: mul r1.zw, r0.zzzw, r1.zzzw
+  57: ushr r3.xyz, r1.xxxx, l(1, 11, 21, 0)
+  58: bfi r3.xyw, l(10, 10, 0, 5), l(6, 6, 0, 23), r3.xyxx, l(0, 0, 0, 0)
+  59: f16tof32 r4.xy, r3.xyxx
+  60: ishl r2.z, r3.z, l(5)
+  61: f16tof32 r2.z, r2.z
+  62: mul r1.zw, r1.zzzw, r4.xxxy
+  63: add r1.z, r1.w, r1.z
+  64: add r4.z, -r1.z, r2.z
+  65: utof r1.zw, r0.xxxy
+  66: add r1.zw, r1.zzzw, l(0.000000, 0.000000, 0.500000, 0.500000)
+  67: mul r3.xy, r0.zwzz, r1.zwzz
+  68: mov r3.z, l(1.000000)
+  69: dp3 r0.y, r4.xyzx, r3.xyzx
+  70: imad r0.z, l(13), r2.y, l(6)
+  71: imad r0.z, l(6), r2.x, r0.z
+  72: bfi r0.xw, l(1, 0, 0, 1), l(0, 0, 0, 23), r0.xxxx, l(6, 0, 0, 0)
+  73: ubfe r0.x, r0.x, r0.z, r1.x
+  74: iadd r0.z, -r0.w, l(0.000000)
+  75: iadd r0.z, r3.w, r0.z
+  76: utof r0.x, r0.x
+  77: mul r0.x, r0.x, r0.z
+  78: movc oDepth, r1.y, r0.y, r0.x
+  79: ret

@@ -1,0 +1,14 @@
+Shader hash cc2e8151-0d8971c6-9f438ef2-749c8627
+
+ps_5_0
+      dcl_globalFlags refactoringAllowed
+      dcl_resource_texture2d (float,float,float,float) t0
+      dcl_input_ps_siv linear noperspective v0.xy, position
+      dcl_output o0.xyzw
+      dcl_temps 1
+   0: ftou r0.xy, v0.xyxx
+   1: mov r0.zw, l(0, 0, 0, 0)
+   2: ld_indexable(texture2d)(float,float,float,float) r0.xyz, r0.xyzw, t0.xyzw
+   3: mov o0.xyz, r0.xyzx
+   4: mov o0.w, l(0)
+   5: ret

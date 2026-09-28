@@ -98,14 +98,6 @@ ignore:
 ## Plugins: https://hexo.io/plugins/
 ## Themes: https://hexo.io/themes/
 theme: next
-theme_config:
-  menu:
-    home: / || home
-    archives: /archives/ || archive
-    categories: /categories/ || th
-    tags: /tags/ || tags
-    渲染文档: /rendering-analysis/ || book
-
 # Local search  
 search:
   path: search.xml

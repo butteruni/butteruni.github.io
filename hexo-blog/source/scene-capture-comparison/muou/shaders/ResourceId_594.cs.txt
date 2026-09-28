@@ -1,0 +1,176 @@
+Shader hash 2eccd2e2-fd71cbd3-22a372ae-01b7508e
+
+cs_5_0
+      dcl_globalFlags refactoringAllowed
+      dcl_constantbuffer cb0[219], immediateIndexed
+      dcl_resource_structured t0, 288
+      dcl_resource_texture3d (uint,uint,uint,uint) t1
+      dcl_uav_typed_texture3d (uint,uint,uint,uint) u0
+      dcl_uav_structured u1, 4
+      dcl_uav_structured u2, 4
+      dcl_uav_structured u3, 4
+      dcl_uav_structured u4, 4
+      dcl_input vThreadIDInGroupFlattened
+      dcl_input vThreadID.xyz
+      dcl_temps 6
+      dcl_tgsm_structured g0, 4, 64
+      dcl_tgsm_raw g1, 4
+      dcl_thread_group 4, 4, 4
+   0: mov r0.xyz, vThreadID.xyzx
+   1: mov r0.w, l(0)
+   2: ld_indexable(texture3d)(uint,uint,uint,uint) r0.x, r0.xyzw, t1.xyzw
+   3: and r0.y, r0.x, l(0x0000ffff)
+   4: ubfe r0.z, l(2), l(26), r0.x
+   5: ult r0.w, l(1), r0.z
+   6: udiv r1.x, null, vThreadID.x, cb0[1].y
+   7: imul null, r2.x, r1.x, cb0[1].y
+   8: ineg r3.x, r2.x
+   9: mov r3.yz, l(0, 0, 0, 0)
+  10: iadd r1.yzw, r3.xxyz, vThreadID.xxyz
+  11: ishl r3.x, r1.x, l(4)
+  12: iadd r3.x, r3.x, l(192)
+  13: ld_structured_indexable(structured_buffer, stride=288)(mixed,mixed,mixed,mixed) r3.xyz, l(0), r3.x, t0.xyzx
+  14: iadd r3.xyz, r1.yzwy, -r3.xyzx
+  15: ult r1.yzw, r3.xxyz, cb0[1].yyyy
+  16: and r1.y, r1.z, r1.y
+  17: and r1.y, r1.w, r1.y
+  18: if_nz r1.y
+  19:   and r4.xyz, r0.xxxx, l(0.000000, 0.000000, 2.000000, 0.000000)
+  20:   mov r2.yzw, l(0, 0, 0, 0)
+  21:   iadd r2.xyzw, r2.xyzw, r3.xyzz
+  22:   ld_uav_typed(texture3d)(uint,uint,uint,uint) r1.z, r2.xyzw, u0.yzxw
+  23:   movc r1.w, r4.x, l(2), l(0)
+  24:   movc r1.w, r4.z, l(3), r1.w
+  25:   movc r1.w, r4.y, l(4), r1.w
+  26:   ishl r2.yz, r2.yywy, l(0, 8, 16, 0)
+  27:   or r2.y, r2.y, r2.x
+  28:   or r2.y, r2.z, r2.y
+  29:   if_nz r0.w
+  30:     ubfe r4.x, l(7), l(16), r0.x
+  31:     ushr r5.x, cb0[218].y, l(6)
+  32:     iadd r2.z, -r4.x, r5.x
+  33:     bfi r2.z, l(7), l(6), r2.z, l(0)
+  34:     umin r1.x, r1.x, l(2)
+  35:     ishl r1.x, l(128), r1.x
+  36:     ult r1.x, r1.x, r2.z
+  37:     ld_structured_indexable(structured_buffer, stride=4)(mixed,mixed,mixed,mixed) r2.z, l(0), l(0), u3.xxxx
+  38:     ilt r2.z, l(0x00002ee0), r2.z
+  39:     and r4.y, r1.x, r2.z
+  40:     mov r5.y, l(0)
+  41:     movc r2.zw, r1.wwww, r5.xxxy, r4.xxxy
+  42:     if_nz r2.w
+  43:       imm_atomic_iadd r4.x, u3, l(1, 0, 0, 0), l(1)
+  44:       store_structured u4.x, r4.x, l(0), r0.y
+  45:       mov r0.x, l(0)
+  46:       mov r4.xy, l(0, 0, 0, 0)
+  47:     else
+  48:       ieq r1.x, r0.z, l(3)
+  49:       and r2.w, r0.x, l(0x80000000)
+  50:       iadd r3.x, -r0.y, cb0[218].y
+  51:       and r3.x, r3.x, l(31)
+  52:       movc r3.x, r3.x, l(0), l(1)
+  53:       movc r3.x, r1.w, r1.w, r3.x
+  54:       ieq r5.xyz, r3.xxxx, l(4, 3, 2, 0)
+  55:       movc r4.z, r5.z, l(2), l(1)
+  56:       movc r4.z, r5.y, l(3), r4.z
+  57:       movc r5.y, r5.x, l(2), r4.z
+  58:       ult r5.x, r3.x, l(3)
+  59:       movc r4.xy, r3.xxxx, r5.xyxx, l(0, 0, 0, 0)
+  60:       bfi r2.z, l(7), l(16), r2.z, l(0)
+  61:       bfi r2.z, l(16), l(0), r0.x, r2.z
+  62:       imad r2.z, r3.x, l(0.000000), r2.z
+  63:       movc r2.w, r2.w, l(0x80000000), l(0)
+  64:       iadd r2.z, r2.w, r2.z
+  65:       movc r1.x, r1.x, l(0.000000), l(0.000000)
+  66:       iadd r0.x, r1.x, r2.z
+  67:     endif
+  68:   else
+  69:     ieq r0.z, r0.z, l(1)
+  70:     if_z r0.z
+  71:       ubfe r0.z, l(2), l(26), r1.z
+  72:       ult r1.x, l(1), r0.z
+  73:       ieq r2.zw, r0.zzzz, l(0, 0, 1, 3)
+  74:       and r0.z, r1.z, l(0x80000000)
+  75:       bfi r1.z, l(9), l(23), r1.w, r1.z
+  76:       movc r0.z, r0.z, l(0x80000000), l(0)
+  77:       iadd r0.z, r0.z, r1.z
+  78:       and r1.z, r2.z, l(1)
+  79:       movc r1.x, r1.x, l(2), r1.z
+  80:       movc r1.x, r2.w, l(3), r1.x
+  81:       imad r0.x, r1.x, l(0.000000), r0.z
+  82:     endif
+  83:     mov r4.xy, l(0, 0, 0, 0)
+  84:   endif
+  85:   mov r3.w, r2.x
+  86:   store_uav_typed u0.xyzw, r3.wyzz, r0.xxxx
+  87: else
+  88:   if_nz r0.w
+  89:     imm_atomic_iadd r3.x, u3, l(1, 0, 0, 0), l(1)
+  90:     store_structured u4.x, r3.x, l(0), r0.y
+  91:   endif
+  92:   mov r2.y, l(0)
+  93:   mov r0.y, l(0)
+  94:   mov r4.xy, l(0, 0, 0, 0)
+  95: endif
+  96: movc r0.x, r4.y, l(1), l(0)
+  97: store_structured g0.x, vThreadIDInGroupFlattened.x, l(0), r0.x
+  98: sync_g_t
+  99: iadd r3.xyzw, vThreadIDInGroupFlattened.xxxx, l(-1, -2, -4, -8)
+ 100: ilt r5.xyzw, r3.xyzw, l(0, 0, 0, 0)
+ 101: ld_structured r0.z, r3.x, l(0), g0.xxxx
+ 102: movc r0.z, r5.x, l(0), r0.z
+ 103: sync_g_t
+ 104: iadd r0.z, r0.z, r0.x
+ 105: store_structured g0.x, vThreadIDInGroupFlattened.x, l(0), r0.z
+ 106: sync_g_t
+ 107: ld_structured r0.w, r3.y, l(0), g0.xxxx
+ 108: movc r0.w, r5.y, l(0), r0.w
+ 109: sync_g_t
+ 110: iadd r0.z, r0.w, r0.z
+ 111: store_structured g0.x, vThreadIDInGroupFlattened.x, l(0), r0.z
+ 112: sync_g_t
+ 113: ld_structured r0.w, r3.z, l(0), g0.xxxx
+ 114: movc r0.w, r5.z, l(0), r0.w
+ 115: sync_g_t
+ 116: iadd r0.z, r0.w, r0.z
+ 117: store_structured g0.x, vThreadIDInGroupFlattened.x, l(0), r0.z
+ 118: sync_g_t
+ 119: ld_structured r0.w, r3.w, l(0), g0.xxxx
+ 120: movc r0.w, r5.w, l(0), r0.w
+ 121: sync_g_t
+ 122: iadd r0.z, r0.w, r0.z
+ 123: store_structured g0.x, vThreadIDInGroupFlattened.x, l(0), r0.z
+ 124: sync_g_t
+ 125: iadd r1.xz, vThreadIDInGroupFlattened.xxxx, l(-16, 0, -32, 0)
+ 126: ilt r2.xz, r1.xxzx, l(0, 0, 0, 0)
+ 127: ld_structured r0.w, r1.x, l(0), g0.xxxx
+ 128: movc r0.w, r2.x, l(0), r0.w
+ 129: sync_g_t
+ 130: iadd r0.z, r0.w, r0.z
+ 131: store_structured g0.x, vThreadIDInGroupFlattened.x, l(0), r0.z
+ 132: sync_g_t
+ 133: ld_structured r0.w, r1.z, l(0), g0.xxxx
+ 134: movc r0.w, r2.z, l(0), r0.w
+ 135: iadd r0.z, r0.w, r0.z
+ 136: ieq r0.w, vThreadIDInGroupFlattened.x, l(63)
+ 137: if_nz r0.w
+ 138:   imm_atomic_iadd r3.x, u1, l(0, 0, 0, 0), r0.z
+ 139:   store_raw g1.x, l(0), r3.x
+ 140: endif
+ 141: sync_g_t
+ 142: if_nz r0.x
+ 143:   ine r0.x, r4.y, l(0)
+ 144:   iadd r0.x, r0.x, r0.z
+ 145:   ld_raw r0.z, l(0), g1.xxxx
+ 146:   iadd r0.x, r0.x, r0.z
+ 147:   ishl r0.z, r0.x, l(1)
+ 148:   and r0.w, r4.x, l(2.000000)
+ 149:   iadd r0.y, r0.w, r0.y
+ 150:   and r0.w, r1.y, l(0.000000)
+ 151:   iadd r0.y, r0.w, r0.y
+ 152:   imad r0.y, r4.y, l(0x00010000), r0.y
+ 153:   store_structured u2.x, r0.z, l(0), r2.y
+ 154:   bfi r0.x, l(31), l(1), r0.x, l(1)
+ 155:   store_structured u2.x, r0.x, l(0), r0.y
+ 156: endif
+ 157: ret

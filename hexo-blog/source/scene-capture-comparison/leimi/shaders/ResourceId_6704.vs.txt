@@ -1,0 +1,16 @@
+Shader hash 1979f233-efa2f272-8607647a-6a6ee1c5
+
+vs_5_0
+      dcl_globalFlags refactoringAllowed
+      dcl_input_sgv v0.x, vertexid
+      dcl_output_siv o0.xyzw, position
+      dcl_output o1.xy
+      dcl_temps 1
+   0: bfi r0.x, l(1), l(1), v0.x, l(0)
+   1: and r0.w, v0.x, l(2)
+   2: utof r0.xy, r0.xwxx
+   3: mad o0.xy, r0.xyxx, l(2.000000, 2.000000, 0.000000, 0.000000), l(-1.000000, -1.000000, 0.000000, 0.000000)
+   4: add r0.z, -r0.y, l(1.000000)
+   5: mov o1.xy, r0.xzxx
+   6: mov o0.zw, l(0.000000, 0.000000, 1.000000, 1.000000)
+   7: ret

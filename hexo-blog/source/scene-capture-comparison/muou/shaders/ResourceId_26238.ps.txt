@@ -1,0 +1,61 @@
+Shader hash 438279e6-5727ece1-82424f58-02df0b62
+
+ps_5_0
+      dcl_globalFlags refactoringAllowed
+      dcl_constantbuffer cb0[21], immediateIndexed
+      dcl_constantbuffer cb1[9], immediateIndexed
+      dcl_sampler s0, mode_default
+      dcl_sampler s1, mode_default
+      dcl_resource_texture2d (float,float,float,float) t0
+      dcl_resource_texture2d (float,float,float,float) t1
+      dcl_input_ps linear v1.xy
+      dcl_input_ps linear v2.xyz
+      dcl_output o0.xyzw
+      dcl_temps 3
+   0: sample_indexable(texture2d)(float,float,float,float) r0.xyzw, v1.xyxx, t0.xyzw, s1
+   1: lt r1.x, l(0.005000), abs(r0.x)
+   2: if_nz r1.x
+   3:   mov o0.xyzw, r0.xyzw
+   4:   ret
+   5: endif
+   6: mul r0.xy, v1.xyxx, cb0[20].zwzz
+   7: mul r0.xy, r0.xyxx, l(0.250000, 0.250000, 0.000000, 0.000000)
+   8: round_ni r0.xy, r0.xyxx
+   9: mad r0.xy, r0.xyxx, l(4.000000, 4.000000, 0.000000, 0.000000), l(0.500000, 0.500000, 0.000000, 0.000000)
+  10: mul r0.xy, r0.xyxx, cb0[20].xyxx
+  11: sample_indexable(texture2d)(float,float,float,float) r0.xyzw, r0.xyxx, t0.xyzw, s1
+  12: lt r1.x, l(0.500000), r0.w
+  13: if_nz r1.x
+  14:   mov o0.xyzw, r0.xyzw
+  15:   ret
+  16: endif
+  17: sample_indexable(texture2d)(float,float,float,float) r0.x, v1.xyxx, t1.xyzw, s0
+  18: mad r0.x, cb1[8].x, r0.x, cb1[8].y
+  19: div r0.x, l(1.000000, 1.000000, 1.000000, 1.000000), r0.x
+  20: mad r0.xyz, v2.xyzx, r0.xxxx, cb1[5].xyzx
+  21: mul r1.xyz, r0.yyyy, cb0[7].xywx
+  22: mad r1.xyz, cb0[6].xywx, r0.xxxx, r1.xyzx
+  23: mad r1.xyz, cb0[8].xywx, r0.zzzz, r1.xyzx
+  24: add r1.xyz, r1.xyzx, cb0[9].xywx
+  25: mul r2.xyz, r0.yyyy, cb0[3].xywx
+  26: mad r0.xyw, cb0[2].xyxw, r0.xxxx, r2.xyxz
+  27: mad r0.xyz, cb0[4].xywx, r0.zzzz, r0.xywx
+  28: add r0.xyz, r0.xyzx, cb0[5].xywx
+  29: div r1.xy, r1.xyxx, r1.zzzz
+  30: div r0.xy, r0.xyxx, r0.zzzz
+  31: add r0.zw, r1.xxxy, l(0.000000, 0.000000, 1.000000, 1.000000)
+  32: mul r1.x, r0.z, l(0.500000)
+  33: add r0.xy, r0.xyxx, l(1.000000, 1.000000, 0.000000, 0.000000)
+  34: mul r0.x, r0.x, l(0.500000)
+  35: mad r1.z, -r0.w, l(0.500000), l(1.000000)
+  36: mad r0.z, -r0.y, l(0.500000), l(1.000000)
+  37: add r0.xy, r0.xzxx, -r1.xzxx
+  38: sqrt r0.zw, abs(r0.xxxy)
+  39: lt r1.xy, l(0, 0, 0, 0), r0.xyxx
+  40: lt r0.xy, r0.xyxx, l(0, 0, 0, 0)
+  41: iadd r0.xy, -r1.xyxx, r0.xyxx
+  42: itof r0.xy, r0.xyxx
+  43: mul r0.xy, r0.xyxx, r0.zwzz
+  44: mad o0.xy, r0.xyxx, l(0.500000, 0.500000, 0.000000, 0.000000), l(0.498039, 0.498039, 0.000000, 0.000000)
+  45: mov o0.zw, l(0, 0, 0, 0)
+  46: ret

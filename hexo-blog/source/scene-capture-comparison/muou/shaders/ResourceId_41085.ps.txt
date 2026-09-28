@@ -1,0 +1,57 @@
+Shader hash ab995ec9-fa2661de-7f233129-580c8c39
+
+ps_5_0
+      dcl_globalFlags refactoringAllowed
+      dcl_sampler s0, mode_default
+      dcl_sampler s1, mode_default
+      dcl_resource_texture2d (float,float,float,float) t0
+      dcl_resource_texture2d (float,float,float,float) t1
+      dcl_input_ps linear v1.xy
+      dcl_input_ps linear v2.xyzw
+      dcl_input_ps linear v3.xyzw
+      dcl_input_ps linear v4.xy
+      dcl_output o0.xyzw
+      dcl_temps 2
+   0: mov r0.y, l(1.000000)
+   1: sample_indexable(texture2d)(float,float,float,float) r0.xw, v2.xyxx, t1.xyzw, s1
+   2: lt r0.z, l(0.001000), r0.w
+   3: and r0.xy, r0.xyxx, r0.zzzz
+   4: movc r1.y, r0.z, l(2.000000), l(1.000000)
+   5: sample_indexable(texture2d)(float,float,float,float) r1.xz, v2.zwzz, t1.xywz, s1
+   6: add r1.x, r0.x, r1.x
+   7: lt r0.z, l(0.001000), r1.z
+   8: movc r0.xyz, r0.zzzz, r1.xyzx, r0.xywx
+   9: add r1.y, r0.y, l(1.000000)
+  10: sample_indexable(texture2d)(float,float,float,float) r1.xz, v3.xyxx, t1.xywz, s1
+  11: add r1.x, r0.x, r1.x
+  12: lt r0.w, l(0.001000), r1.z
+  13: movc r0.xyz, r0.wwww, r1.xyzx, r0.xyzx
+  14: add r1.y, r0.y, l(1.000000)
+  15: sample_indexable(texture2d)(float,float,float,float) r1.xz, v3.zwzz, t1.xywz, s1
+  16: add r1.x, r0.x, r1.x
+  17: lt r0.w, l(0.001000), r1.z
+  18: movc r0.xyz, r0.wwww, r1.xyzx, r0.xyzx
+  19: add r1.y, r0.y, l(1.000000)
+  20: sample_indexable(texture2d)(float,float,float,float) r1.xz, v4.xyxx, t1.xywz, s1
+  21: add r1.x, r0.x, r1.x
+  22: lt r0.w, l(0.001000), r1.z
+  23: movc r0.xyz, r0.wwww, r1.xyzx, r0.xyzx
+  24: div r0.x, r0.x, r0.y
+  25: add r0.x, r0.x, l(-0.500000)
+  26: lt r0.yw, l(0.000000, 0.000000, 0.000000, 999.000000), r0.yyyz
+  27: and r0.x, r0.x, r0.y
+  28: mul r0.x, r0.z, r0.x
+  29: mov_sat r0.y, r0.x
+  30: sample_indexable(texture2d)(float,float,float,float) r1.xy, v1.xyxx, t0.xyzw, s0
+  31: add r0.z, r1.y, l(-0.500000)
+  32: add r1.y, -abs(r0.z), l(1.001000)
+  33: log r1.y, r1.y
+  34: mul r1.y, r1.y, l(10.000000)
+  35: exp r1.y, r1.y
+  36: add r1.y, r1.y, l(0.010000)
+  37: mad r0.x, r0.x, r1.y, r0.z
+  38: add_sat r1.x, r0.x, r1.x
+  39: add_sat r1.y, r0.x, l(0.500000)
+  40: movc o0.xy, r0.wwww, r0.yyyy, r1.xyxx
+  41: mov o0.zw, l(0, 0, 0, 0)
+  42: ret

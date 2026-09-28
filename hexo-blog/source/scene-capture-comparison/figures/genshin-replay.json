@@ -1,0 +1,271 @@
+{
+  "capture": "muou_light.rdc",
+  "images": [
+    {
+      "name": "genshin-eye-before",
+      "event": 10540,
+      "crop": [
+        0.48,
+        0.403,
+        0.045,
+        0.095
+      ],
+      "width": 520,
+      "slot": 1,
+      "resource": null,
+      "flipY": true,
+      "gamma": false,
+      "range": [
+        0,
+        1
+      ],
+      "channel": null,
+      "typeCast": "UNormSRGB",
+      "resourceId": "ResourceId::64537",
+      "sourceSize": [
+        3440,
+        1440
+      ],
+      "sourceFormat": "R8G8B8A8_TYPELESS",
+      "outputSize": [
+        520,
+        460
+      ],
+      "file": "replay/genshin-eye-before.png",
+      "method": "RenderDoc headless TextureDisplay; original capture resources unchanged"
+    },
+    {
+      "name": "genshin-eye-after",
+      "event": 10567,
+      "crop": [
+        0.48,
+        0.403,
+        0.045,
+        0.095
+      ],
+      "width": 520,
+      "slot": 1,
+      "resource": null,
+      "flipY": true,
+      "gamma": false,
+      "range": [
+        0,
+        1
+      ],
+      "channel": null,
+      "typeCast": "UNormSRGB",
+      "resourceId": "ResourceId::64537",
+      "sourceSize": [
+        3440,
+        1440
+      ],
+      "sourceFormat": "R8G8B8A8_TYPELESS",
+      "outputSize": [
+        520,
+        460
+      ],
+      "file": "replay/genshin-eye-after.png",
+      "method": "RenderDoc headless TextureDisplay; original capture resources unchanged"
+    },
+    {
+      "name": "genshin-snow-material",
+      "event": 10890,
+      "crop": [
+        0.05,
+        0.02,
+        0.38,
+        0.57
+      ],
+      "width": 640,
+      "slot": 1,
+      "resource": null,
+      "flipY": true,
+      "gamma": false,
+      "range": [
+        0,
+        1
+      ],
+      "channel": null,
+      "typeCast": "UNormSRGB",
+      "resourceId": "ResourceId::64537",
+      "sourceSize": [
+        3440,
+        1440
+      ],
+      "sourceFormat": "R8G8B8A8_TYPELESS",
+      "outputSize": [
+        640,
+        402
+      ],
+      "file": "replay/genshin-snow-material.png",
+      "method": "RenderDoc headless TextureDisplay; original capture resources unchanged"
+    },
+    {
+      "name": "genshin-temporal-before",
+      "event": 25362,
+      "crop": [
+        0.245,
+        0.23,
+        0.075,
+        0.19
+      ],
+      "width": 480,
+      "slot": 0,
+      "resource": null,
+      "flipY": true,
+      "gamma": false,
+      "range": [
+        0,
+        1
+      ],
+      "channel": null,
+      "typeCast": "UNormSRGB",
+      "resourceId": "ResourceId::67582",
+      "sourceSize": [
+        3440,
+        1440
+      ],
+      "sourceFormat": "R8G8B8A8_TYPELESS",
+      "outputSize": [
+        480,
+        509
+      ],
+      "file": "replay/genshin-temporal-before.png",
+      "method": "RenderDoc headless TextureDisplay; original capture resources unchanged"
+    },
+    {
+      "name": "genshin-temporal-after",
+      "event": 25381,
+      "crop": [
+        0.245,
+        0.23,
+        0.075,
+        0.19
+      ],
+      "width": 480,
+      "slot": 1,
+      "resource": null,
+      "flipY": true,
+      "gamma": false,
+      "range": [
+        0,
+        1
+      ],
+      "channel": null,
+      "typeCast": "UNormSRGB",
+      "resourceId": "ResourceId::61437",
+      "sourceSize": [
+        3440,
+        1440
+      ],
+      "sourceFormat": "R8G8B8A8_TYPELESS",
+      "outputSize": [
+        480,
+        509
+      ],
+      "file": "replay/genshin-temporal-after.png",
+      "method": "RenderDoc headless TextureDisplay; original capture resources unchanged"
+    },
+    {
+      "name": "genshin-snow-final",
+      "event": 25393,
+      "crop": [
+        0.05,
+        0.02,
+        0.38,
+        0.57
+      ],
+      "width": 640,
+      "slot": 0,
+      "resource": null,
+      "flipY": false,
+      "gamma": false,
+      "range": [
+        0,
+        1
+      ],
+      "channel": null,
+      "typeCast": "UNormSRGB",
+      "resourceId": "ResourceId::23686",
+      "sourceSize": [
+        3440,
+        1440
+      ],
+      "sourceFormat": "R8G8B8A8_SRGB",
+      "outputSize": [
+        640,
+        402
+      ],
+      "file": "replay/genshin-snow-final.png",
+      "method": "RenderDoc headless TextureDisplay; original capture resources unchanged"
+    },
+    {
+      "name": "genshin-face-final",
+      "event": 25393,
+      "crop": [
+        0.48,
+        0.403,
+        0.045,
+        0.095
+      ],
+      "width": 520,
+      "slot": 0,
+      "resource": null,
+      "flipY": false,
+      "gamma": false,
+      "range": [
+        0,
+        1
+      ],
+      "channel": null,
+      "typeCast": "UNormSRGB",
+      "resourceId": "ResourceId::23686",
+      "sourceSize": [
+        3440,
+        1440
+      ],
+      "sourceFormat": "R8G8B8A8_SRGB",
+      "outputSize": [
+        520,
+        460
+      ],
+      "file": "replay/genshin-face-final.png",
+      "method": "RenderDoc headless TextureDisplay; original capture resources unchanged"
+    },
+    {
+      "name": "genshin-cloth-final",
+      "event": 25393,
+      "crop": [
+        0.435,
+        0.54,
+        0.12,
+        0.3
+      ],
+      "width": 480,
+      "slot": 0,
+      "resource": null,
+      "flipY": false,
+      "gamma": false,
+      "range": [
+        0,
+        1
+      ],
+      "channel": null,
+      "typeCast": "UNormSRGB",
+      "resourceId": "ResourceId::23686",
+      "sourceSize": [
+        3440,
+        1440
+      ],
+      "sourceFormat": "R8G8B8A8_SRGB",
+      "outputSize": [
+        480,
+        502
+      ],
+      "file": "replay/genshin-cloth-final.png",
+      "method": "RenderDoc headless TextureDisplay; original capture resources unchanged"
+    }
+  ],
+  "errors": [],
+  "complete": true
+}

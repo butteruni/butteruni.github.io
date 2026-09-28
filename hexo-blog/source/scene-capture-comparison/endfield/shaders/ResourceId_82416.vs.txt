@@ -1,0 +1,71 @@
+SPIR-V 1.0 module, <id> bound of 55
+
+Generator: spiregg from Google - Contact Steven Perron, stevenperron@google.com
+Generator Version: 0
+
+Capability(Shader);
+
+
+
+MemoryModel(Logical, GLSL450);
+
+EntryPoint(Vertex, _2, "main", {
+    _3, 
+    _4, 
+    _5
+  });
+
+
+
+
+
+
+struct _6 : [[Block]] {
+  float _child0 : [[Offset(0)]];
+  float _child1 : [[Offset(4)]];
+  float _child2 : [[Offset(8)]];
+  float _child3 : [[Offset(12)]];
+  float _child4 : [[Offset(16)]];
+  float _child5 : [[Offset(20)]];
+  float _child6 : [[Offset(24)]];
+  float _child7 : [[Offset(28)]];
+}
+Uniform struct6* _7 : [[DescriptorSet(3), Binding(0)]];
+Input uint* _3 : [[BuiltIn(VertexIndex)]];
+Output float4* _4 : [[BuiltIn(Position)]];
+Output float2* _5 : [[Location(0)]];
+
+void _2() {
+  uint _28 = *_3;
+  uint _29 = _28 << 1;
+  uint _30 = _29 & 2;
+  float _31 = ConvertUToF(_30);
+  uint _32 = _28 & 2;
+  float _33 = ConvertUToF(_32);
+  float2 _34 = CompositeConstruct({_31, _33});
+  float2 _35 = _34 * 2.0000;
+  float2 _36 = _35 - {1.0000, 1.0000};
+  float _37 = _36.x;
+  float _38 = _36.y;
+  float4 _39 = CompositeConstruct({_37, _38, 1.0000, 1.0000});
+  float* _40 = &_7._child1;
+  float _41 = *_40;
+  float _42 = _41 * 2.0000;
+  float _43 = 1.0000 - _42;
+  float _44 = _37 * _43;
+  float4 _45 = CompositeInsert(_44, _39, {0});
+  float* _46 = &_7._child2;
+  float _47 = *_46;
+  float _48 = _47 * 2.0000;
+  float _49 = 1.0000 - _48;
+  float _50 = _38 * _49;
+  float _51 = 1.0000 - _33;
+  float2 _52 = CompositeConstruct({_31, _51});
+  float _53 = -_50;
+  float4 _54 = CompositeInsert(_53, _45, {1});
+  *_4 = _54;
+  *_5 = _52;
+  return;
+}
+
+

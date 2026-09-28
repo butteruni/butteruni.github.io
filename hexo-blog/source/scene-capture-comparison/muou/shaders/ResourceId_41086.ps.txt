@@ -1,0 +1,48 @@
+Shader hash 582b4024-3a00cca2-4ff3e62e-6fbefaa8
+
+ps_5_0
+      dcl_globalFlags refactoringAllowed
+      dcl_constantbuffer cb0[3], immediateIndexed
+      dcl_sampler s0, mode_default
+      dcl_sampler s1, mode_default
+      dcl_resource_texture2d (float,float,float,float) t0
+      dcl_resource_texture2d (float,float,float,float) t1
+      dcl_input_ps linear v1.xy
+      dcl_input_ps linear v2.xyzw
+      dcl_input_ps linear v3.xyzw
+      dcl_input_ps linear v4.xy
+      dcl_output o0.xyzw
+      dcl_temps 3
+   0: mov r0.w, l(1.000000)
+   1: sample_indexable(texture2d)(float,float,float,float) r1.xyzw, v2.xyxx, t1.xyzw, s1
+   2: mov r0.xyz, r1.xyzx
+   3: lt r1.x, l(0.001000), r1.w
+   4: and r0.xyzw, r0.xyzw, r1.xxxx
+   5: movc r1.w, r1.x, l(2.000000), l(1.000000)
+   6: sample_indexable(texture2d)(float,float,float,float) r2.xyzw, v2.zwzz, t1.xyzw, s1
+   7: add r1.xyz, r0.xyzx, r2.xyzx
+   8: lt r2.x, l(0.001000), r2.w
+   9: movc r0.xyzw, r2.xxxx, r1.xyzw, r0.xyzw
+  10: add r1.w, r0.w, l(1.000000)
+  11: sample_indexable(texture2d)(float,float,float,float) r2.xyzw, v3.xyxx, t1.xyzw, s1
+  12: add r1.xyz, r0.xyzx, r2.xyzx
+  13: lt r2.x, l(0.001000), r2.w
+  14: movc r0.xyzw, r2.xxxx, r1.xyzw, r0.xyzw
+  15: add r1.w, r0.w, l(1.000000)
+  16: sample_indexable(texture2d)(float,float,float,float) r2.xyzw, v3.zwzz, t1.xyzw, s1
+  17: add r1.xyz, r0.xyzx, r2.xyzx
+  18: lt r2.x, l(0.001000), r2.w
+  19: movc r0.xyzw, r2.xxxx, r1.xyzw, r0.xyzw
+  20: add r1.w, r0.w, l(1.000000)
+  21: sample_indexable(texture2d)(float,float,float,float) r2.xyzw, v4.xyxx, t1.xyzw, s1
+  22: add r1.xyz, r0.xyzx, r2.xyzx
+  23: lt r2.x, l(0.001000), r2.w
+  24: movc r0.xyzw, r2.xxxx, r1.xyzw, r0.xyzw
+  25: lt r1.x, l(0), r0.w
+  26: div r0.xyz, r0.xyzx, r0.wwww
+  27: sample_indexable(texture2d)(float,float,float,float) r1.yzw, v1.xyxx, t0.wxyz, s0
+  28: movc r0.xyz, r1.xxxx, r0.xyzx, r1.yzwy
+  29: add r0.xyz, -r1.yzwy, r0.xyzx
+  30: mad o0.xyz, cb0[2].xxxx, r0.xyzx, r1.yzwy
+  31: mov o0.w, l(0)
+  32: ret

@@ -1,0 +1,60 @@
+Shader hash 167fa3df-fcff9df9-b35a26a1-d4df2a1d
+
+vs_5_0
+      dcl_globalFlags refactoringAllowed
+      dcl_constantbuffer cb0[190], immediateIndexed
+      dcl_constantbuffer cb1[7], immediateIndexed
+      dcl_constantbuffer cb2[4], immediateIndexed
+      dcl_constantbuffer cb3[21], immediateIndexed
+      dcl_input v0.xyzw
+      dcl_input v1.xyzw
+      dcl_input v2.xyzw
+      dcl_input v3.xyzw
+      dcl_input v4.xy
+      dcl_input v5.xy
+      dcl_output_siv o0.xyzw, position
+      dcl_output o1.xyzw
+      dcl_output o2.xyz
+      dcl_output o3.xyz
+      dcl_output o4.xyz
+      dcl_output o5.xyz
+      dcl_output o6.xyzw
+      dcl_output o7.xyzw
+      dcl_output o8.xyzw
+      dcl_output o9.xyzw
+      dcl_temps 3
+   0: ne r0.x, l(0, 0, 0, 0), cb0[26].w
+   1: mul r0.y, cb0[164].y, cb0[189].y
+   2: movc r0.x, r0.x, r0.y, l(1.000000)
+   3: mul r0.xyzw, r0.xxxx, v0.xyzw
+   4: mul r1.xyzw, r0.yyyy, cb2[1].xyzw
+   5: mad r1.xyzw, cb2[0].xyzw, r0.xxxx, r1.xyzw
+   6: mad r1.xyzw, cb2[2].xyzw, r0.zzzz, r1.xyzw
+   7: mad o5.xyz, cb2[3].xyzx, r0.wwww, r1.xyzx
+   8: add r0.xyzw, r1.xyzw, cb2[3].xyzw
+   9: mul r1.xyzw, r0.yyyy, cb3[18].xyzw
+  10: mad r1.xyzw, cb3[17].xyzw, r0.xxxx, r1.xyzw
+  11: mad r1.xyzw, cb3[19].xyzw, r0.zzzz, r1.xyzw
+  12: mad r1.xyzw, cb3[20].xyzw, r0.wwww, r1.xyzw
+  13: mov o0.xyzw, r1.xyzw
+  14: mul r1.y, r1.y, cb1[6].x
+  15: mul r2.xzw, r1.xxwy, l(0.500000, 0.000000, 0.500000, 0.500000)
+  16: mov o1.zw, r1.zzzw
+  17: add o1.xy, r2.zzzz, r2.xwxx
+  18: mul r1.xyz, r0.yyyy, cb3[10].xyzx
+  19: mad r1.xyz, cb3[9].xyzx, r0.xxxx, r1.xyzx
+  20: mad r0.xyz, cb3[11].xyzx, r0.zzzz, r1.xyzx
+  21: mad r0.xyz, cb3[12].xyzx, r0.wwww, r0.xyzx
+  22: mul o2.xyz, r0.xyzx, l(-1.000000, -1.000000, 1.000000, 0.000000)
+  23: dp3 r0.x, cb2[2].xyzx, cb2[2].xyzx
+  24: rsq r0.x, r0.x
+  25: mul o3.xyz, r0.xxxx, cb2[2].xyzx
+  26: dp3 r0.x, cb2[0].xyzx, cb2[0].xyzx
+  27: rsq r0.x, r0.x
+  28: mul o4.xyz, r0.xxxx, cb2[0].xyzx
+  29: mov o6.xyzw, v2.xyzw
+  30: mov o7.xyzw, v3.xyzw
+  31: mov o8.xy, v4.xyxx
+  32: mov o8.zw, v5.xxxy
+  33: mov o9.xyzw, v1.xyzw
+  34: ret

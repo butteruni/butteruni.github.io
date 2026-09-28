@@ -1,0 +1,86 @@
+SPIR-V 1.0 module, <id> bound of 66
+
+Generator: spiregg from Google - Contact Steven Perron, stevenperron@google.com
+Generator Version: 0
+
+Capability(Shader);
+
+
+
+MemoryModel(Logical, GLSL450);
+
+EntryPoint(Vertex, _2, "main", {
+    _3, 
+    _4, 
+    _5
+  });
+
+
+
+
+
+
+struct _6 : [[Block]] {
+  float _child0 : [[Offset(0)]];
+  float _child1 : [[Offset(4)]];
+  float _child2 : [[Offset(8)]];
+  float _child3 : [[Offset(12)]];
+  float _child4 : [[Offset(16)]];
+  float _child5 : [[Offset(20)]];
+  float _child6 : [[Offset(24)]];
+  float _child7 : [[Offset(28)]];
+}
+struct _8 : [[Block]] {
+  float4 _child0 : [[Offset(0)]];
+  float4 _child1 : [[Offset(16)]];
+  float _child2 : [[Offset(32)]];
+  float2 _child3 : [[Offset(36)]];
+  uint _child4 : [[Offset(44)]];
+  int _child5 : [[Offset(48)]];
+}
+Uniform struct6* _7 : [[DescriptorSet(3), Binding(0)]];
+Uniform struct8* _9 : [[DescriptorSet(3), Binding(1)]];
+Input uint* _3 : [[BuiltIn(VertexIndex)]];
+Output float4* _4 : [[BuiltIn(Position)]];
+Output float2* _5 : [[Location(0)]];
+
+void _2() {
+  uint _33 = *_3;
+  uint _34 = _33 << 1;
+  uint _35 = _34 & 2;
+  float _36 = ConvertUToF(_35);
+  uint _37 = _33 & 2;
+  float _38 = ConvertUToF(_37);
+  float2 _39 = CompositeConstruct({_36, _38});
+  float2 _40 = _39 * 2.0000;
+  float2 _41 = _40 - {1.0000, 1.0000};
+  float _42 = _41.x;
+  float _43 = _41.y;
+  float4 _44 = CompositeConstruct({_42, _43, 1.0000, 1.0000});
+  float* _45 = &_7._child1;
+  float _46 = *_45;
+  float _47 = _46 * 2.0000;
+  float _48 = 1.0000 - _47;
+  float _49 = _42 * _48;
+  float4 _50 = CompositeInsert(_49, _44, {0});
+  float* _51 = &_7._child2;
+  float _52 = *_51;
+  float _53 = _52 * 2.0000;
+  float _54 = 1.0000 - _53;
+  float _55 = _43 * _54;
+  float _56 = 1.0000 - _38;
+  float2 _57 = CompositeConstruct({_36, _56});
+  float4* _58 = &_9._child0;
+  float4 _59 = *_58;
+  float2 _60 = _59.xy;
+  float2 _61 = _57 * _60;
+  float2 _62 = _59.zw;
+  float2 _63 = _61 + _62;
+  float _64 = -_55;
+  float4 _65 = CompositeInsert(_64, _50, {1});
+  *_4 = _65;
+  *_5 = _63;
+  return;
+}
+
+

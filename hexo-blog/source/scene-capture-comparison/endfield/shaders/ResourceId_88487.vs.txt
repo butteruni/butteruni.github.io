@@ -1,0 +1,152 @@
+SPIR-V 1.0 module, <id> bound of 109
+
+Generator: spiregg from Google - Contact Steven Perron, stevenperron@google.com
+Generator Version: 0
+
+Capability(Shader);
+
+
+
+MemoryModel(Logical, GLSL450);
+
+EntryPoint(Vertex, _2, "main", {
+    _3, 
+    _4, 
+    _5, 
+    _6, 
+    _7, 
+    _9, 
+    _10, 
+    _11, 
+    _12, 
+    _13
+  });
+
+
+
+
+
+
+struct _14 : [[Block]] {
+  float4x4 _child0 : [[RowMajor, MatrixStride(16), Offset(0)]];
+  float4x4 _child1 : [[RowMajor, MatrixStride(16), Offset(64)]];
+  float4x4 _child2 : [[RowMajor, MatrixStride(16), Offset(128)]];
+  float4x4 _child3 : [[RowMajor, MatrixStride(16), Offset(192)]];
+  float4x4 _child4 : [[RowMajor, MatrixStride(16), Offset(256)]];
+  float4x4 _child5 : [[RowMajor, MatrixStride(16), Offset(320)]];
+  float4x4 _child6 : [[RowMajor, MatrixStride(16), Offset(384)]];
+  float4x4 _child7 : [[RowMajor, MatrixStride(16), Offset(448)]];
+  float4x4 _child8 : [[RowMajor, MatrixStride(16), Offset(512)]];
+  float4x4 _child9 : [[RowMajor, MatrixStride(16), Offset(576)]];
+  float4x4 _child10 : [[RowMajor, MatrixStride(16), Offset(640)]];
+  float4 _child11 : [[Offset(704)]];
+  float4x4 _child12 : [[RowMajor, MatrixStride(16), Offset(720)]];
+  float4x4 _child13 : [[RowMajor, MatrixStride(16), Offset(784)]];
+  float4x4 _child14 : [[RowMajor, MatrixStride(16), Offset(848)]];
+  float4x4 _child15 : [[RowMajor, MatrixStride(16), Offset(912)]];
+  float4x4 _child16 : [[RowMajor, MatrixStride(16), Offset(976)]];
+  float4x4 _child17 : [[RowMajor, MatrixStride(16), Offset(1040)]];
+  float4x4 _child18 : [[RowMajor, MatrixStride(16), Offset(1104)]];
+  float4x4 _child19 : [[RowMajor, MatrixStride(16), Offset(1168)]];
+  float4x4 _child20 : [[RowMajor, MatrixStride(16), Offset(1232)]];
+  float4 _child21 : [[Offset(1296)]];
+}
+struct _17 {
+  float4x4 _child0 : [[RowMajor, MatrixStride(16), Offset(0)]];
+  float4 _child1 : [[Offset(64)]];
+  float4 _child2 : [[Offset(80)]];
+  float4 _child3 : [[Offset(96)]];
+  float4 _child4 : [[Offset(112)]];
+  float4 _child5 : [[Offset(128)]];
+  float4 _child6 : [[Offset(144)]];
+}
+struct _16 : [[Block]] {
+  struct17[32] _child0 : [[Offset(0)]] : [[ArrayStride(160)]];
+}
+Uniform struct14* _15 : [[DescriptorSet(0), Binding(9)]];
+Uniform struct16* _18 : [[DescriptorSet(0), Binding(7)]];
+Input float3* _3 : [[Location(0)]];
+Input float2* _4 : [[Location(1)]];
+Input uint* _5 : [[BuiltIn(InstanceIndex)]];
+Output float4* _6 : [[BuiltIn(Position)]];
+Output float3* _7 : [[Location(0)]];
+Output float4* _9 : [[Location(2)]];
+Output float4* _10 : [[Location(3)]];
+Output float4* _11 : [[Location(4)]];
+Output float2* _12 : [[Location(5)]];
+Output uint* _13 : [[Location(6), Flat]];
+
+void _2() {
+  float3 _47 = *_3;
+  float2 _48 = *_4;
+  uint _49 = *_5;
+  uint _50 = GLSL.std.450::UMin(_49, 31);
+  float4x4* _51 = &_18._child0[_50]._child0;
+  float4x4 _52 = *_51;
+  float _53 = _47.x;
+  float _54 = _47.y;
+  float _55 = _47.z;
+  float4 _56 = CompositeConstruct({_53, _54, _55, 1.0000});
+  float4 _57 = _56 * _52;
+  float3 _58 = _57.xyz;
+  float4x4* _59 = &_15._child5;
+  float4x4 _60 = *_59;
+  float4* _61 = &_15._child11;
+  float4 _62 = *_61;
+  float3 _63 = _62.xyz;
+  float3 _64 = _58 - _63;
+  float _65 = _64.x;
+  float _66 = _64.y;
+  float _67 = _64.z;
+  float4 _68 = CompositeConstruct({_65, _66, _67, 1.0000});
+  float4 _69 = _68 * _60;
+  float _70 = _52[0].w;
+  float _71 = _52[1].w;
+  float _72 = _52[2].w;
+  float _73 = _52[0].x;
+  float _74 = _52[1].x;
+  float _75 = _52[2].x;
+  float3 _76 = CompositeConstruct({_73, _74, _75});
+  float _77 = Dot(_76, _76);
+  float3 _78 = CompositeConstruct({_77, _77, _77});
+  float3 _79 = _76 / _78;
+  float _80 = _52[0].y;
+  float _81 = _52[1].y;
+  float _82 = _52[2].y;
+  float3 _83 = CompositeConstruct({_80, _81, _82});
+  float _84 = Dot(_83, _83);
+  float3 _85 = CompositeConstruct({_84, _84, _84});
+  float3 _86 = _83 / _85;
+  float _87 = _52[0].z;
+  float _88 = _52[1].z;
+  float _89 = _52[2].z;
+  float3 _90 = CompositeConstruct({_87, _88, _89});
+  float _91 = Dot(_90, _90);
+  float3 _92 = CompositeConstruct({_91, _91, _91});
+  float3 _93 = _90 / _92;
+  float _94 = _79.x;
+  float _95 = _79.y;
+  float _96 = _79.z;
+  float4 _97 = CompositeConstruct({_94, _95, _96, _70});
+  float _98 = _86.x;
+  float _99 = _86.y;
+  float _100 = _86.z;
+  float4 _101 = CompositeConstruct({_98, _99, _100, _71});
+  float _102 = _93.x;
+  float _103 = _93.y;
+  float _104 = _93.z;
+  float4 _105 = CompositeConstruct({_102, _103, _104, _72});
+  float _106 = _69.y;
+  float _107 = -_106;
+  float4 _108 = CompositeInsert(_107, _69, {1});
+  *_6 = _108;
+  *_7 = _58;
+  *_9 = _97;
+  *_10 = _101;
+  *_11 = _105;
+  *_12 = _48;
+  *_13 = _49;
+  return;
+}
+
+

@@ -1,0 +1,48 @@
+SPIR-V 1.0 module, <id> bound of 33
+
+Generator: spiregg from Google - Contact Steven Perron, stevenperron@google.com
+Generator Version: 0
+
+Capability(Shader);
+
+
+
+MemoryModel(Logical, GLSL450);
+
+EntryPoint(Fragment, _1, "main", {
+    _2, 
+    _3, 
+    _4
+  });
+
+ExecutionMode(_1, OriginUpperLeft);
+ExecutionMode(_1, DepthReplacing);
+
+
+
+
+
+UniformConstant sampler* _6 : [[DescriptorSet(3), Binding(0)]];
+UniformConstant Image<float, 2D>* _8 : [[DescriptorSet(3), Binding(2)]];
+UniformConstant Image<float, 2D>* _9 : [[DescriptorSet(3), Binding(1)]];
+Input float2* _2 : [[Location(0)]];
+Output float4* _3 : [[Location(0)]];
+Output float* _4 : [[BuiltIn(FragDepth)]];
+
+void _1() {
+  float2 _23 = *_2;
+  Image<float, 2D> _24 = *_8;
+  sampler _25 = *_6;
+  SampledImage<float, 2D> _26 = SampledImage(_24, _25);
+  float4 _27 = ImageSampleExplicitLod(_26, _23, Lod(0.0000));
+  Image<float, 2D> _28 = *_9;
+  sampler _29 = *_6;
+  SampledImage<float, 2D> _30 = SampledImage(_28, _29);
+  float4 _31 = ImageSampleExplicitLod(_30, _23, Lod(0.0000));
+  float _32 = _31.x;
+  *_3 = _27;
+  *_4 = _32;
+  return;
+}
+
+

@@ -1,0 +1,83 @@
+Shader hash af9b2952-b19cf844-64db4346-63a639bd
+
+ps_5_0
+      dcl_globalFlags refactoringAllowed
+      dcl_constantbuffer cb0[5], immediateIndexed
+      dcl_resource_texture2d (uint,uint,uint,uint) t0
+      dcl_resource_texture2d (uint,uint,uint,uint) t1
+      dcl_uav_typed_texture2d (uint,uint,uint,uint) u2
+      dcl_uav_typed_texture2d (float,float,float,float) u3
+      dcl_input_ps_siv linear noperspective v0.xyz, position
+      dcl_input_ps linear v1.xyz
+      dcl_temps 3
+   0: rcp r0.x, abs(cb0[0].x)
+   1: add r0.x, r0.x, r0.x
+   2: ftou r0.yz, cb0[4].xxyx
+   3: utof r0.w, r0.y
+   4: mul r0.w, r0.w, cb0[3].y
+   5: div r0.x, r0.w, r0.x
+   6: deriv_rtx_coarse r1.x, v0.z
+   7: deriv_rty_coarse r1.y, v0.z
+   8: dp2 r0.w, r1.xyxx, r1.xyxx
+   9: sqrt r0.w, r0.w
+  10: mul r0.x, r0.x, r0.w
+  11: ge r0.x, r0.x, l(1.191754)
+  12: dp3 r0.w, v1.xyzx, v1.xyzx
+  13: rsq r0.w, r0.w
+  14: mul r0.w, r0.w, v1.y
+  15: ge r0.w, l(0.642788), r0.w
+  16: or r0.x, r0.w, r0.x
+  17: if_nz r0.x
+  18:   ret
+  19: endif
+  20: iadd r0.xy, r0.yzyy, l(-1, -1, 0, 0)
+  21: ftou r0.zw, cb0[4].zzzw
+  22: ftou r1.xy, v0.xyxx
+  23: iadd r0.zw, r0.zzzw, r1.xxxy
+  24: and r0.xy, r0.xyxx, r0.zwzz
+  25: ushr r1.xy, r0.xyxx, l(3, 3, 0, 0)
+  26: mov r1.zw, l(0, 0, 0, 0)
+  27: ld_indexable(texture2d)(uint,uint,uint,uint) r1.z, r1.xyzw, t0.yzxw
+  28: add r1.w, -v0.z, l(1.000000)
+  29: mul r2.x, r1.w, l(32.000000)
+  30: max r2.x, r2.x, l(0)
+  31: min r2.x, r2.x, l(31.000000)
+  32: ftou r2.x, r2.x
+  33: bfi r1.z, l(1), r2.x, l(1), r1.z
+  34: iadd r2.x, r1.z, l(-1)
+  35: not r2.x, r2.x
+  36: and r2.x, r1.z, r2.x
+  37: ishl r2.y, r2.x, l(1)
+  38: or r2.x, r2.y, r2.x
+  39: uge r1.z, r2.x, r1.z
+  40: if_nz r1.z
+  41:   mov r0.zw, l(0, 0, 0, 0)
+  42:   ld_indexable(texture2d)(uint,uint,uint,uint) r0.z, r0.xyzw, t1.yzxw
+  43:   ushr r0.w, r0.z, l(16)
+  44:   and r0.z, r0.z, l(0x0000ffff)
+  45:   mov_sat r1.w, r1.w
+  46:   mul r1.z, r1.w, l(65532.000000)
+  47:   round_ne r1.z, r1.z
+  48:   ftou r1.z, r1.z
+  49:   ieq r1.w, r1.z, l(0x0000fffc)
+  50:   movc r1.z, r1.w, l(0), r1.z
+  51:   iadd r0.w, -r0.w, r1.z
+  52:   div r1.w, l(1.200000), cb0[3].y
+  53:   mul r1.w, r1.w, l(65532.000000)
+  54:   round_pi r1.w, r1.w
+  55:   ftou r1.w, r1.w
+  56:   ilt r2.x, l(0), r0.w
+  57:   iadd r0.z, r0.z, r0.w
+  58:   ult r0.z, r0.z, r1.w
+  59:   and r0.z, r0.z, r2.x
+  60:   if_nz r0.z
+  61:     ishl r0.z, r1.z, l(16)
+  62:     or r0.z, r0.w, r0.z
+  63:     imm_atomic_umax r2.x, u2, r0.xyxx, r0.z
+  64:     ult r0.x, r2.x, r0.z
+  65:     if_nz r0.x
+  66:       store_uav_typed u3.xyzw, r1.xyyy, l(1.000000, 1.000000, 1.000000, 1.000000)
+  67:     endif
+  68:   endif
+  69: endif
+  70: ret

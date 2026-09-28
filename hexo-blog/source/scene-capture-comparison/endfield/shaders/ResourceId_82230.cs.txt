@@ -1,0 +1,470 @@
+SPIR-V 1.3 module, <id> bound of 490
+
+Generator: spiregg from Google - Contact Steven Perron, stevenperron@google.com
+Generator Version: 0
+
+Capability(Shader);
+Capability(StorageImageExtendedFormats);
+
+
+
+MemoryModel(Logical, GLSL450);
+
+EntryPoint(GLCompute, _2, "main", {
+    _3
+  });
+
+ExecutionMode(_2, LocalSize(8, 8, 1));
+
+
+
+
+
+struct _4 : [[Block]] {
+  float4x4 _child0 : [[RowMajor, MatrixStride(16), Offset(0)]];
+  float4x4 _child1 : [[RowMajor, MatrixStride(16), Offset(64)]];
+  float4x4 _child2 : [[RowMajor, MatrixStride(16), Offset(128)]];
+  float4x4 _child3 : [[RowMajor, MatrixStride(16), Offset(192)]];
+  float4x4 _child4 : [[RowMajor, MatrixStride(16), Offset(256)]];
+  float4x4 _child5 : [[RowMajor, MatrixStride(16), Offset(320)]];
+  float4x4 _child6 : [[RowMajor, MatrixStride(16), Offset(384)]];
+  float4x4 _child7 : [[RowMajor, MatrixStride(16), Offset(448)]];
+  float4x4 _child8 : [[RowMajor, MatrixStride(16), Offset(512)]];
+  float4x4 _child9 : [[RowMajor, MatrixStride(16), Offset(576)]];
+  float4x4 _child10 : [[RowMajor, MatrixStride(16), Offset(640)]];
+  float4 _child11 : [[Offset(704)]];
+  float4x4 _child12 : [[RowMajor, MatrixStride(16), Offset(720)]];
+  float4x4 _child13 : [[RowMajor, MatrixStride(16), Offset(784)]];
+  float4x4 _child14 : [[RowMajor, MatrixStride(16), Offset(848)]];
+  float4x4 _child15 : [[RowMajor, MatrixStride(16), Offset(912)]];
+  float4x4 _child16 : [[RowMajor, MatrixStride(16), Offset(976)]];
+  float4x4 _child17 : [[RowMajor, MatrixStride(16), Offset(1040)]];
+  float4x4 _child18 : [[RowMajor, MatrixStride(16), Offset(1104)]];
+  float4x4 _child19 : [[RowMajor, MatrixStride(16), Offset(1168)]];
+  float4x4 _child20 : [[RowMajor, MatrixStride(16), Offset(1232)]];
+  float4 _child21 : [[Offset(1296)]];
+}
+struct _9 : [[Block]] {
+  float4 _child0 : [[Offset(0)]];
+  float4 _child1 : [[Offset(16)]];
+  float4 _child2 : [[Offset(32)]];
+  float4 _child3 : [[Offset(48)]];
+  float4 _child4 : [[Offset(64)]];
+}
+Uniform struct4* _5 : [[DescriptorSet(1), Binding(0)]];
+UniformConstant sampler* _7 : [[DescriptorSet(0), Binding(4)]];
+Uniform struct9* _10 : [[DescriptorSet(1), Binding(1)]];
+UniformConstant Image<float, 2D>* _11 : [[DescriptorSet(0), Binding(2)]];
+UniformConstant Image<float, 2D>* _12 : [[DescriptorSet(0), Binding(3)]];
+UniformConstant StorageImage<float, 2D>* _14 : [[DescriptorSet(0), Binding(0)]];
+UniformConstant StorageImage<float, 2D>* _15 : [[DescriptorSet(0), Binding(1)]];
+Input uint3* _3 : [[BuiltIn(GlobalInvocationId)]];
+
+void _2() {
+  uint3 _100 = *_3;
+  uint2 _101 = _100.xy;
+  float* _102 = &_10._child1.z;
+  float _103 = *_102;
+  uint _104 = ConvertFToU(_103);
+  uint _105 = _100.x;
+  uint _106 = _100.y;
+
+  while(true) {
+    uint _108 = Phi(_106, _109);
+    uint _111 = Phi(_105, _112);
+    uint _113 = Phi(0, _114);
+    uint _115 = Phi(32, _116);
+    bool _117 = _115 > 0;
+    if(!_117) break;
+    uint _120 = _111 & _115;
+    bool _121 = _120 > 0;
+    uint _122 = Select(_121, 1, 0);
+    uint _123 = _108 & _115;
+    bool _124 = _123 > 0;
+    uint _125 = Select(_124, 1, 0);
+    uint _126 = _115 * _115;
+    uint _127 = 3 * _122;
+    uint _128 = _127 ^ _125;
+    uint _129 = _126 * _128;
+    uint _114 = _113 + _129;
+    bool _130 = _125 == 0;
+    
+    if(_130) {
+      bool _133 = _122 == 1;
+      
+      if(_133) {
+        uint _136 = 63 - _111;
+        uint _137 = 63 - _108;
+      }
+
+      uint _138 = Phi(_108, _137);
+      uint _139 = Phi(_111, _136);
+    }
+
+    uint _109 = Phi(_108, _139);
+    uint _112 = Phi(_111, _138);
+    uint _116 = _115 / 2;
+  }
+
+  uint _140 = UMod(_104, 64);
+  uint _141 = 288 * _140;
+  uint _142 = _113 + _141;
+  float _143 = ConvertUToF(_142);
+  float2 _144 = {0.7549, 0.5698} * _143;
+  float2 _145 = {0.5000, 0.5000} + _144;
+  float2 _146 = GLSL.std.450::Fract(_145);
+  float2 _147 = ConvertUToF(_101);
+  float2 _148 = _147 + {0.5000, 0.5000};
+  float4* _149 = &_10._child4;
+  float4 _150 = *_149;
+  float2 _151 = _150.zw;
+  float2 _152 = _148 * _151;
+  float2 _153 = _147 * _151;
+  Image<float, 2D> _154 = *_12;
+  sampler _155 = *_7;
+  SampledImage<float, 2D> _156 = SampledImage(_154, _155);
+  float4 _157 = ImageGather(_156, _153, 0, );
+  Image<float, 2D> _158 = *_12;
+  sampler _159 = *_7;
+  SampledImage<float, 2D> _160 = SampledImage(_158, _159);
+  float4 _161 = ImageGather(_160, _153, 0, ConstOffset({1, 1}));
+  float _162 = _157.y;
+  float _163 = _157.x;
+  float _164 = _157.z;
+  float _165 = _161.z;
+  float _166 = _161.x;
+  float4 _167 = CompositeConstruct({_163, _165, _164, _166});
+  float4 _168 = CompositeConstruct({_162, _162, _162, _162});
+  float4 _169 = _167 - _168;
+  float _170 = _169.y;
+  float _171 = _169.x;
+  float _172 = _170 - _171;
+  float _173 = _172 * 0.5000;
+  float _174 = _169.w;
+  float _175 = _169.z;
+  float _176 = _174 - _175;
+  float _177 = _176 * 0.5000;
+  float _178 = _172 * -0.5000;
+  float _179 = _176 * -0.5000;
+  float4 _180 = CompositeConstruct({_173, _178, _177, _179});
+  float4 _181 = _169 + _180;
+  float4 _182 = GLSL.std.450::FAbs(_169);
+  float4 _183 = GLSL.std.450::FAbs(_181);
+  float4 _184 = GLSL.std.450::NMin(_182, _183);
+  float _185 = _162 * 0.0110;
+  float4 _186 = CompositeConstruct({_185, _185, _185, _185});
+  float4 _187 = _184 / _186;
+  float4 _188 = {1.2500, 1.2500, 1.2500, 1.2500} - _187;
+  float4 _189 = GLSL.std.450::FClamp(_188, {0.0000, 0.0000, 0.0000, 0.0000}, {1.0000, 1.0000, 1.0000, 1.0000});
+  float4 _190 = GLSL.std.450::FClamp(_189, {0.0000, 0.0000, 0.0000, 0.0000}, {1.0000, 1.0000, 1.0000, 1.0000});
+  float4 _191 = _190 * 2.9000;
+  float4 _192 = GLSL.std.450::RoundEven(_191);
+  float _193 = Dot(_192, {0.2510, 0.0627, 0.0157, 0.0039});
+  StorageImage<float, 2D> _194 = *_15;
+  ImageWrite(_194, _101, _193, );
+  Image<float, 2D> _195 = *_11;
+  sampler _196 = *_7;
+  SampledImage<float, 2D> _197 = SampledImage(_195, _196);
+  float4 _198 = ImageSampleExplicitLod(_197, _152, Lod(0.0000));
+  float2 _199 = _198.xy;
+  float2 _200 = _199 * 2.0000;
+  float2 _201 = _200 - {1.0000, 1.0000};
+  float _202 = _201.x;
+  float2 _203 = GLSL.std.450::FAbs(_201);
+  float _204 = Dot({1.0000, 1.0000}, _203);
+  float _205 = 1.0000 - _204;
+  float _206 = _201.y;
+  float3 _207 = CompositeConstruct({_202, _205, _206});
+  bool _208 = _205 < 0.0000;
+  
+  if(_208) {
+    float2 _211 = _207.zx;
+    float2 _212 = GLSL.std.450::FAbs(_211);
+    float2 _213 = {1.0000, 1.0000} - _212;
+    float2 _214 = _207.xz;
+    bool _215 = _214 >= {0.0000, 0.0000};
+    float2 _216 = Select(_215, {1.0000, 1.0000}, {-1.0000, -1.0000});
+    float2 _217 = _213 * _216;
+    float3 _218 = float3(_217.x, _207.y, _217.y);
+  }
+
+  float3 _219 = Phi(_207, _218);
+  float3 _220 = GLSL.std.450::Normalize(_219);
+  float4x4* _221 = &_5._child0;
+  float4x4 _222 = *_221;
+  float4 _223 = _222[0];
+  float3 _224 = _223.xyz;
+  float4 _225 = _222[1];
+  float3 _226 = _225.xyz;
+  float4 _227 = _222[2];
+  float3 _228 = _227.xyz;
+  float3x3 _229 = CompositeConstruct({_224, _226, _228});
+  float3 _230 = _220 * _229;
+  float _231 = _230.z;
+  float _232 = -_231;
+  float3 _233 = CompositeInsert(_232, _230, {2});
+  float _234 = _162 * 1.0000;
+  float2 _235 = _152 * 2.0000;
+  float2 _236 = _235 - {1.0000, 1.0000};
+  float _237 = _236.x;
+  float _238 = _236.y;
+  float4x4* _239 = &_5._child3;
+  float4x4 _240 = *_239;
+  float4 _241 = CompositeConstruct({_237, _238, 1.0000, 1.0000});
+  float4 _242 = _241 * _240;
+  float2 _243 = _242.xy;
+  float2 _244 = _243 * _234;
+  float _245 = _244.y;
+  float _246 = -_245;
+  float _247 = _244.x;
+  float3 _248 = CompositeConstruct({_247, _246, _234});
+  float3 _249 = -_248;
+  float3 _250 = GLSL.std.450::Normalize(_249);
+  float* _251 = &_10._child0.x;
+  float _252 = *_251;
+  float* _253 = &_10._child0.y;
+  float _254 = *_253;
+  float _255 = _252 * _254;
+  float* _256 = &_10._child0.w;
+  float _257 = *_256;
+  float _258 = _146.x;
+  float _259 = _146.y;
+  float2 _260 = _152 + _151;
+  float2 _261 = _260 * 2.0000;
+  float2 _262 = _261 - {1.0000, 1.0000};
+  float _263 = _262.x;
+  float _264 = _262.y;
+  float4 _265 = CompositeConstruct({_263, _264, 1.0000, 1.0000});
+  float4 _266 = _265 * _240;
+  float2 _267 = _266.xy;
+  float2 _268 = _267 * _234;
+  float _269 = _268.x;
+  float3 _270 = CompositeConstruct({_269, float(Undef), _234});
+  float2 _271 = _270.xy;
+  float2 _272 = _248.xy;
+  float2 _273 = _271 - _272;
+  float _274 = _273.x;
+  float _275 = _255 / _274;
+  float _276 = GLSL.std.450::NMin(_275, 48.0000);
+  float _277 = _276 * _274;
+  float* _278 = &_10._child0.z;
+  float _279 = *_278;
+  float _280 = _279 * _277;
+  float _281 = 1.0000 - _279;
+  float _282 = _277 * _281;
+  float _283 = -1.0000 / _280;
+  float _284 = _282 / _280;
+  float _285 = _284 + 1.0000;
+  float _286 = 10.0000 - _276;
+  float _287 = _286 * 0.0100;
+  float _288 = GLSL.std.450::FClamp(_287, 0.0000, 1.0000);
+  float _289 = _288 * 0.5000;
+  float _290 = 1.3000 / _276;
+
+  while(true) {
+    float _292 = Phi(_289, _293);
+    float _295 = Phi(0.0000, _296);
+    bool _297 = _295 < 3.0000;
+    if(!_297) break;
+    float _300 = _295 + _258;
+    float _301 = _300 * 1.0472;
+    float _302 = GLSL.std.450::Cos(_301);
+    float _303 = GLSL.std.450::Sin(_301);
+    float2 _304 = CompositeConstruct({_302, _303});
+    float2 _305 = _304 * _276;
+    float3 _306 = CompositeConstruct({_302, _303, 0.0000});
+    float _307 = Dot(_306, _250);
+    float3 _308 = _250 * _307;
+    float3 _309 = _306 - _308;
+    float3 _310 = GLSL.std.450::Cross(_309, _250);
+    float3 _311 = GLSL.std.450::Normalize(_310);
+    float _312 = Dot(_233, _311);
+    float3 _313 = _311 * _312;
+    float3 _314 = _233 - _313;
+    float _315 = Dot(_309, _314);
+    float _316 = GLSL.std.450::FSign(_315);
+    int _317 = ConvertFToS(_316);
+    float _318 = ConvertSToF(_317);
+    float _319 = GLSL.std.450::Length(_314);
+    float _320 = Dot(_314, _250);
+    float _321 = _320 / _319;
+    float _322 = GLSL.std.450::FClamp(_321, 0.0000, 1.0000);
+    float _323 = GLSL.std.450::FAbs(_322);
+    float _324 = -0.1566 * _323;
+    float _325 = _324 + 1.5708;
+    float _326 = 1.0000 - _323;
+    int _327 = Bitcast(_326);
+    int _328 = _327 >> 1;
+    int _329 = 532487669 + _328;
+    float _330 = Bitcast(_329);
+    float _331 = _325 * _330;
+    float _332 = GLSL.std.450::FClamp(_331, 0.0000, 3.1416);
+    float _333 = _318 * _332;
+    float _334 = _333 + 1.5708;
+    float _335 = GLSL.std.450::Cos(_334);
+    float _336 = _333 - 1.5708;
+    float _337 = GLSL.std.450::Cos(_336);
+
+    while(true) {
+      float _339 = Phi(_335, _340);
+      float _342 = Phi(_337, _343);
+      float _344 = Phi(0.0000, _345);
+      bool _346 = _344 < 3.0000;
+      [[Unroll]]
+      if(!_346) break;
+      float _348 = _344 * 3.0000;
+      float _349 = _295 + _348;
+      float _350 = _349 * 0.6180;
+      float _351 = _259 + _350;
+      float _352 = GLSL.std.450::Fract(_351);
+      float _353 = _344 + _352;
+      float _354 = _353 * 0.3333;
+      float _355 = GLSL.std.450::Pow(_354, _257);
+      float _356 = _355 + _290;
+      float2 _357 = _305 * _356;
+      float _358 = GLSL.std.450::Length(_357);
+      float _359 = GLSL.std.450::Log2(_358);
+      float* _360 = &_10._child1.w;
+      float _361 = *_360;
+      float _362 = _359 - _361;
+      float* _363 = &_10._child3.x;
+      float _364 = *_363;
+      float _365 = _364 - 1.0000;
+      float _366 = GLSL.std.450::FClamp(_362, 0.0000, _365);
+      float2 _367 = GLSL.std.450::RoundEven(_357);
+      float2 _368 = _367 * _151;
+      float2 _369 = _152 + _368;
+      Image<float, 2D> _370 = *_12;
+      sampler _371 = *_7;
+      SampledImage<float, 2D> _372 = SampledImage(_370, _371);
+      float4 _373 = ImageSampleExplicitLod(_372, _369, Lod(_366));
+      float _374 = _373.x;
+      float2 _375 = _369 * 2.0000;
+      float2 _376 = _375 - {1.0000, 1.0000};
+      float _377 = _376.x;
+      float _378 = _376.y;
+      float4 _379 = CompositeConstruct({_377, _378, 1.0000, 1.0000});
+      float4 _380 = _379 * _240;
+      float2 _381 = _380.xy;
+      float2 _382 = _381 * _374;
+      float _383 = _382.y;
+      float _384 = -_383;
+      float _385 = _382.x;
+      float3 _386 = CompositeConstruct({_385, _384, _374});
+      float2 _387 = _152 - _368;
+      Image<float, 2D> _388 = *_12;
+      sampler _389 = *_7;
+      SampledImage<float, 2D> _390 = SampledImage(_388, _389);
+      float4 _391 = ImageSampleExplicitLod(_390, _387, Lod(_366));
+      float _392 = _391.x;
+      float2 _393 = _387 * 2.0000;
+      float2 _394 = _393 - {1.0000, 1.0000};
+      float _395 = _394.x;
+      float _396 = _394.y;
+      float4 _397 = CompositeConstruct({_395, _396, 1.0000, 1.0000});
+      float4 _398 = _397 * _240;
+      float2 _399 = _398.xy;
+      float2 _400 = _399 * _392;
+      float _401 = _400.y;
+      float _402 = -_401;
+      float _403 = _400.x;
+      float3 _404 = CompositeConstruct({_403, _402, _392});
+      float3 _405 = _386 - _248;
+      float3 _406 = _404 - _248;
+      float _407 = GLSL.std.450::Length(_405);
+      float _408 = GLSL.std.450::Length(_406);
+      float3 _409 = CompositeConstruct({_407, _407, _407});
+      float3 _410 = _405 / _409;
+      float3 _411 = CompositeConstruct({_408, _408, _408});
+      float3 _412 = _406 / _411;
+      float _413 = _405.x;
+      float _414 = _405.y;
+      float _415 = _405.z;
+      float* _416 = &_10._child1.x;
+      float _417 = *_416;
+      float _418 = 1.0000 + _417;
+      float _419 = _415 * _418;
+      float3 _420 = CompositeConstruct({_413, _414, _419});
+      float _421 = GLSL.std.450::Length(_420);
+      float _422 = _406.x;
+      float _423 = _406.y;
+      float _424 = _406.z;
+      float _425 = _424 * _418;
+      float3 _426 = CompositeConstruct({_422, _423, _425});
+      float _427 = GLSL.std.450::Length(_426);
+      float _428 = _421 * _283;
+      float _429 = _428 + _285;
+      float _430 = GLSL.std.450::FClamp(_429, 0.0000, 1.0000);
+      float _431 = _427 * _283;
+      float _432 = _431 + _285;
+      float _433 = GLSL.std.450::FClamp(_432, 0.0000, 1.0000);
+      float _434 = Dot(_410, _250);
+      float _435 = Dot(_412, _250);
+      float _436 = GLSL.std.450::FMix(_335, _434, _430);
+      float _437 = GLSL.std.450::FMix(_337, _435, _433);
+      float _340 = GLSL.std.450::NMax(_339, _436);
+      float _343 = GLSL.std.450::NMax(_342, _437);
+      float _345 = _344 + 1.0000;
+    }
+
+    float _438 = GLSL.std.450::FMix(_319, 1.0000, 0.0500);
+    float _439 = GLSL.std.450::FAbs(_342);
+    float _440 = -0.1566 * _439;
+    float _441 = _440 + 1.5708;
+    float _442 = 1.0000 - _439;
+    int _443 = Bitcast(_442);
+    int _444 = _443 >> 1;
+    int _445 = 532487669 + _444;
+    float _446 = Bitcast(_445);
+    float _447 = _441 * _446;
+    bool _448 = _342 >= 0.0000;
+    float _449 = 3.1416 - _447;
+    float _450 = Select(_448, _447, _449);
+    float _451 = GLSL.std.450::FClamp(_450, 0.0000, 3.1416);
+    float _452 = GLSL.std.450::FAbs(_339);
+    float _453 = -0.1566 * _452;
+    float _454 = _453 + 1.5708;
+    float _455 = 1.0000 - _452;
+    int _456 = Bitcast(_455);
+    int _457 = _456 >> 1;
+    int _458 = 532487669 + _457;
+    float _459 = Bitcast(_458);
+    float _460 = _454 * _459;
+    bool _461 = _339 >= 0.0000;
+    float _462 = 3.1416 - _460;
+    float _463 = Select(_461, _460, _462);
+    float _464 = GLSL.std.450::FClamp(_463, 0.0000, 3.1416);
+    float _465 = _451 * -2.0000;
+    float _466 = GLSL.std.450::Sin(_333);
+    float _467 = _465 * _466;
+    float _468 = _322 + _467;
+    float _469 = _465 - _333;
+    float _470 = GLSL.std.450::Cos(_469);
+    float _471 = _468 - _470;
+    float _472 = 2.0000 * _464;
+    float _473 = _472 * _466;
+    float _474 = _322 + _473;
+    float _475 = _472 - _333;
+    float _476 = GLSL.std.450::Cos(_475);
+    float _477 = _474 - _476;
+    float _478 = _471 + _477;
+    float _479 = 0.2500 * _478;
+    float _480 = _438 * _479;
+    float _293 = _292 + _480;
+    float _296 = _295 + 1.0000;
+  }
+
+  float _481 = _292 * 0.3333;
+  float _482 = GLSL.std.450::FAbs(_481);
+  float* _483 = &_10._child1.y;
+  float _484 = *_483;
+  float _485 = GLSL.std.450::Pow(_482, _484);
+  float _486 = GLSL.std.450::NMax(0.0300, _485);
+  float _487 = _486 * 0.6667;
+  float _488 = GLSL.std.450::FClamp(_487, 0.0000, 1.0000);
+  StorageImage<float, 2D> _489 = *_14;
+  ImageWrite(_489, _101, _488, );
+  return;
+}
+
+

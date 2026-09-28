@@ -1,0 +1,88 @@
+SPIR-V 1.0 module, <id> bound of 78
+
+Generator: spiregg from Google - Contact Steven Perron, stevenperron@google.com
+Generator Version: 0
+
+Capability(Shader);
+
+
+
+MemoryModel(Logical, GLSL450);
+
+EntryPoint(Fragment, _2, "main", {
+    _3, 
+    _4
+  });
+
+ExecutionMode(_2, OriginUpperLeft);
+
+
+
+
+
+struct _8 : [[Block]] {
+  float4 _child0 : [[Offset(0)]];
+  float4 _child1 : [[Offset(16)]];
+  float4 _child2 : [[Offset(32)]];
+  float4 _child3 : [[Offset(48)]];
+  float4 _child4 : [[Offset(64)]];
+  float4 _child5 : [[Offset(80)]];
+  float4 _child6 : [[Offset(96)]];
+  float4 _child7 : [[Offset(112)]];
+  float4 _child8 : [[Offset(128)]];
+  [3] _child9 : [[Offset(144)]] : [[ArrayStride(16)]];
+}
+UniformConstant sampler* _6 : [[DescriptorSet(3), Binding(0)]];
+Uniform struct8* _9 : [[DescriptorSet(3), Binding(2)]];
+UniformConstant Image<float, 2D>* _10 : [[DescriptorSet(3), Binding(1)]];
+Input float2* _3 : [[Location(0)]];
+Output float* _4 : [[Location(0)]];
+
+void _2() {
+  float2 _36 = *_3;
+  Image<float, 2D> _37 = *_10;
+  sampler _38 = *_6;
+  SampledImage<float, 2D> _39 = SampledImage(_37, _38);
+  float4 _40 = ImageSampleExplicitLod(_39, _36, Lod(0.0000));
+  Image<float, 2D> _41 = *_10;
+  sampler _42 = *_6;
+  float4* _43 = &_9._child6;
+  float4 _44 = *_43;
+  float2 _45 = _44.zw;
+  float2 _46 = _45 * {-1.0000, -1.0000};
+  float2 _47 = _36 + _46;
+  SampledImage<float, 2D> _48 = SampledImage(_41, _42);
+  float4 _49 = ImageSampleExplicitLod(_48, _47, Lod(0.0000));
+  Image<float, 2D> _50 = *_10;
+  sampler _51 = *_6;
+  float2 _52 = _45 * {1.0000, -1.0000};
+  float2 _53 = _36 + _52;
+  SampledImage<float, 2D> _54 = SampledImage(_50, _51);
+  float4 _55 = ImageSampleExplicitLod(_54, _53, Lod(0.0000));
+  Image<float, 2D> _56 = *_10;
+  sampler _57 = *_6;
+  float2 _58 = _45 * {-1.0000, 1.0000};
+  float2 _59 = _36 + _58;
+  SampledImage<float, 2D> _60 = SampledImage(_56, _57);
+  float4 _61 = ImageSampleExplicitLod(_60, _59, Lod(0.0000));
+  Image<float, 2D> _62 = *_10;
+  sampler _63 = *_6;
+  float2 _64 = _36 + _45;
+  SampledImage<float, 2D> _65 = SampledImage(_62, _63);
+  float4 _66 = ImageSampleExplicitLod(_65, _64, Lod(0.0000));
+  float _67 = _66.z;
+  float _68 = _61.z;
+  float _69 = GLSL.std.450::NMax(_67, _68);
+  float _70 = _55.z;
+  float _71 = GLSL.std.450::NMax(_69, _70);
+  float _72 = _49.z;
+  float _73 = GLSL.std.450::NMax(_71, _72);
+  float _74 = _40.z;
+  float _75 = GLSL.std.450::NMax(_73, _74);
+  bool _76 = _75 > 0.0000;
+  float _77 = Select(_76, 1.0000, 0.0000);
+  *_4 = _77;
+  return;
+}
+
+

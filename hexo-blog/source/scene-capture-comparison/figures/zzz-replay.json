@@ -1,0 +1,202 @@
+{
+  "capture": "leimi_all_resource.rdc",
+  "images": [
+    {
+      "name": "zzz-eye-before",
+      "event": 9316,
+      "crop": [
+        0.476,
+        0.333,
+        0.049,
+        0.105
+      ],
+      "width": 520,
+      "slot": 0,
+      "resource": null,
+      "flipY": true,
+      "gamma": true,
+      "range": [
+        0,
+        1
+      ],
+      "channel": null,
+      "resourceId": "ResourceId::20788",
+      "sourceSize": [
+        3432,
+        1440
+      ],
+      "sourceFormat": "R16G16B16A16_TYPELESS",
+      "outputSize": [
+        520,
+        468
+      ],
+      "file": "replay/zzz-eye-before.png",
+      "method": "RenderDoc headless TextureDisplay; original capture resources unchanged"
+    },
+    {
+      "name": "zzz-eye-after",
+      "event": 9349,
+      "crop": [
+        0.476,
+        0.333,
+        0.049,
+        0.105
+      ],
+      "width": 520,
+      "slot": 0,
+      "resource": null,
+      "flipY": true,
+      "gamma": true,
+      "range": [
+        0,
+        1
+      ],
+      "channel": null,
+      "resourceId": "ResourceId::20788",
+      "sourceSize": [
+        3432,
+        1440
+      ],
+      "sourceFormat": "R16G16B16A16_TYPELESS",
+      "outputSize": [
+        520,
+        468
+      ],
+      "file": "replay/zzz-eye-after.png",
+      "method": "RenderDoc headless TextureDisplay; original capture resources unchanged"
+    },
+    {
+      "name": "zzz-material-lighting",
+      "event": 9475,
+      "crop": [
+        0.15,
+        0.16,
+        0.31,
+        0.6
+      ],
+      "width": 640,
+      "slot": 0,
+      "resource": null,
+      "flipY": true,
+      "gamma": true,
+      "range": [
+        0,
+        1
+      ],
+      "channel": null,
+      "resourceId": "ResourceId::20788",
+      "sourceSize": [
+        3432,
+        1440
+      ],
+      "sourceFormat": "R16G16B16A16_TYPELESS",
+      "outputSize": [
+        640,
+        520
+      ],
+      "file": "replay/zzz-material-lighting.png",
+      "method": "RenderDoc headless TextureDisplay; original capture resources unchanged"
+    },
+    {
+      "name": "zzz-material-colour",
+      "event": 9475,
+      "crop": [
+        0.15,
+        0.16,
+        0.31,
+        0.6
+      ],
+      "width": 640,
+      "slot": 1,
+      "resource": null,
+      "flipY": true,
+      "gamma": false,
+      "range": [
+        0,
+        1
+      ],
+      "channel": null,
+      "typeCast": "UNormSRGB",
+      "resourceId": "ResourceId::20538",
+      "sourceSize": [
+        3432,
+        1440
+      ],
+      "sourceFormat": "R8G8B8A8_TYPELESS",
+      "outputSize": [
+        640,
+        520
+      ],
+      "file": "replay/zzz-material-colour.png",
+      "method": "RenderDoc headless TextureDisplay; original capture resources unchanged"
+    },
+    {
+      "name": "zzz-scene-final",
+      "event": 12209,
+      "crop": [
+        0.15,
+        0.16,
+        0.31,
+        0.6
+      ],
+      "width": 640,
+      "slot": 0,
+      "resource": null,
+      "flipY": false,
+      "gamma": false,
+      "range": [
+        0,
+        1
+      ],
+      "channel": null,
+      "typeCast": "UNormSRGB",
+      "resourceId": "ResourceId::7803",
+      "sourceSize": [
+        3440,
+        1440
+      ],
+      "sourceFormat": "R8G8B8A8_TYPELESS",
+      "outputSize": [
+        640,
+        519
+      ],
+      "file": "replay/zzz-scene-final.png",
+      "method": "RenderDoc headless TextureDisplay; original capture resources unchanged"
+    },
+    {
+      "name": "zzz-face-final",
+      "event": 12209,
+      "crop": [
+        0.476,
+        0.333,
+        0.049,
+        0.105
+      ],
+      "width": 520,
+      "slot": 0,
+      "resource": null,
+      "flipY": false,
+      "gamma": false,
+      "range": [
+        0,
+        1
+      ],
+      "channel": null,
+      "typeCast": "UNormSRGB",
+      "resourceId": "ResourceId::7803",
+      "sourceSize": [
+        3440,
+        1440
+      ],
+      "sourceFormat": "R8G8B8A8_TYPELESS",
+      "outputSize": [
+        520,
+        466
+      ],
+      "file": "replay/zzz-face-final.png",
+      "method": "RenderDoc headless TextureDisplay; original capture resources unchanged"
+    }
+  ],
+  "errors": [],
+  "complete": true
+}

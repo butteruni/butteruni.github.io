@@ -1,0 +1,81 @@
+SPIR-V 1.0 module, <id> bound of 79
+
+Generator: spiregg from Google - Contact Steven Perron, stevenperron@google.com
+Generator Version: 0
+
+Capability(Shader);
+
+
+
+MemoryModel(Logical, GLSL450);
+
+EntryPoint(Fragment, _2, "main", {
+    _3, 
+    _4, 
+    _5, 
+    _6
+  });
+
+ExecutionMode(_2, OriginUpperLeft);
+
+
+
+
+
+struct _8 {
+  float4x4 _child0 : [[RowMajor, MatrixStride(16), Offset(0)]];
+  float4 _child1 : [[Offset(64)]];
+  float4 _child2 : [[Offset(80)]];
+}
+struct _7 : [[Block]] {
+  struct8[32] _child0 : [[Offset(0)]] : [[ArrayStride(96)]];
+}
+Uniform struct7* _9 : [[DescriptorSet(2), Binding(0)]];
+Input float3* _3 : [[Location(2)]];
+Input uint* _4 : [[Location(3), Flat]];
+Output float4* _5 : [[Location(0)]];
+Output float4* _6 : [[Location(1)]];
+
+void _2() {
+  float3 _45 = *_3;
+  uint _46 = *_4;
+  uint _47 = GLSL.std.450::UMin(_46, 31);
+  float* _48 = &_9._child0[_47]._child1.x;
+  float _49 = *_48;
+  int _50 = ConvertFToS(_49);
+  float3 _51 = GLSL.std.450::FAbs(_45);
+  float _52 = Dot({1.0000, 1.0000, 1.0000}, _51);
+  float2 _53 = CompositeConstruct({_52, _52});
+  float2 _54 = _45.xz;
+  float2 _55 = _54 / _53;
+  float3 _56 = float3(_55.x, _45.y, _55.y);
+  float _57 = _45.y;
+  bool _58 = _57 <= 0.0000;
+  
+  if(_58) {
+    float2 _61 = _55.yx;
+    float2 _62 = GLSL.std.450::FAbs(_61);
+    float2 _63 = {1.0000, 1.0000} - _62;
+    float2 _64 = _55.xy;
+    bool _65 = _64 >= {0.0000, 0.0000};
+    float2 _66 = Select(_65, {1.0000, 1.0000}, {-1.0000, -1.0000});
+    float2 _67 = _63 * _66;
+    float3 _68 = float3(_67.x, _45.y, _67.y);
+  }
+
+  float3 _69 = Phi(_56, _68);
+  float2 _70 = _69.xz;
+  float2 _71 = _70 * 0.5000;
+  float2 _72 = _71 + {0.5000, 0.5000};
+  float _73 = ConvertSToF(_50);
+  float _74 = _73 * 0.0039;
+  float4 _75 = CompositeInsert(_74, {0.0000, 0.0000, 0.0000, 0.0000}, {3});
+  float _76 = _72.x;
+  float _77 = _72.y;
+  float4 _78 = CompositeConstruct({_76, _77, 0.0000, 0.0000});
+  *_5 = _75;
+  *_6 = _78;
+  return;
+}
+
+

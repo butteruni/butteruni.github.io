@@ -1,0 +1,406 @@
+SPIR-V 1.3 module, <id> bound of 404
+
+Generator: spiregg from Google - Contact Steven Perron, stevenperron@google.com
+Generator Version: 0
+
+Capability(Shader);
+Capability(StorageImageExtendedFormats);
+
+
+
+MemoryModel(Logical, GLSL450);
+
+EntryPoint(GLCompute, _2, "main", {
+    _3
+  });
+
+ExecutionMode(_2, LocalSize(8, 8, 1));
+
+
+
+
+
+struct _7 : [[Block]] {
+  float4 _child0 : [[Offset(0)]];
+  float4 _child1 : [[Offset(16)]];
+  float4 _child2 : [[Offset(32)]];
+  float4 _child3 : [[Offset(48)]];
+  float4 _child4 : [[Offset(64)]];
+}
+UniformConstant sampler* _5 : [[DescriptorSet(0), Binding(3)]];
+Uniform struct7* _8 : [[DescriptorSet(1), Binding(0)]];
+UniformConstant Image<float, 2D>* _10 : [[DescriptorSet(0), Binding(1)]];
+UniformConstant Image<float, 2D>* _11 : [[DescriptorSet(0), Binding(2)]];
+UniformConstant StorageImage<float, 2D>* _12 : [[DescriptorSet(0), Binding(0)]];
+Input uint3* _3 : [[BuiltIn(GlobalInvocationId)]];
+
+void _2() {
+  float[2]* _67;
+  float4[2]* _68;
+  float[2]* _69;
+  float[2]* _70;
+  float[2]* _71;
+  float[2]* _72;
+  float[4]* _73;
+  float[4]* _74;
+  float[4]* _75;
+  float[4]* _76;
+  float4* _77;
+  float4* _78;
+  float4* _79;
+  float4* _80;
+  uint3 _81 = *_3;
+  uint2 _82 = _81.xy;
+  uint2 _83 = _82 * {2, 1};
+  float* _84 = &_8._child2.x;
+  float _85 = *_84;
+  float _86 = _85 * 0.2000;
+  uint _87 = _83.x;
+  float _88 = ConvertUToF(_87);
+  uint _89 = _83.y;
+  float _90 = ConvertUToF(_89);
+  float2 _91 = CompositeConstruct({_88, _90});
+  float4* _92 = &_8._child4;
+  float4 _93 = *_92;
+  float2 _94 = _93.zw;
+  float2 _95 = _91 * _94;
+  Image<float, 2D> _96 = *_11;
+  sampler _97 = *_5;
+  SampledImage<float, 2D> _98 = SampledImage(_96, _97);
+  float4 _99 = ImageGather(_98, _95, 0, ConstOffset({0, 0}));
+  Image<float, 2D> _100 = *_11;
+  sampler _101 = *_5;
+  SampledImage<float, 2D> _102 = SampledImage(_100, _101);
+  float4 _103 = ImageGather(_102, _95, 0, ConstOffset({2, 0}));
+  Image<float, 2D> _104 = *_11;
+  sampler _105 = *_5;
+  SampledImage<float, 2D> _106 = SampledImage(_104, _105);
+  float4 _107 = ImageGather(_106, _95, 0, ConstOffset({1, 2}));
+  Image<float, 2D> _108 = *_10;
+  sampler _109 = *_5;
+  SampledImage<float, 2D> _110 = SampledImage(_108, _109);
+  float4 _111 = ImageGather(_110, _95, 0, ConstOffset({0, 0}));
+  *_77 = _111;
+
+  while(true) {
+    int _113 = Phi(0, _114);
+    bool _116 = _113 < 4;
+    if(!_116) break;
+    uint _118 = Bitcast(_113);
+    float* _119 = &_77[_118];
+    float _120 = *_119;
+    float* _121 = &_73[_113];
+    *_121 = _120;
+    int _114 = _113 + 1;
+  }
+
+  Image<float, 2D> _122 = *_10;
+  sampler _123 = *_5;
+  SampledImage<float, 2D> _124 = SampledImage(_122, _123);
+  float4 _125 = ImageGather(_124, _95, 0, ConstOffset({2, 0}));
+  *_78 = _125;
+
+  while(true) {
+    int _127 = Phi(0, _128);
+    bool _130 = _127 < 4;
+    if(!_130) break;
+    uint _132 = Bitcast(_127);
+    float* _133 = &_78[_132];
+    float _134 = *_133;
+    float* _135 = &_74[_127];
+    *_135 = _134;
+    int _128 = _127 + 1;
+  }
+
+  Image<float, 2D> _136 = *_10;
+  sampler _137 = *_5;
+  SampledImage<float, 2D> _138 = SampledImage(_136, _137);
+  float4 _139 = ImageGather(_138, _95, 0, ConstOffset({0, 2}));
+  *_79 = _139;
+
+  while(true) {
+    int _141 = Phi(0, _142);
+    bool _144 = _141 < 4;
+    if(!_144) break;
+    uint _146 = Bitcast(_141);
+    float* _147 = &_79[_146];
+    float _148 = *_147;
+    float* _149 = &_75[_141];
+    *_149 = _148;
+    int _142 = _141 + 1;
+  }
+
+  Image<float, 2D> _150 = *_10;
+  sampler _151 = *_5;
+  SampledImage<float, 2D> _152 = SampledImage(_150, _151);
+  float4 _153 = ImageGather(_152, _95, 0, ConstOffset({2, 2}));
+  *_80 = _153;
+
+  while(true) {
+    int _155 = Phi(0, _156);
+    bool _158 = _155 < 4;
+    if(!_158) break;
+    uint _160 = Bitcast(_155);
+    float* _161 = &_80[_160];
+    float _162 = *_161;
+    float* _163 = &_76[_155];
+    *_163 = _162;
+    int _156 = _155 + 1;
+  }
+
+
+  while(true) {
+    int _165 = Phi(0, _166);
+    bool _168 = _165 < 2;
+    if(!_168) break;
+    uint _170 = Bitcast(_165);
+    uint _171 = _87 + _170;
+    int _172 = Bitcast(_171);
+    int _173 = Bitcast(_89);
+    int2 _174 = CompositeConstruct({_172, _173});
+    bool _175 = _165 == 0;
+    float _176 = _99.x;
+    float _177 = _99.y;
+    float _178 = Select(_175, _176, _177);
+    float _179 = _178 * 255.5000;
+    uint _180 = ConvertFToU(_179);
+    uint _181 = _180 >> 4;
+    uint _182 = _181 & 3;
+    float _183 = ConvertUToF(_182);
+    float _184 = _183 * 0.3333;
+    uint _185 = _180 >> 2;
+    uint _186 = _185 & 3;
+    float _187 = ConvertUToF(_186);
+    float _188 = _187 * 0.3333;
+    uint _189 = _180 & 3;
+    float _190 = ConvertUToF(_189);
+    float _191 = _190 * 0.3333;
+    float4 _192 = CompositeConstruct({float(Undef), _184, _188, _191});
+    float4 _193 = GLSL.std.450::FClamp(_192, {0.0000, 0.0000, 0.0000, 0.0000}, {1.0000, 1.0000, 1.0000, 1.0000});
+    float _194 = _99.z;
+    float _195 = _103.w;
+    float _196 = Select(_175, _194, _195);
+    float _197 = _196 * 255.5000;
+    uint _198 = ConvertFToU(_197);
+    uint _199 = _198 >> 6;
+    uint _200 = _199 & 3;
+    float _201 = ConvertUToF(_200);
+    float _202 = _201 * 0.3333;
+    uint _203 = _198 >> 4;
+    uint _204 = _203 & 3;
+    float _205 = ConvertUToF(_204);
+    float _206 = _205 * 0.3333;
+    uint _207 = _198 & 3;
+    float _208 = ConvertUToF(_207);
+    float _209 = _208 * 0.3333;
+    float4 _210 = CompositeConstruct({_202, _206, float(Undef), _209});
+    float4 _211 = GLSL.std.450::FClamp(_210, {0.0000, 0.0000, 0.0000, 0.0000}, {1.0000, 1.0000, 1.0000, 1.0000});
+    float _212 = _103.x;
+    float _213 = _103.y;
+    float _214 = Select(_175, _212, _213);
+    float _215 = _214 * 255.5000;
+    uint _216 = ConvertFToU(_215);
+    uint _217 = _216 >> 6;
+    uint _218 = _217 & 3;
+    float _219 = ConvertUToF(_218);
+    float _220 = _219 * 0.3333;
+    uint _221 = _216 >> 2;
+    uint _222 = _221 & 3;
+    float _223 = ConvertUToF(_222);
+    float _224 = _223 * 0.3333;
+    uint _225 = _216 & 3;
+    float _226 = ConvertUToF(_225);
+    float _227 = _226 * 0.3333;
+    float4 _228 = CompositeConstruct({_220, float(Undef), _224, _227});
+    float4 _229 = GLSL.std.450::FClamp(_228, {0.0000, 0.0000, 0.0000, 0.0000}, {1.0000, 1.0000, 1.0000, 1.0000});
+    float _230 = _107.w;
+    float _231 = _107.z;
+    float _232 = Select(_175, _230, _231);
+    float _233 = _232 * 255.5000;
+    uint _234 = ConvertFToU(_233);
+    uint _235 = _234 >> 6;
+    uint _236 = _235 & 3;
+    float _237 = ConvertUToF(_236);
+    float _238 = _237 * 0.3333;
+    uint _239 = _234 >> 4;
+    uint _240 = _239 & 3;
+    float _241 = ConvertUToF(_240);
+    float _242 = _241 * 0.3333;
+    uint _243 = _234 >> 2;
+    uint _244 = _243 & 3;
+    float _245 = ConvertUToF(_244);
+    float _246 = _245 * 0.3333;
+    float4 _247 = CompositeConstruct({_238, _242, _246, float(Undef)});
+    float4 _248 = GLSL.std.450::FClamp(_247, {0.0000, 0.0000, 0.0000, 0.0000}, {1.0000, 1.0000, 1.0000, 1.0000});
+    float _249 = Select(_175, _177, _212);
+    float _250 = _249 * 255.5000;
+    uint _251 = ConvertFToU(_250);
+    uint _252 = _251 >> 6;
+    uint _253 = _252 & 3;
+    float _254 = ConvertUToF(_253);
+    float _255 = _254 * 0.3333;
+    uint _256 = _251 >> 4;
+    uint _257 = _256 & 3;
+    float _258 = ConvertUToF(_257);
+    float _259 = _258 * 0.3333;
+    uint _260 = _251 >> 2;
+    uint _261 = _260 & 3;
+    float _262 = ConvertUToF(_261);
+    float _263 = _262 * 0.3333;
+    uint _264 = _251 & 3;
+    float _265 = ConvertUToF(_264);
+    float _266 = _265 * 0.3333;
+    float4 _267 = CompositeConstruct({_255, _259, _263, _266});
+    float4 _268 = GLSL.std.450::FClamp(_267, {0.0000, 0.0000, 0.0000, 0.0000}, {1.0000, 1.0000, 1.0000, 1.0000});
+    float4* _269 = &_68[_165];
+    *_269 = _268;
+    float _270 = _193.y;
+    float _271 = _229.x;
+    float _272 = _211.w;
+    float _273 = _248.z;
+    float4 _274 = CompositeConstruct({_270, _271, _272, _273});
+    float4 _275 = *_269;
+    float4 _276 = _275 * _274;
+    *_269 = _276;
+    float4 _277 = *_269;
+    float _278 = Dot(_277, {1.0000, 1.0000, 1.0000, 1.0000});
+    float _279 = 1.5000 - _278;
+    float _280 = GLSL.std.450::FClamp(_279, 0.0000, 1.0000);
+    float _281 = _280 * 0.3333;
+    float4 _282 = *_269;
+    float4 _283 = CompositeConstruct({_281, _281, _281, _281});
+    float4 _284 = _282 + _283;
+    float4 _285 = GLSL.std.450::FClamp(_284, {0.0000, 0.0000, 0.0000, 0.0000}, {1.0000, 1.0000, 1.0000, 1.0000});
+    *_269 = _285;
+    float* _286 = &_68[_165].x;
+    float _287 = *_286;
+    float _288 = _193.z;
+    float _289 = _287 * _288;
+    float* _290 = &_68[_165].z;
+    float _291 = *_290;
+    float _292 = _211.x;
+    float _293 = _291 * _292;
+    float _294 = _289 + _293;
+    float _295 = 0.4250 * _294;
+    float* _296 = &_69[_165];
+    *_296 = _295;
+    float _297 = *_290;
+    float _298 = _211.y;
+    float _299 = _297 * _298;
+    float* _300 = &_68[_165].y;
+    float _301 = *_300;
+    float _302 = _229.z;
+    float _303 = _301 * _302;
+    float _304 = _299 + _303;
+    float _305 = 0.4250 * _304;
+    float* _306 = &_70[_165];
+    *_306 = _305;
+    float* _307 = &_68[_165].w;
+    float _308 = *_307;
+    float _309 = _248.x;
+    float _310 = _308 * _309;
+    float _311 = *_286;
+    float _312 = _193.w;
+    float _313 = _311 * _312;
+    float _314 = _310 + _313;
+    float _315 = 0.4250 * _314;
+    float* _316 = &_71[_165];
+    *_316 = _315;
+    float _317 = *_300;
+    float _318 = _229.w;
+    float _319 = _317 * _318;
+    float _320 = *_307;
+    float _321 = _248.y;
+    float _322 = _320 * _321;
+    float _323 = _319 + _322;
+    float _324 = 0.4250 * _323;
+    float* _325 = &_72[_165];
+    *_325 = _324;
+    float* _326 = &_73[1];
+    float _327 = *_326;
+    float* _328 = &_74[0];
+    float _329 = *_328;
+    float _330 = Select(_175, _327, _329);
+    float* _331 = &_73[0];
+    float _332 = *_331;
+    float _333 = *_326;
+    float _334 = Select(_175, _332, _333);
+    float* _335 = &_73[2];
+    float _336 = *_335;
+    float* _337 = &_74[3];
+    float _338 = *_337;
+    float _339 = Select(_175, _336, _338);
+    float _340 = *_328;
+    float* _341 = &_74[1];
+    float _342 = *_341;
+    float _343 = Select(_175, _340, _342);
+    float* _344 = &_75[2];
+    float _345 = *_344;
+    float* _346 = &_76[3];
+    float _347 = *_346;
+    float _348 = Select(_175, _345, _347);
+    float* _349 = &_73[3];
+    float _350 = *_349;
+    float _351 = *_335;
+    float _352 = Select(_175, _350, _351);
+    float _353 = *_346;
+    float* _354 = &_76[2];
+    float _355 = *_354;
+    float _356 = Select(_175, _353, _355);
+    float _357 = *_337;
+    float* _358 = &_74[2];
+    float _359 = *_358;
+    float _360 = Select(_175, _357, _359);
+    float* _361 = &_75[3];
+    float _362 = *_361;
+    float _363 = *_344;
+    float _364 = Select(_175, _362, _363);
+    float _365 = _330 * _86;
+    float _366 = *_286;
+    float _367 = _366 * _334;
+    float _368 = _365 + _367;
+    float _369 = _86 + _366;
+    float _370 = *_300;
+    float _371 = _370 * _343;
+    float _372 = _368 + _371;
+    float _373 = _369 + _370;
+    float _374 = *_290;
+    float _375 = _374 * _339;
+    float _376 = _372 + _375;
+    float _377 = _373 + _374;
+    float _378 = *_307;
+    float _379 = _378 * _348;
+    float _380 = _376 + _379;
+    float _381 = _377 + _378;
+    float _382 = *_296;
+    float _383 = _382 * _352;
+    float _384 = _380 + _383;
+    float _385 = _381 + _382;
+    float _386 = *_306;
+    float _387 = _386 * _360;
+    float _388 = _384 + _387;
+    float _389 = _385 + _386;
+    float _390 = *_316;
+    float _391 = _390 * _364;
+    float _392 = _388 + _391;
+    float _393 = _389 + _390;
+    float _394 = *_325;
+    float _395 = _394 * _356;
+    float _396 = _392 + _395;
+    float _397 = _393 + _394;
+    float _398 = _396 / _397;
+    float* _399 = &_67[_165];
+    *_399 = _398;
+    float _400 = *_399;
+    *_399 = _400;
+    float _401 = *_399;
+    uint2 _402 = Bitcast(_174);
+    StorageImage<float, 2D> _403 = *_12;
+    ImageWrite(_403, _402, _401, );
+    int _166 = _165 + 1;
+  }
+
+  return;
+}
+
+

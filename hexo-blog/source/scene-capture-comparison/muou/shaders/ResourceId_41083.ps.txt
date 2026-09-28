@@ -1,0 +1,43 @@
+Shader hash dee2f334-7e5f8246-f21a1c96-72a61063
+
+ps_5_0
+      dcl_globalFlags refactoringAllowed
+      dcl_constantbuffer cb0[57], dynamicIndexed
+      dcl_constantbuffer cb1[7], immediateIndexed
+      dcl_sampler s0, mode_default
+      dcl_sampler s1, mode_default
+      dcl_resource_texture2d (float,float,float,float) t0
+      dcl_resource_texture2d (float,float,float,float) t1
+      dcl_input_ps linear v0.xy
+      dcl_output o0.xyzw
+      dcl_temps 2
+   0: mul r0.xy, v0.xyxx, l(10.000000, 5.000000, 0.000000, 0.000000)
+   1: round_ni r0.xy, r0.xyxx
+   2: max r0.xy, r0.xyxx, l(0, 0, 0, 0)
+   3: min r0.xy, r0.xyxx, l(9.000000, 4.000000, 0.000000, 0.000000)
+   4: ftou r0.xy, r0.xyxx
+   5: imad r0.x, r0.x, l(5), r0.y
+   6: ne r0.y, l(0, 0, 0, 0), cb0[r0.x + 7].w
+   7: if_nz r0.y
+   8:   mul r0.yzw, cb0[4].xxyw, cb0[r0.x + 7].yyyy
+   9:   mad r0.yzw, cb0[3].xxyw, cb0[r0.x + 7].xxxx, r0.yyzw
+  10:   mad r0.yzw, cb0[5].xxyw, cb0[r0.x + 7].zzzz, r0.yyzw
+  11:   add r0.yzw, r0.yyzw, cb0[6].xxyw
+  12:   mul r1.xz, r0.yywy, l(0.500000, 0.000000, 0.500000, 0.000000)
+  13:   mul r0.y, r0.z, cb1[6].x
+  14:   mul r1.w, r0.y, l(0.500000)
+  15:   add r0.yz, r1.zzzz, r1.xxwx
+  16:   div r0.yz, r0.yyzy, r0.wwww
+  17:   sample_indexable(texture2d)(float,float,float,float) r0.w, r0.yzyy, t0.yzwx, s1
+  18:   mad r0.w, r0.w, l(255.000000), l(0.500000)
+  19:   ftou r0.w, r0.w
+  20:   and r0.w, r0.w, l(-193)
+  21:   sample_indexable(texture2d)(float,float,float,float) r1.xyz, r0.yzyy, t1.xyzw, s0
+  22:   ine r0.yz, r0.wwww, l(0, 4, 5, 0)
+  23:   and r0.y, r0.z, r0.y
+  24:   mov r1.w, cb0[r0.x + 7].w
+  25:   and o0.xyzw, r0.yyyy, r1.xyzw
+  26: else
+  27:   mov o0.xyzw, l(0, 0, 0, 0)
+  28: endif
+  29: ret

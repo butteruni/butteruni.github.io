@@ -1,0 +1,266 @@
+{
+  "capture": "终末地场景.rdc",
+  "images": [
+    {
+      "name": "endfield-ao-ground",
+      "event": 5210,
+      "crop": [
+        0.385,
+        0.72,
+        0.25,
+        0.25
+      ],
+      "width": 690,
+      "slot": 0,
+      "resource": 121880,
+      "flipY": true,
+      "gamma": false,
+      "range": [
+        0,
+        0.67
+      ],
+      "channel": 0,
+      "resourceId": "ResourceId::121880",
+      "sourceSize": [
+        3440,
+        1440
+      ],
+      "sourceFormat": "R8_UNORM",
+      "outputSize": [
+        690,
+        289
+      ],
+      "file": "replay/endfield-ao-ground.png",
+      "method": "RenderDoc headless TextureDisplay; original capture resources unchanged"
+    },
+    {
+      "name": "endfield-character-before",
+      "event": 5361,
+      "crop": [
+        0.425,
+        0.34,
+        0.135,
+        0.51
+      ],
+      "width": 390,
+      "slot": 0,
+      "resource": null,
+      "flipY": true,
+      "gamma": true,
+      "range": [
+        0,
+        0.2
+      ],
+      "channel": null,
+      "resourceId": "ResourceId::121930",
+      "sourceSize": [
+        3440,
+        1440
+      ],
+      "sourceFormat": "R11G11B10_FLOAT",
+      "outputSize": [
+        390,
+        617
+      ],
+      "file": "replay/endfield-character-before.png",
+      "method": "RenderDoc headless TextureDisplay; original capture resources unchanged"
+    },
+    {
+      "name": "endfield-character-after",
+      "event": 5717,
+      "crop": [
+        0.425,
+        0.34,
+        0.135,
+        0.51
+      ],
+      "width": 390,
+      "slot": 0,
+      "resource": null,
+      "flipY": true,
+      "gamma": true,
+      "range": [
+        0,
+        0.2
+      ],
+      "channel": null,
+      "resourceId": "ResourceId::121930",
+      "sourceSize": [
+        3440,
+        1440
+      ],
+      "sourceFormat": "R11G11B10_FLOAT",
+      "outputSize": [
+        390,
+        617
+      ],
+      "file": "replay/endfield-character-after.png",
+      "method": "RenderDoc headless TextureDisplay; original capture resources unchanged"
+    },
+    {
+      "name": "endfield-bloom-source",
+      "event": 6428,
+      "crop": [
+        0,
+        0.323,
+        0.125,
+        0.095
+      ],
+      "width": 750,
+      "slot": 0,
+      "resource": 121774,
+      "flipY": true,
+      "gamma": true,
+      "range": [
+        0,
+        0.02
+      ],
+      "channel": null,
+      "resourceId": "ResourceId::121774",
+      "sourceSize": [
+        1720,
+        720
+      ],
+      "sourceFormat": "R11G11B10_FLOAT",
+      "outputSize": [
+        750,
+        239
+      ],
+      "file": "replay/endfield-bloom-source.png",
+      "method": "RenderDoc headless TextureDisplay; original capture resources unchanged"
+    },
+    {
+      "name": "endfield-bloom-filtered",
+      "event": 6492,
+      "crop": [
+        0,
+        0.323,
+        0.125,
+        0.095
+      ],
+      "width": 750,
+      "slot": 0,
+      "resource": 121726,
+      "flipY": true,
+      "gamma": true,
+      "range": [
+        0,
+        0.02
+      ],
+      "channel": null,
+      "resourceId": "ResourceId::121726",
+      "sourceSize": [
+        1720,
+        720
+      ],
+      "sourceFormat": "R11G11B10_FLOAT",
+      "outputSize": [
+        750,
+        239
+      ],
+      "file": "replay/endfield-bloom-filtered.png",
+      "method": "RenderDoc headless TextureDisplay; original capture resources unchanged"
+    },
+    {
+      "name": "endfield-character-final",
+      "event": 6531,
+      "crop": [
+        0.425,
+        0.34,
+        0.135,
+        0.51
+      ],
+      "width": 390,
+      "slot": 0,
+      "resource": null,
+      "flipY": false,
+      "gamma": false,
+      "range": [
+        0,
+        1
+      ],
+      "channel": null,
+      "typeCast": "UNormSRGB",
+      "resourceId": "ResourceId::460",
+      "sourceSize": [
+        3440,
+        1440
+      ],
+      "sourceFormat": "R8G8B8A8_UNORM",
+      "outputSize": [
+        390,
+        617
+      ],
+      "file": "replay/endfield-character-final.png",
+      "method": "RenderDoc headless TextureDisplay; original capture resources unchanged"
+    },
+    {
+      "name": "endfield-ground-final",
+      "event": 6531,
+      "crop": [
+        0.385,
+        0.72,
+        0.25,
+        0.25
+      ],
+      "width": 690,
+      "slot": 0,
+      "resource": null,
+      "flipY": false,
+      "gamma": false,
+      "range": [
+        0,
+        1
+      ],
+      "channel": null,
+      "typeCast": "UNormSRGB",
+      "resourceId": "ResourceId::460",
+      "sourceSize": [
+        3440,
+        1440
+      ],
+      "sourceFormat": "R8G8B8A8_UNORM",
+      "outputSize": [
+        690,
+        289
+      ],
+      "file": "replay/endfield-ground-final.png",
+      "method": "RenderDoc headless TextureDisplay; original capture resources unchanged"
+    },
+    {
+      "name": "endfield-bloom-final",
+      "event": 6531,
+      "crop": [
+        0,
+        0.323,
+        0.125,
+        0.095
+      ],
+      "width": 750,
+      "slot": 0,
+      "resource": null,
+      "flipY": false,
+      "gamma": false,
+      "range": [
+        0,
+        1
+      ],
+      "channel": null,
+      "typeCast": "UNormSRGB",
+      "resourceId": "ResourceId::460",
+      "sourceSize": [
+        3440,
+        1440
+      ],
+      "sourceFormat": "R8G8B8A8_UNORM",
+      "outputSize": [
+        750,
+        239
+      ],
+      "file": "replay/endfield-bloom-final.png",
+      "method": "RenderDoc headless TextureDisplay; original capture resources unchanged"
+    }
+  ],
+  "errors": [],
+  "complete": true
+}

@@ -1,0 +1,29 @@
+Shader hash cf5952d6-35a8083c-9719ab5f-1e2ad98e
+
+ps_5_0
+      dcl_globalFlags refactoringAllowed
+      dcl_constantbuffer cb0[19], immediateIndexed
+      dcl_input_ps linear v0.xyw
+      dcl_input_ps linear v1.xyw
+      dcl_output o0.xyzw
+      dcl_temps 2
+   0: div r0.xy, v0.xyxx, v0.wwww
+   1: add r0.xy, r0.xyxx, l(1.000000, 1.000000, 0.000000, 0.000000)
+   2: mul r0.x, r0.x, l(0.500000)
+   3: mad r0.z, -r0.y, l(0.500000), l(1.000000)
+   4: div r0.yw, v1.xxxy, v1.wwww
+   5: add r0.yw, r0.yyyw, l(0.000000, 1.000000, 0.000000, 1.000000)
+   6: mul r1.x, r0.y, l(0.500000)
+   7: mad r1.z, -r0.w, l(0.500000), l(1.000000)
+   8: add r0.xy, r0.xzxx, -r1.xzxx
+   9: movc r0.z, cb0[18].y, l(1.000000), l(0)
+  10: mad r0.xy, r0.zzzz, -r0.xyxx, r0.xyxx
+  11: lt r0.zw, l(0, 0, 0, 0), r0.xxxy
+  12: lt r1.xy, r0.xyxx, l(0, 0, 0, 0)
+  13: sqrt r0.xy, abs(r0.xyxx)
+  14: iadd r0.zw, -r0.zzzw, r1.xxxy
+  15: itof r0.zw, r0.zzzw
+  16: mul r0.xy, r0.zwzz, r0.xyxx
+  17: mad o0.xy, r0.xyxx, l(0.500000, 0.500000, 0.000000, 0.000000), l(0.498039, 0.498039, 0.000000, 0.000000)
+  18: mov o0.zw, l(0.000000, 0.000000, 1.000000, 0.000000)
+  19: ret

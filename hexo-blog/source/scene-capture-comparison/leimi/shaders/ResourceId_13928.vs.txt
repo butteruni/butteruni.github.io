@@ -1,0 +1,68 @@
+Shader hash f5eb09f2-b1cb27dc-d68f6355-04bb1bb7
+
+vs_4_0
+      dcl_constantbuffer cb0[170], immediateIndexed
+      dcl_constantbuffer cb1[4], immediateIndexed
+      dcl_constantbuffer cb2[4], immediateIndexed
+      dcl_constantbuffer cb3[2], immediateIndexed
+      dcl_input v0.xyz
+      dcl_input v2.x
+      dcl_output_siv o0.xyzw, position
+      dcl_output o1.x
+      dcl_temps 3
+   0: dp3 r0.x, cb1[2].xyzx, cb1[2].xyzx
+   1: max r0.x, r0.x, l(0.000000)
+   2: rsq r0.x, r0.x
+   3: mul r0.xyz, r0.xxxx, cb1[2].xyzx
+   4: itof r0.w, cb2[2].x
+   5: lt r0.w, l(0.500000), r0.w
+   6: lt r1.x, l(0), cb3[1].w
+   7: movc r1.xyz, r1.xxxx, cb3[1].xyzx, cb0[167].xyzx
+   8: movc r1.xyz, r0.wwww, cb2[3].xyzx, r1.xyzx
+   9: dp3 r0.w, r1.xyzx, r0.xyzx
+  10: dp3 r0.x, -r0.xyzx, r1.xyzx
+  11: mul r0.y, r0.w, v2.x
+  12: mul r0.yzw, r1.xxyz, r0.yyyy
+  13: mul r1.xyz, v0.yyyy, cb1[1].xyzx
+  14: mad r1.xyz, cb1[0].xyzx, v0.xxxx, r1.xyzx
+  15: mad r1.xyz, cb1[2].xyzx, v0.zzzz, r1.xyzx
+  16: add r1.xyz, r1.xyzx, cb1[3].xyzx
+  17: add r2.xyz, -r1.xyzx, cb0[30].xyzx
+  18: dp3 r1.w, r2.xyzx, r2.xyzx
+  19: rsq r1.w, r1.w
+  20: mul r2.xyz, r1.wwww, r2.xyzx
+  21: mul r2.xyz, r2.xyzx, cb2[0].wwww
+  22: mad r1.xyz, r2.xyzx, v2.xxxx, r1.xyzx
+  23: mad r0.yzw, r0.yyzw, l(0.000000, 8.000000, 8.000000, 8.000000), r1.xxyz
+  24: mul r2.xy, r0.zzzz, cb0[103].xyxx
+  25: mad r0.yz, cb0[102].xxyx, r0.yyyy, r2.xxyx
+  26: mad r0.yz, cb0[104].xxyx, r0.wwww, r0.yyzy
+  27: add r0.yz, r0.yyzy, cb0[105].xxyx
+  28: mul r2.xyzw, r1.yyyy, cb0[103].xyzw
+  29: mad r2.xyzw, cb0[102].xyzw, r1.xxxx, r2.xyzw
+  30: mad r1.xyzw, cb0[104].xyzw, r1.zzzz, r2.xyzw
+  31: add r1.xyzw, r1.xyzw, cb0[105].xyzw
+  32: add r0.yz, r0.yyzy, -r1.xxyx
+  33: lt r2.xy, l(0, 0, 0, 0), r0.yzyy
+  34: lt r2.zw, r0.yyyz, l(0, 0, 0, 0)
+  35: mul r0.yz, r0.yyzy, l(0.000000, 0.100000, 0.100000, 0.000000)
+  36: exp r0.yz, -abs(r0.yyzy)
+  37: add r0.yz, -r0.yyzy, l(0.000000, 1.000000, 1.000000, 0.000000)
+  38: iadd r2.xy, -r2.xyxx, r2.zwzz
+  39: itof r2.xy, r2.xyxx
+  40: mul r0.yz, r0.yyzy, r2.xxyx
+  41: mul r0.yz, r0.yyzy, cb2[0].xxxx
+  42: lt r0.w, l(0), r0.x
+  43: lt r0.x, r0.x, l(0)
+  44: iadd r0.x, -r0.w, r0.x
+  45: itof r0.x, r0.x
+  46: mad r0.xy, r0.yzyy, r0.xxxx, r1.xyxx
+  47: add r0.zw, -cb2[0].yyyz, cb2[1].zzzw
+  48: mad r0.zw, cb3[1].wwww, r0.zzzw, cb2[0].yyyz
+  49: mad r0.xy, v2.xxxx, r0.zwzz, r0.xyxx
+  50: mad r0.xy, cb0[169].xyxx, r1.wwww, r0.xyxx
+  51: lt r0.z, cb0[168].x, l(0.500000)
+  52: movc o0.xy, r0.zzzz, r0.xyxx, r1.xyxx
+  53: mov o0.zw, r1.zzzw
+  54: mov o1.x, v2.x
+  55: ret

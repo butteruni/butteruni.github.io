@@ -1,0 +1,12 @@
+Shader hash 877145a2-fd1cf6a5-4d3c7505-64597298
+
+ps_4_0
+      dcl_sampler s0, mode_default
+      dcl_resource_texture2d (float,float,float,float) t0
+      dcl_input_ps linear v1.xy
+      dcl_output o0.xyzw
+      dcl_temps 1
+   0: sample_indexable r0.xyzw, v1.xyxx, t0.xyzw, s0
+   1: mov o0.xyz, r0.xyzx
+   2: mov o0.w, l(1.000000)
+   3: ret

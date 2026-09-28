@@ -1,0 +1,50 @@
+Shader hash a373e7dc-02a1f7ee-6350be2f-3f4c563e
+
+ps_5_0
+      dcl_globalFlags refactoringAllowed
+      dcl_constantbuffer cb0[63], immediateIndexed
+      dcl_sampler s0, mode_default
+      dcl_sampler s1, mode_default
+      dcl_resource_texture2d (float,float,float,float) t0
+      dcl_resource_texture2d (float,float,float,float) t1
+      dcl_resource_texture2d (float,float,float,float) t2
+      dcl_resource_texture2d (float,float,float,float) t3
+      dcl_input_ps_siv linear noperspective v0.xy, position
+      dcl_input_ps linear v1.xy
+      dcl_output o0.xyzw
+      dcl_temps 4
+   0: sample_indexable(texture2d)(float,float,float,float) r0.x, v1.xyxx, t2.wxyz, s0
+   1: ge r0.x, l(0.500000), r0.x
+   2: if_nz r0.x
+   3:   sample_l(texture2d)(float,float,float,float) r0.x, v1.xyxx, t0.xyzw, s1, l(0)
+   4:   mad r0.x, cb0[62].x, r0.x, cb0[62].y
+   5:   div r0.x, l(1.000000, 1.000000, 1.000000, 1.000000), r0.x
+   6:   mad r0.yz, v0.xxyx, l(0.000000, 0.500000, 0.500000, 0.000000), l(0.000000, -0.500000, -0.500000, 0.000000)
+   7:   round_ni r0.yz, r0.yyzy
+   8:   ftoi r0.yz, r0.yyzy
+   9:   mov r1.zw, l(0, 0, 0, 0)
+  10:   mov r2.xy, l(0, 0, 0, 0)
+  11:   mov r0.w, l(0)
+  12:   loop
+  13:     ige r2.z, r0.w, l(4)
+  14:     breakc_nz r2.z
+  15:     and r3.x, r0.w, l(1)
+  16:     ishr r3.y, r0.w, l(1)
+  17:     iadd r1.xy, r0.yzyy, r3.xyxx
+  18:     ld_indexable(texture2d)(float,float,float,float) r2.z, r1.xyww, t1.yzxw
+  19:     ld_indexable(texture2d)(float,float,float,float) r1.x, r1.xyzw, t3.xyzw
+  20:     add r1.y, -r0.x, r2.z
+  21:     div r1.y, r1.y, r0.x
+  22:     mad r1.y, -abs(r1.y), l(20.000000), l(1.000000)
+  23:     max r1.y, r1.y, l(0)
+  24:     add r1.y, r1.y, l(0.010000)
+  25:     add r2.y, r1.y, r2.y
+  26:     mad r2.x, r1.x, r1.y, r2.x
+  27:     iadd r0.w, r0.w, l(1)
+  28:   endloop
+  29:   div r0.x, r2.x, r2.y
+  30: else
+  31:   mov r0.x, l(1.000000)
+  32: endif
+  33: mov o0.xyzw, r0.xxxx
+  34: ret

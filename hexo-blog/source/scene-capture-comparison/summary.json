@@ -1,0 +1,103 @@
+{
+  "leimi": {
+    "api": "GraphicsAPI.D3D11",
+    "actionNodes": 1092,
+    "draws": 979,
+    "dispatches": 59,
+    "indirectDraws": 29,
+    "indirectDispatches": 0,
+    "instancedDraws": 49,
+    "maxInstances": 16,
+    "textureCount": 1234,
+    "accessedTextureCount": 467,
+    "bufferCount": 2487,
+    "uniqueShaders": 361,
+    "textureBytes": 1914632757,
+    "bufferBytes": 93859036,
+    "depthOnlyDraws": 207,
+    "msaaCounts": {
+      "1": 1234
+    },
+    "mrtCounts": {
+      "1": 408,
+      "4": 339,
+      "0": 207,
+      "3": 1,
+      "2": 24
+    },
+    "shaderStageCounts": {
+      "cs": 16,
+      "vs": 166,
+      "gs": 14,
+      "ps": 165
+    }
+  },
+  "muou": {
+    "api": "GraphicsAPI.D3D11",
+    "actionNodes": 2084,
+    "draws": 1840,
+    "dispatches": 141,
+    "indirectDraws": 56,
+    "indirectDispatches": 20,
+    "instancedDraws": 532,
+    "maxInstances": 76,
+    "textureCount": 5423,
+    "accessedTextureCount": 714,
+    "bufferCount": 10122,
+    "uniqueShaders": 591,
+    "textureBytes": 1881692689,
+    "bufferBytes": 405412512,
+    "depthOnlyDraws": 792,
+    "msaaCounts": {
+      "1": 5423
+    },
+    "mrtCounts": {
+      "1": 315,
+      "2": 68,
+      "0": 800,
+      "6": 653,
+      "5": 3,
+      "3": 1
+    },
+    "shaderStageCounts": {
+      "vs": 207,
+      "cs": 110,
+      "gs": 2,
+      "ps": 264,
+      "hs": 4,
+      "ds": 4
+    }
+  },
+  "endfield": {
+    "api": "GraphicsAPI.Vulkan",
+    "actionNodes": 1485,
+    "draws": 1326,
+    "dispatches": 65,
+    "indirectDraws": 1,
+    "indirectDispatches": 3,
+    "instancedDraws": 522,
+    "maxInstances": 681,
+    "textureCount": 842,
+    "accessedTextureCount": 838,
+    "bufferCount": 57,
+    "uniqueShaders": 519,
+    "textureBytes": 3132252409,
+    "bufferBytes": 601577060,
+    "depthOnlyDraws": 548,
+    "msaaCounts": {
+      "1": 842
+    },
+    "mrtCounts": {
+      "1": 92,
+      "0": 548,
+      "5": 460,
+      "2": 212,
+      "3": 14
+    },
+    "shaderStageCounts": {
+      "vs": 240,
+      "ps": 240,
+      "cs": 39
+    }
+  }
+}

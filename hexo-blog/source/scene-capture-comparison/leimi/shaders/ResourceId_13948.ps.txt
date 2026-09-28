@@ -1,0 +1,5 @@
+Shader hash 499d4ed5-bbe2842c-179313ee-de5cd5d9
+
+ps_5_0
+      dcl_globalFlags refactoringAllowed
+   0: ret

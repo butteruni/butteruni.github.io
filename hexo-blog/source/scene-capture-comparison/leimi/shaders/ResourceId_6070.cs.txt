@@ -1,0 +1,537 @@
+Shader hash 55bef96a-ea8e974c-ce9aa579-5ba55137
+
+cs_5_0
+      dcl_globalFlags refactoringAllowed
+      dcl_constantbuffer cb0[2], immediateIndexed
+      dcl_resource_structured t0, 360
+      dcl_resource_structured t1, 36
+      dcl_uav_structured u0, 4
+      dcl_uav_structured u1, 4
+      dcl_uav_structured u2, 4
+      dcl_input vThreadIDInGroupFlattened
+      dcl_input vThreadGroupID.x
+      dcl_input vThreadIDInGroup.xy
+      dcl_temps 16
+      dcl_tgsm_structured g0, 4, 64
+      dcl_tgsm_raw g1, 4
+      dcl_tgsm_raw g2, 4
+      dcl_tgsm_raw g3, 4
+      dcl_tgsm_structured g4, 512, 5
+      dcl_tgsm_structured g5, 4, 512
+      dcl_thread_group 8, 8, 1
+   0: ld_structured_indexable(structured_buffer, stride=36)(mixed,mixed,mixed,mixed) r0.xyzw, l(0), l(16), t1.xyzw
+   1: ld_structured_indexable(structured_buffer, stride=36)(mixed,mixed,mixed,mixed) r1.x, l(0), l(32), t1.xxxx
+   2: imul null, r1.y, r0.w, r0.z
+   3: imul null, r1.y, r1.x, r1.y
+   4: ushr r1.y, r1.y, l(6)
+   5: ult r1.y, vThreadGroupID.x, r1.y
+   6: if_z r1.y
+   7:   ret
+   8: endif
+   9: ld_structured_indexable(structured_buffer, stride=36)(mixed,mixed,mixed,mixed) r2.xyzw, l(0), l(0), t1.xyzw
+  10: rcp r3.yw, r0.yyyx
+  11: ieq r0.x, r0.z, l(1)
+  12: if_nz r0.x
+  13:   ushr r0.x, r0.w, l(3)
+  14:   udiv r0.x, r4.x, vThreadGroupID.x, r0.x
+  15:   mov r4.y, r4.x
+  16:   mov r4.z, r0.x
+  17:   ishl r0.xy, r4.yzyy, l(3, 3, 0, 0)
+  18:   mov r4.x, l(0)
+  19:   mov r5.x, l(0)
+  20:   mov r5.yz, vThreadIDInGroup.xxyx
+  21:   bfi r4.xyz, l(29, 29, 29, 0), l(3, 3, 3, 0), r4.xyzx, r5.xyzx
+  22:   utof r0.xy, r0.xyxx
+  23:   mad r0.xy, r3.wyww, r0.xyxx, r2.yzyy
+  24:   mul r1.zw, r3.wwwy, l(0.000000, 0.000000, 4.000000, 4.000000)
+  25:   mad r0.xy, r3.wyww, l(4.000000, 4.000000, 0.000000, 0.000000), r0.xyxx
+  26:   dp2 r4.w, r1.zwzz, r1.zwzz
+  27:   ushr r5.x, r4.w, l(1)
+  28:   iadd r5.x, r5.x, l(0.000000)
+  29:   div r4.w, r4.w, r5.x
+  30:   add r4.w, r4.w, r5.x
+  31:   mul r5.z, r4.w, l(0.510000)
+  32:   mov r5.x, l(0)
+  33:   mov r5.y, r4.z
+  34: else
+  35:   rcp r3.xz, r2.wwww
+  36:   ieq r2.w, r0.w, l(1)
+  37:   ushr r0.z, r0.z, l(3)
+  38:   udiv r6.x, r7.x, vThreadGroupID.x, r0.z
+  39:   mov r7.xz, r7.xxxx
+  40:   mov r7.yw, r6.xxxx
+  41:   ishl r8.xyzw, r7.xyzw, l(3, 3, 3, 3)
+  42:   utof r8.xyzw, r8.xyzw
+  43:   mad r8.xyzw, r3.zyzw, r8.xyzw, r2.xzxy
+  44:   mul r9.xyzw, r3.xyzw, l(4.000000, 4.000000, 4.000000, 4.000000)
+  45:   dp2 r0.z, r9.xyxx, r9.xyxx
+  46:   ushr r2.x, r0.z, l(1)
+  47:   iadd r2.x, r2.x, l(0.000000)
+  48:   div r0.z, r0.z, r2.x
+  49:   add r0.z, r0.z, r2.x
+  50:   mul r2.z, r0.z, l(0.510000)
+  51:   mov r4.zw, vThreadIDInGroup.xxxy
+  52:   bfi r7.x, l(29), l(3), r7.x, r4.z
+  53:   bfi r7.y, l(29), l(3), r6.x, r4.w
+  54:   mov r7.z, l(0)
+  55:   mad r3.xyzw, r3.xyzw, l(4.000000, 4.000000, 4.000000, 4.000000), r8.xyzw
+  56:   dp2 r0.z, r9.zwzz, r9.zwzz
+  57:   ushr r4.z, r0.z, l(1)
+  58:   iadd r4.z, r4.z, l(0.000000)
+  59:   div r0.z, r0.z, r4.z
+  60:   add r0.z, r0.z, r4.z
+  61:   mul r6.z, r0.z, l(0.510000)
+  62:   movc r4.xy, r2.wwww, r7.xzxx, r7.xyxx
+  63:   movc r0.xy, r2.wwww, r3.xyxx, r3.zwzz
+  64:   movc r1.zw, r2.wwww, r9.xxxy, r9.zzzw
+  65:   mov r2.x, l(1)
+  66:   mov r2.y, r7.y
+  67:   mov r6.xy, l(2, 0, 0, 0)
+  68:   movc r5.xyz, r2.wwww, r2.xyzx, r6.xyzx
+  69: endif
+  70: add r2.xy, r0.xyxx, -r1.zwzz
+  71: mul r3.xyzw, r1.zwzw, l(0.250000, 0.250000, 0.125000, 0.125000)
+  72: utof r2.zw, vThreadIDInGroup.xxxy
+  73: mad r2.xy, r3.xyxx, r2.zwzz, r2.xyxx
+  74: mad r2.xy, r1.zwzz, l(0.125000, 0.125000, 0.000000, 0.000000), r2.xyxx
+  75: dp2 r0.z, r3.zwzz, r3.zwzz
+  76: ushr r2.z, r0.z, l(1)
+  77: iadd r2.z, r2.z, l(0.000000)
+  78: div r0.z, r0.z, r2.z
+  79: add r0.z, r0.z, r2.z
+  80: mul r2.z, r0.z, l(0.510000)
+  81: ieq r2.w, vThreadIDInGroupFlattened.x, l(63)
+  82: if_z vThreadIDInGroupFlattened.x
+  83:   store_raw g1.x, l(0), l(0)
+  84:   store_raw g3.x, l(0), l(0)
+  85: endif
+  86: sync_g_t
+  87: ftou r3.x, cb0[1].x
+  88: ieq r3.y, r5.x, l(1)
+  89: mov r6.w, l(0)
+  90: mov r3.z, vThreadIDInGroupFlattened.x
+  91: mov r3.w, l(0)
+  92: mov r4.zw, l(0, 0, -1, 0)
+  93: mov r5.w, l(0)
+  94: mov r7.xy, l(0, 0, 0, 0)
+  95: loop
+  96:   uge r7.z, r7.y, r3.x
+  97:   breakc_nz r7.z
+  98:   mov r7.z, r7.y
+  99:   mov r7.w, l(0)
+ 100:   loop
+ 101:     uge r8.x, r7.z, r3.x
+ 102:     breakc_nz r8.x
+ 103:     iadd r8.x, r3.z, r7.z
+ 104:     iadd r8.y, r7.z, l(64)
+ 105:     ult r8.z, r8.x, r3.x
+ 106:     if_nz r8.z
+ 107:       ld_structured_indexable(structured_buffer, stride=360)(mixed,mixed,mixed,mixed) r8.z, r8.x, l(356), t0.xxxx
+ 108:       lt r8.z, l(0), r8.z
+ 109:       if_nz r8.z
+ 110:         ld_structured_indexable(structured_buffer, stride=360)(mixed,mixed,mixed,mixed) r9.xyz, r8.x, l(0), t0.xyzx
+ 111:         ld_structured_indexable(structured_buffer, stride=360)(mixed,mixed,mixed,mixed) r8.z, r8.x, l(128), t0.xxxx
+ 112:         ld_structured_indexable(structured_buffer, stride=360)(mixed,mixed,mixed,mixed) r8.w, r8.x, l(148), t0.xxxx
+ 113:         ushr r9.w, r8.z, l(1)
+ 114:         iadd r9.w, -r9.w, l(13835058055282164000.000000)
+ 115:         mul r8.z, r8.z, l(0.500000)
+ 116:         mul r8.z, r9.w, r8.z
+ 117:         mad r8.z, -r8.z, r9.w, l(1.500000)
+ 118:         mul r6.z, r8.z, r9.w
+ 119:         if_z r8.w
+ 120:           ld_structured_indexable(structured_buffer, stride=360)(mixed,mixed,mixed,mixed) r10.xyz, r8.x, l(16), t0.xyzx
+ 121:           ld_structured_indexable(structured_buffer, stride=360)(mixed,mixed,mixed,mixed) r11.xy, r8.x, l(136), t0.xyxx
+ 122:           div r10.w, -r11.y, r11.x
+ 123:           movc r11.xy, r3.yyyy, r9.xzxx, r9.xyxx
+ 124:           movc r11.xy, r5.xxxx, r11.xyxx, r9.yzyy
+ 125:           movc r12.xyz, r3.yyyy, -r10.xzyx, -r10.xyzx
+ 126:           movc r12.xyz, r5.xxxx, r12.xyzx, -r10.yzxy
+ 127:           mad r10.x, -r10.w, r10.w, l(1.000000)
+ 128:           ushr r10.y, r10.x, l(1)
+ 129:           iadd r10.y, r10.y, l(0.000000)
+ 130:           div r10.x, r10.x, r10.y
+ 131:           add r10.x, r10.x, r10.y
+ 132:           mul r10.x, r10.x, l(0.500000)
+ 133:           div r10.y, r6.z, r10.w
+ 134:           mul r13.x, r10.x, r10.y
+ 135:           mul r14.x, abs(r12.z), r13.x
+ 136:           dp2 r10.z, r12.xyxx, r12.xyxx
+ 137:           ushr r10.w, r10.z, l(1)
+ 138:           iadd r10.w, r10.w, l(0.000000)
+ 139:           div r10.z, r10.z, r10.w
+ 140:           add r10.z, r10.z, r10.w
+ 141:           mul r10.z, r10.z, l(0.500000)
+ 142:           add r11.zw, -r0.xxxy, r11.xxxy
+ 143:           add r11.zw, -r1.zzzw, abs(r11.zzzw)
+ 144:           max r15.xy, r11.zwzz, l(0, 0, 0, 0)
+ 145:           dp2 r10.w, r15.xyxx, r15.xyxx
+ 146:           max r11.z, r11.w, r11.z
+ 147:           min r11.z, r11.z, l(0)
+ 148:           mad r11.z, r9.w, r8.z, -r11.z
+ 149:           mul r11.z, r11.z, r11.z
+ 150:           lt r10.w, r10.w, r11.z
+ 151:           div r11.zw, r12.xxxy, r10.zzzz
+ 152:           mul r10.z, r6.z, r10.z
+ 153:           lt r12.z, r10.z, r14.x
+ 154:           mad r15.x, r10.y, r10.x, -r14.x
+ 155:           mad r13.zw, r11.zzzw, r10.zzzz, r11.xxxy
+ 156:           mov r12.w, -r12.x
+ 157:           mad r14.zw, -r12.yyyw, r15.xxxx, r13.zzzw
+ 158:           add r14.y, r15.x, r15.x
+ 159:           mul r15.xy, r12.ywyy, r14.yyyy
+ 160:           mad r13.y, r10.y, r10.x, -r10.z
+ 161:           mul r10.xy, r11.zwzz, r13.yyyy
+ 162:           movc r10.xy, r12.zzzz, r15.xyxx, r10.xyxx
+ 163:           movc r15.xyzw, r12.zzzz, r14.xyzw, r13.xyzw
+ 164:           add r11.zw, r0.xxxy, -r15.zzzw
+ 165:           dp2 r10.z, r11.zwzz, r10.xyxx
+ 166:           mul r12.z, r15.y, r15.y
+ 167:           div_sat r10.z, r10.z, r12.z
+ 168:           mad r10.xy, -r10.xyxx, r10.zzzz, r11.zwzz
+ 169:           add r10.z, r5.z, r15.x
+ 170:           dp2 r10.x, r10.xyxx, r10.xyxx
+ 171:           mul r10.y, r10.z, r10.z
+ 172:           lt r10.x, r10.x, r10.y
+ 173:           and r10.x, r10.x, r10.w
+ 174:           mul r10.y, r6.z, l(10.230000)
+ 175:           round_pi r10.y, r10.y
+ 176:           ftoi r10.y, r10.y
+ 177:           umin r10.y, r10.y, l(1023)
+ 178:           bfi r15.w, l(10), l(0), r10.y, r12.y
+ 179:           mul r10.y, r13.x, l(5.115000)
+ 180:           round_pi r10.y, r10.y
+ 181:           ftoi r10.y, r10.y
+ 182:           umin r10.y, r10.y, l(1023)
+ 183:           bfi r15.z, l(10), l(0), r10.y, r12.x
+ 184:           div r10.y, r14.x, r13.x
+ 185:           mul r10.y, r10.y, l(254.999985)
+ 186:           round_pi r10.y, r10.y
+ 187:           ftoi r10.y, r10.y
+ 188:           umin r10.y, r10.y, l(255)
+ 189:           bfi r15.y, l(8), l(0), r10.y, r11.y
+ 190:           mov r15.x, r11.x
+ 191:           and r11.xyzw, r10.xxxx, r15.xyzw
+ 192:         else
+ 193:           ieq r8.w, r8.w, l(1)
+ 194:           movc r10.yz, r3.yyyy, r9.xxzx, r9.xxyx
+ 195:           movc r6.xy, r5.xxxx, r10.yzyy, r9.yzyy
+ 196:           add r9.xy, -r0.xyxx, r6.xyxx
+ 197:           add r9.xy, -r1.zwzz, abs(r9.xyxx)
+ 198:           max r10.yz, r9.xxyx, l(0, 0, 0, 0)
+ 199:           dp2 r9.z, r10.yzyy, r10.yzyy
+ 200:           max r9.x, r9.y, r9.x
+ 201:           min r9.x, r9.x, l(0)
+ 202:           mad r8.z, r9.w, r8.z, -r9.x
+ 203:           mul r8.z, r8.z, r8.z
+ 204:           lt r8.z, r9.z, r8.z
+ 205:           and r11.xyzw, r6.xyzw, r8.wwww
+ 206:           and r10.x, r8.z, r8.w
+ 207:         endif
+ 208:         if_nz r10.x
+ 209:           imm_atomic_iadd r9.x, g3, l(0), l(1)
+ 210:           ishl r6.x, r9.x, l(2)
+ 211:           store_structured g4.x, l(0), r6.x, r11.x
+ 212:           store_structured g4.x, l(1), r6.x, r11.y
+ 213:           store_structured g4.x, l(2), r6.x, r11.z
+ 214:           store_structured g4.x, l(3), r6.x, r11.w
+ 215:           store_structured g4.x, l(4), r6.x, r8.x
+ 216:         endif
+ 217:       endif
+ 218:     endif
+ 219:     sync_g_t
+ 220:     ld_raw r6.x, l(0), g3.xxxx
+ 221:     ult r6.y, l(64), r6.x
+ 222:     if_nz r6.y
+ 223:       mov r7.z, r8.y
+ 224:       mov r7.w, r6.x
+ 225:       break
+ 226:     endif
+ 227:     mov r7.z, r8.y
+ 228:     mov r7.w, r6.x
+ 229:   endloop
+ 230:   mov r7.yw, r7.zzzw
+ 231:   sync_g_t
+ 232:   if_z r3.z
+ 233:     store_raw g3.x, l(0), l(0)
+ 234:   endif
+ 235:   mov r6.x, r3.w
+ 236:   mov r6.yz, r4.zzwz
+ 237:   mov r8.x, r5.w
+ 238:   mov r8.y, r7.x
+ 239:   mov r8.z, l(0)
+ 240:   loop
+ 241:     uge r8.w, r8.z, r7.w
+ 242:     breakc_nz r8.w
+ 243:     ishl r8.w, r8.z, l(2)
+ 244:     ld_structured r9.x, l(0), r8.w, g4.xxxx
+ 245:     ld_structured r9.y, l(1), r8.w, g4.xxxx
+ 246:     ld_structured r10.x, l(2), r8.w, g4.xxxx
+ 247:     ld_structured r10.y, l(3), r8.w, g4.xxxx
+ 248:     if_z r10.y
+ 249:       add r9.zw, -r2.xxxy, r9.xxxy
+ 250:       mad r9.zw, -r1.zzzw, l(0.000000, 0.000000, 0.125000, 0.125000), abs(r9.zzzw)
+ 251:       max r11.xy, r9.zwzz, l(0, 0, 0, 0)
+ 252:       dp2 r11.x, r11.xyxx, r11.xyxx
+ 253:       max r9.z, r9.w, r9.z
+ 254:       min r9.z, r9.z, l(0)
+ 255:       add r9.z, -r9.z, r10.x
+ 256:       mul r9.z, r9.z, r9.z
+ 257:       lt r9.z, r11.x, r9.z
+ 258:     else
+ 259:       and r11.xy, r10.yxyy, l(1023, 1023, 0, 0)
+ 260:       utof r11.xy, r11.xyxx
+ 261:       mul r12.xz, r11.xxyx, l(0.097752, 0.000000, 0.195503, 0.000000)
+ 262:       and r9.w, r9.y, l(255)
+ 263:       utof r9.w, r9.w
+ 264:       mul r9.w, r9.w, r12.z
+ 265:       mul r11.z, r9.w, l(0.003922)
+ 266:       dp2 r11.w, r10.xyxx, r10.xyxx
+ 267:       ushr r12.w, r11.w, l(1)
+ 268:       iadd r12.w, r12.w, l(0.000000)
+ 269:       div r11.w, r11.w, r12.w
+ 270:       add r11.w, r11.w, r12.w
+ 271:       mul r11.w, r11.w, l(0.500000)
+ 272:       add r13.xy, -r2.xyxx, r9.xyxx
+ 273:       mad r13.xy, -r1.zwzz, l(0.125000, 0.125000, 0.000000, 0.000000), abs(r13.xyxx)
+ 274:       max r13.zw, r13.xxxy, l(0, 0, 0, 0)
+ 275:       dp2 r12.w, r13.zwzz, r13.zwzz
+ 276:       max r13.x, r13.y, r13.x
+ 277:       min r13.x, r13.x, l(0)
+ 278:       mad r11.x, r11.x, l(0.097752), -r13.x
+ 279:       mul r11.x, r11.x, r11.x
+ 280:       lt r11.x, r12.w, r11.x
+ 281:       if_nz r11.x
+ 282:         div r13.xy, r10.xyxx, r11.wwww
+ 283:         mul r12.y, r11.w, r12.x
+ 284:         lt r11.x, r11.z, r12.y
+ 285:         if_nz r11.x
+ 286:           div r11.x, r11.z, r12.z
+ 287:           lt r11.w, r11.x, l(0.010000)
+ 288:           div r12.x, r12.y, r11.x
+ 289:           mul r12.w, r12.z, r12.z
+ 290:           mad r12.w, r12.x, r12.x, -r12.w
+ 291:           div r12.x, r12.w, r12.x
+ 292:           mad r12.w, -r12.x, r12.x, r12.w
+ 293:           ushr r13.z, r12.w, l(1)
+ 294:           iadd r13.z, r13.z, l(0.000000)
+ 295:           div r12.w, r12.w, r13.z
+ 296:           add r12.w, r12.w, r13.z
+ 297:           mul r14.y, r12.w, l(0.500000)
+ 298:           mul r14.x, r11.x, r12.x
+ 299:           movc r11.xw, r11.wwww, r12.yyyz, r14.xxxy
+ 300:           mov r10.zw, -r10.xxxx
+ 301:           mul r12.xz, r10.zzyz, r11.wwww
+ 302:           mad r12.xz, r13.yyxy, r11.xxxx, r12.xxzx
+ 303:           dp2 r10.z, r12.xzxx, r12.xzxx
+ 304:           ushr r12.w, r10.z, l(1)
+ 305:           iadd r12.w, -r12.w, l(13835058055282164000.000000)
+ 306:           mul r10.z, r10.z, l(0.500000)
+ 307:           mul r10.z, r12.w, r10.z
+ 308:           mad r10.z, -r10.z, r12.w, l(1.500000)
+ 309:           mul r10.z, r10.z, r12.w
+ 310:           mul r12.xz, r10.zzzz, r12.xxzx
+ 311:           add r13.zw, r2.xxxy, -r9.xxxy
+ 312:           dp2 r10.z, r13.zwzz, r10.ywyy
+ 313:           lt r10.w, r10.z, l(0)
+ 314:           add r12.w, r10.z, r10.z
+ 315:           mul r14.xy, r10.yxyy, l(1.000000, -1.000000, 0.000000, 0.000000)
+ 316:           mad r14.xy, -r12.wwww, r14.xyxx, r13.zwzz
+ 317:           movc r13.zw, r10.wwww, r14.xxxy, r13.zzzw
+ 318:           mul r10.w, r12.z, r13.w
+ 319:           mad r10.w, r13.z, r12.x, -r10.w
+ 320:           dp2 r12.x, r13.zwzz, r13.xyxx
+ 321:           lt r10.w, r10.w, r2.z
+ 322:           mad r11.xw, r0.zzzz, l(0.510000, 0.000000, 0.000000, 0.510000), r11.xxxw
+ 323:           lt r11.x, r12.x, r11.x
+ 324:           and r10.w, r10.w, r11.x
+ 325:           lt r11.x, -r2.z, r12.x
+ 326:           and r10.w, r10.w, r11.x
+ 327:           lt r10.z, abs(r10.z), r11.w
+ 328:           and r10.z, r10.z, r10.w
+ 329:           mov r10.w, r10.z
+ 330:         else
+ 331:           mov r10.zw, l(0, 0, 0, 0)
+ 332:         endif
+ 333:         mad r9.xy, r13.xyxx, r12.yyyy, r9.xyxx
+ 334:         mad r11.x, r11.y, l(0.195503), -r11.z
+ 335:         mul r10.xy, r10.yxyy, l(1.000000, -1.000000, 0.000000, 0.000000)
+ 336:         mad r9.xy, -r10.xyxx, r11.xxxx, r9.xyxx
+ 337:         add r11.x, r11.x, r11.x
+ 338:         add r9.xy, r2.xyxx, -r9.xyxx
+ 339:         mul r10.xy, r10.xyxx, r11.xxxx
+ 340:         dp2 r11.y, r9.xyxx, r10.xyxx
+ 341:         mul r11.x, r11.x, r11.x
+ 342:         div_sat r11.x, r11.y, r11.x
+ 343:         mad r9.xy, -r10.xyxx, r11.xxxx, r9.xyxx
+ 344:         mad r9.w, r9.w, l(0.003922), r2.z
+ 345:         dp2 r9.x, r9.xyxx, r9.xyxx
+ 346:         mul r9.y, r9.w, r9.w
+ 347:         lt r9.x, r9.x, r9.y
+ 348:         movc r9.z, r10.z, r10.w, r9.x
+ 349:       else
+ 350:         mov r9.z, l(0)
+ 351:       endif
+ 352:     endif
+ 353:     if_nz r9.z
+ 354:       udiv r9.x, null, r6.x, l(3)
+ 355:       ult r9.y, r9.x, l(8)
+ 356:       if_nz r9.y
+ 357:         ushr r9.y, r9.x, l(1)
+ 358:         ilt r9.y, r6.y, r9.y
+ 359:         ult r9.z, l(1), r6.x
+ 360:         and r9.y, r9.z, r9.y
+ 361:         if_nz r9.y
+ 362:           iadd r9.y, r6.y, l(1)
+ 363:           imm_atomic_iadd r10.x, g1, l(0), l(1)
+ 364:           uge r9.z, r10.x, l(256)
+ 365:           if_nz r9.z
+ 366:             mov r6.y, r9.y
+ 367:             mov r6.z, r10.x
+ 368:             break
+ 369:           endif
+ 370:           ishl r9.z, r9.y, l(3)
+ 371:           ishl r9.z, r10.x, r9.z
+ 372:           iadd r8.x, r8.x, r9.z
+ 373:           ishl r6.z, r10.x, l(1)
+ 374:           mov r6.y, r9.y
+ 375:         endif
+ 376:         udiv null, r9.y, r6.x, l(3)
+ 377:         ld_structured r8.w, l(4), r8.w, g4.xxxx
+ 378:         imul null, r9.z, r9.y, l(10)
+ 379:         ishl r8.w, r8.w, r9.z
+ 380:         iadd r8.y, r8.w, r8.y
+ 381:         ieq r8.w, r9.y, l(2)
+ 382:         if_nz r8.w
+ 383:           and r8.w, r9.x, l(1)
+ 384:           iadd r8.w, r6.z, r8.w
+ 385:           store_structured g5.x, r8.w, l(0), r8.y
+ 386:           mov r8.y, l(0)
+ 387:         endif
+ 388:         iadd r6.x, r6.x, l(1)
+ 389:       else
+ 390:         break
+ 391:       endif
+ 392:     endif
+ 393:     iadd r8.z, r8.z, l(1)
+ 394:   endloop
+ 395:   mov r3.w, r6.x
+ 396:   mov r4.zw, r6.yyyz
+ 397:   mov r5.w, r8.x
+ 398:   mov r7.x, r8.y
+ 399:   sync_g_t
+ 400: endloop
+ 401: udiv r0.x, r2.x, r3.w, l(3)
+ 402: movc r0.y, r2.x, l(1), l(0)
+ 403: iadd r0.x, r0.y, r0.x
+ 404: and r0.x, r0.x, r1.y
+ 405: store_structured g0.x, vThreadIDInGroupFlattened.x, l(0), r0.x
+ 406: sync_g_t
+ 407: uge r6.xyzw, vThreadIDInGroupFlattened.xxxx, l(1, 2, 4, 8)
+ 408: if_nz r6.x
+ 409:   iadd r0.z, vThreadIDInGroupFlattened.x, l(-1)
+ 410:   ld_structured r0.z, r0.z, l(0), g0.xxxx
+ 411: else
+ 412:   mov r0.z, l(0)
+ 413: endif
+ 414: iadd r0.z, r0.z, r0.x
+ 415: sync_g_t
+ 416: store_structured g0.x, vThreadIDInGroupFlattened.x, l(0), r0.z
+ 417: sync_g_t
+ 418: if_nz r6.y
+ 419:   iadd r1.z, vThreadIDInGroupFlattened.x, l(-2)
+ 420:   ld_structured r1.z, r1.z, l(0), g0.xxxx
+ 421: else
+ 422:   mov r1.z, l(0)
+ 423: endif
+ 424: iadd r0.z, r0.z, r1.z
+ 425: sync_g_t
+ 426: store_structured g0.x, vThreadIDInGroupFlattened.x, l(0), r0.z
+ 427: sync_g_t
+ 428: if_nz r6.z
+ 429:   iadd r1.z, vThreadIDInGroupFlattened.x, l(-4)
+ 430:   ld_structured r1.z, r1.z, l(0), g0.xxxx
+ 431: else
+ 432:   mov r1.z, l(0)
+ 433: endif
+ 434: iadd r0.z, r0.z, r1.z
+ 435: sync_g_t
+ 436: store_structured g0.x, vThreadIDInGroupFlattened.x, l(0), r0.z
+ 437: sync_g_t
+ 438: if_nz r6.w
+ 439:   iadd r1.z, vThreadIDInGroupFlattened.x, l(-8)
+ 440:   ld_structured r1.z, r1.z, l(0), g0.xxxx
+ 441: else
+ 442:   mov r1.z, l(0)
+ 443: endif
+ 444: iadd r0.z, r0.z, r1.z
+ 445: sync_g_t
+ 446: store_structured g0.x, vThreadIDInGroupFlattened.x, l(0), r0.z
+ 447: sync_g_t
+ 448: uge r1.zw, vThreadIDInGroupFlattened.xxxx, l(0, 0, 16, 32)
+ 449: if_nz r1.z
+ 450:   iadd r1.z, vThreadIDInGroupFlattened.x, l(-16)
+ 451:   ld_structured r1.z, r1.z, l(0), g0.xxxx
+ 452: else
+ 453:   mov r1.z, l(0)
+ 454: endif
+ 455: iadd r0.z, r0.z, r1.z
+ 456: sync_g_t
+ 457: store_structured g0.x, vThreadIDInGroupFlattened.x, l(0), r0.z
+ 458: sync_g_t
+ 459: if_nz r1.w
+ 460:   iadd r1.z, vThreadIDInGroupFlattened.x, l(-32)
+ 461:   ld_structured r1.z, r1.z, l(0), g0.xxxx
+ 462: else
+ 463:   mov r1.z, l(0)
+ 464: endif
+ 465: iadd r0.z, r0.z, r1.z
+ 466: if_nz r2.w
+ 467:   if_nz r0.z
+ 468:     imm_atomic_iadd r6.x, u2, l(0, 0, 0, 0), r0.z
+ 469:   else
+ 470:     mov r6.x, l(0)
+ 471:   endif
+ 472:   store_raw g2.x, l(0), r6.x
+ 473: endif
+ 474: sync_g_t
+ 475: if_nz r1.y
+ 476:   imul null, r0.w, r0.w, r4.x
+ 477:   imul null, r1.y, r1.x, r4.y
+ 478:   imad r0.w, r0.w, r1.x, r1.y
+ 479:   iadd r0.w, r5.y, r0.w
+ 480:   iadd r0.z, -r0.x, r0.z
+ 481:   ld_raw r1.x, l(0), g2.xxxx
+ 482:   iadd r0.z, r0.z, r1.x
+ 483:   ishl r1.x, r3.w, l(24)
+ 484:   or r1.x, r0.z, r1.x
+ 485:   movc r1.x, r3.w, r1.x, l(0)
+ 486:   store_structured u0.x, r0.w, l(0), r1.x
+ 487:   ine r0.w, r2.x, l(0)
+ 488:   iadd r0.x, r0.w, r0.x
+ 489:   mov r0.w, l(-1)
+ 490:   mov r1.x, r4.w
+ 491:   mov r1.y, r5.w
+ 492:   mov r1.z, l(0)
+ 493:   loop
+ 494:     uge r1.w, r1.z, r0.x
+ 495:     breakc_nz r1.w
+ 496:     ushr r1.w, r1.z, l(1)
+ 497:     ilt r1.w, r0.w, r1.w
+ 498:     if_nz r1.w
+ 499:       iadd r0.w, r0.w, l(1)
+ 500:       bfi r1.x, l(8), l(1), r1.y, l(0)
+ 501:       ushr r1.y, r1.y, l(8)
+ 502:     endif
+ 503:     iadd r1.w, r0.z, r1.z
+ 504:     and r2.x, r1.z, l(1)
+ 505:     iadd r2.x, r1.x, r2.x
+ 506:     ld_structured r2.x, r2.x, l(0), g5.xxxx
+ 507:     store_structured u1.x, r1.w, l(0), r2.x
+ 508:     iadd r1.z, r1.z, l(1)
+ 509:   endloop
+ 510:   if_nz r0.y
+ 511:     iadd r0.x, r0.x, r0.z
+ 512:     store_structured u1.x, r0.x, l(0), r7.x
+ 513:   endif
+ 514: endif
+ 515: ret

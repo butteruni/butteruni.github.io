@@ -1,0 +1,10 @@
+Shader hash 8af5d4e9-80102552-3a5b7569-272693ce
+
+ps_5_0
+      dcl_globalFlags refactoringAllowed
+      dcl_sampler s0, mode_default
+      dcl_resource_texture2d (float,float,float,float) t0
+      dcl_input_ps linear v1.xy
+      dcl_output o0.xyzw
+   0: sample_indexable(texture2d)(float,float,float,float) o0.xyzw, v1.xyxx, t0.xyzw, s0
+   1: ret

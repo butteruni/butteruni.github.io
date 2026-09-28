@@ -1,0 +1,140 @@
+SPIR-V 1.0 module, <id> bound of 135
+
+Generator: spiregg from Google - Contact Steven Perron, stevenperron@google.com
+Generator Version: 0
+
+Capability(Shader);
+
+
+
+MemoryModel(Logical, GLSL450);
+
+EntryPoint(Vertex, _2, "main", {
+    _3, 
+    _4, 
+    _5, 
+    _6, 
+    _7, 
+    _10, 
+    _11
+  });
+
+
+
+
+
+
+struct _12 : [[Block]] {
+  float4x4 _child0 : [[RowMajor, MatrixStride(16), Offset(0)]];
+  float4x4 _child1 : [[RowMajor, MatrixStride(16), Offset(64)]];
+  float4 _child2 : [[Offset(128)]];
+  float4 _child3 : [[Offset(144)]];
+  float4 _child4 : [[Offset(160)]];
+  float4 _child5 : [[Offset(176)]];
+}
+struct _15 {
+  float4x4 _child0 : [[RowMajor, MatrixStride(16), Offset(0)]];
+  float4 _child1 : [[Offset(64)]];
+  float4 _child2 : [[Offset(80)]];
+}
+struct _14 : [[Block]] {
+  struct15[32] _child0 : [[Offset(0)]] : [[ArrayStride(96)]];
+}
+Uniform struct12* _13 : [[DescriptorSet(0), Binding(7)]];
+Uniform struct14* _16 : [[DescriptorSet(2), Binding(0)]];
+Input float3* _3 : [[Location(0)]];
+Input float3* _4 : [[Location(1)]];
+Input float2* _5 : [[Location(2)]];
+Input uint* _6 : [[BuiltIn(InstanceIndex)]];
+Output float4* _7 : [[BuiltIn(Position)]];
+Output float3* _10 : [[Location(2)]];
+Output uint* _11 : [[Location(3), Flat]];
+
+void _2() {
+  float3 _57 = *_3;
+  float3 _58 = *_4;
+  float2 _59 = *_5;
+  uint _60 = *_6;
+  uint _61 = GLSL.std.450::UMin(_60, 31);
+  float4x4* _62 = &_16._child0[_61]._child0;
+  float4x4 _63 = *_62;
+  float _64 = _57.x;
+  float _65 = _57.y;
+  float _66 = _57.z;
+  float4 _67 = CompositeConstruct({_64, _65, _66, 1.0000});
+  float4 _68 = _67 * _63;
+  float3 _69 = _68.xyz;
+  float4x4* _70 = &_13._child0;
+  float4x4 _71 = *_70;
+  float _72 = _68.x;
+  float _73 = _68.y;
+  float _74 = _68.z;
+  float4 _75 = CompositeConstruct({_72, _73, _74, 1.0000});
+  float4 _76 = _75 * _71;
+  float _77 = _58.x;
+  uint _78 = Bitcast(_77);
+  uint _79 = _78 & 1073741824;
+  bool _80 = _79 > 0;
+  
+  if(_80) {
+    uint _84 = _78 << 22;
+    uint _85 = _84 >> 22;
+    float _86 = ConvertUToF(_85);
+    uint _87 = _78 << 12;
+    uint _88 = _87 >> 22;
+    float _89 = ConvertUToF(_88);
+    bool _90 = _86 >= 512.0000;
+    float _91 = _86 - 1024.0000;
+    float _92 = Select(_90, _91, _86);
+    bool _93 = _89 >= 512.0000;
+    float _94 = _89 - 1024.0000;
+    float _95 = Select(_93, _94, _89);
+    float3 _96 = CompositeConstruct({_92, _95, 0.0000});
+    float3 _97 = _96 * 0.0020;
+    float _98 = _97.x;
+    float _99 = GLSL.std.450::FAbs(_98);
+    float _100 = 1.0000 - _99;
+    float _101 = _97.y;
+    float _102 = GLSL.std.450::FAbs(_101);
+    float _103 = _100 - _102;
+    float3 _104 = CompositeInsert(_103, _97, {2});
+    bool _105 = _103 < 0.0000;
+    bool _106 = CompositeConstruct({_105, _105});
+    float2 _107 = _104.yx;
+    float2 _108 = GLSL.std.450::FAbs(_107);
+    float2 _109 = {1.0000, 1.0000} - _108;
+    float2 _110 = _104.xy;
+    float2 _111 = GLSL.std.450::Step({0.0000, 0.0000}, _110);
+    float2 _112 = _111 * 2.0000;
+    float2 _113 = _112 - {1.0000, 1.0000};
+    float2 _114 = _109 * _113;
+    float2 _115 = Select(_106, _114, _110);
+    float3 _116 = float3(_115.x, _115.y, _104.z);
+    float3 _117 = GLSL.std.450::Normalize(_116);
+  } else {
+  }
+
+  float3 _118 = Phi(_117, _58);
+  float4x4 _119 = Transpose(_63);
+  float4 _120 = _119[0];
+  float3 _121 = _120.xyz;
+  float4 _122 = _119[1];
+  float3 _123 = _122.xyz;
+  float4 _124 = _119[2];
+  float3 _125 = _124.xyz;
+  float3x3 _126 = CompositeConstruct({_121, _123, _125});
+  float3 _127 = _126 * _118;
+  float _128 = Dot(_127, _127);
+  float _129 = GLSL.std.450::NMax(0.0000, _128);
+  float _130 = GLSL.std.450::InverseSqrt(_129);
+  float3 _131 = _127 * _130;
+  float _132 = _76.y;
+  float _133 = -_132;
+  float4 _134 = CompositeInsert(_133, _76, {1});
+  *_7 = _134;
+  *_10 = _131;
+  *_11 = _60;
+  return;
+}
+
+

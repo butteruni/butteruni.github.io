@@ -1,0 +1,49 @@
+SPIR-V 1.0 module, <id> bound of 36
+
+Generator: spiregg from Google - Contact Steven Perron, stevenperron@google.com
+Generator Version: 0
+
+Capability(Shader);
+
+
+
+MemoryModel(Logical, GLSL450);
+
+EntryPoint(Vertex, _1, "main", {
+    _2, 
+    _3, 
+    _4
+  });
+
+
+
+
+
+
+Input uint* _2 : [[BuiltIn(VertexIndex)]];
+Output float4* _3 : [[BuiltIn(Position)]];
+Output float2* _4 : [[Location(0)]];
+
+void _1() {
+  uint _20 = *_2;
+  uint _21 = _20 << 1;
+  uint _22 = _21 & 2;
+  float _23 = ConvertUToF(_22);
+  uint _24 = _20 & 2;
+  float _25 = ConvertUToF(_24);
+  float2 _26 = CompositeConstruct({_23, _25});
+  float2 _27 = _26 * 2.0000;
+  float2 _28 = _27 - {1.0000, 1.0000};
+  float _29 = _28.x;
+  float _30 = _28.y;
+  float4 _31 = CompositeConstruct({_29, _30, 1.0000, 1.0000});
+  float _32 = 1.0000 - _25;
+  float2 _33 = CompositeConstruct({_23, _32});
+  float _34 = -_30;
+  float4 _35 = CompositeInsert(_34, _31, {1});
+  *_3 = _35;
+  *_4 = _33;
+  return;
+}
+
+

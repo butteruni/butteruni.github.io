@@ -1,0 +1,399 @@
+Shader hash 5e1e20a3-ee982231-2783f666-0b30682e
+
+cs_5_0
+      dcl_globalFlags refactoringAllowed
+      dcl_constantbuffer cb0[4], immediateIndexed
+      dcl_resource_structured t0, 16
+      dcl_uav_structured u0, 16
+      dcl_input vThreadID.x
+      dcl_temps 9
+      dcl_thread_group 64, 1, 1
+   0: uge r0.x, vThreadID.x, cb0[0].x
+   1: if_nz r0.x
+   2:   ret
+   3: endif
+   4: ishl r0.xy, vThreadID.xxxx, l(1, 2, 0, 0)
+   5: ult r0.z, l(0), cb0[1].y
+   6: iadd r0.w, cb0[1].y, l(-1)
+   7: utof r0.w, r0.w
+   8: and r0.z, r0.w, r0.z
+   9: imad r0.w, r0.x, cb0[3].x, l(1)
+  10: utof r1.x, cb0[0].z
+  11: mov r2.x, l(1.000000)
+  12: mov r1.y, l(0)
+  13: loop
+  14:   uge r1.z, r1.y, cb0[3].x
+  15:   breakc_nz r1.z
+  16:   ishl r1.zw, r1.yyyy, l(0, 0, 1, 2)
+  17:   imad r3.xy, r0.xyxx, cb0[3].xxxx, r1.zwzz
+  18:   ld_structured_indexable(structured_buffer, stride=16)(mixed,mixed,mixed,mixed) r4.xyzw, r3.x, l(0), u0.xyzw
+  19:   ld_structured_indexable(structured_buffer, stride=16)(mixed,mixed,mixed,mixed) r5.xyzw, r3.y, l(0), t0.xyzw
+  20:   add r1.w, -r5.x, abs(r5.y)
+  21:   eq r6.xyzw, r4.xyzw, r4.xyzw
+  22:   lt r7.xyzw, l(-100000000.000000, -100000000.000000, -100000000.000000, -100000000.000000), r4.xyzw
+  23:   and r6.xyzw, r6.xyzw, r7.xyzw
+  24:   lt r7.xyzw, r4.xyzw, l(100000000.000000, 100000000.000000, 100000000.000000, 100000000.000000)
+  25:   and r6.xyzw, r6.xyzw, r7.xyzw
+  26:   if_z r6.x
+  27:     mov r3.z, l(0)
+  28:   endif
+  29:   eq r3.w, r5.x, r5.x
+  30:   lt r7.x, l(-100000000.000000), r5.x
+  31:   and r3.w, r3.w, r7.x
+  32:   lt r7.x, r5.x, l(100000000.000000)
+  33:   and r3.w, r3.w, r7.x
+  34:   if_z r3.w
+  35:     mov r7.x, l(0)
+  36:   endif
+  37:   max r7.y, r5.x, l(0)
+  38:   min r7.y, r0.z, r7.y
+  39:   movc r3.w, r3.w, r7.y, r7.x
+  40:   eq r7.x, r1.w, r1.w
+  41:   lt r7.y, l(-100000000.000000), r1.w
+  42:   and r7.x, r7.y, r7.x
+  43:   lt r7.y, r1.w, l(100000000.000000)
+  44:   and r7.x, r7.y, r7.x
+  45:   not r7.x, r7.x
+  46:   ge r7.y, l(0), r1.w
+  47:   or r7.x, r7.y, r7.x
+  48:   if_nz r7.x
+  49:     mov r8.x, r3.w
+  50:   endif
+  51:   if_z r7.x
+  52:     lt r7.x, r5.z, l(-0.000001)
+  53:     if_nz r7.x
+  54:       mad r7.y, r5.w, r1.w, r5.x
+  55:       eq r7.z, r7.y, r7.y
+  56:       lt r7.w, l(-100000000.000000), r7.y
+  57:       and r7.z, r7.w, r7.z
+  58:       lt r7.w, r7.y, l(100000000.000000)
+  59:       and r7.z, r7.w, r7.z
+  60:       if_z r7.z
+  61:         mov r7.w, l(0)
+  62:       endif
+  63:       max r7.y, r7.y, l(0)
+  64:       min r7.y, r0.z, r7.y
+  65:       movc r8.x, r7.z, r7.y, r7.w
+  66:     endif
+  67:     if_z r7.x
+  68:       max r4.x, r4.x, l(0)
+  69:       min r4.x, r0.z, r4.x
+  70:       movc r3.z, r6.x, r4.x, r3.z
+  71:       lt r4.x, l(0.000001), r5.z
+  72:       if_nz r4.x
+  73:         mul r6.x, r1.w, cb0[0].w
+  74:         eq r7.x, r6.x, r6.x
+  75:         lt r7.y, l(-100000000.000000), r6.x
+  76:         and r7.x, r7.y, r7.x
+  77:         lt r7.y, r6.x, l(100000000.000000)
+  78:         and r7.x, r7.y, r7.x
+  79:         not r7.x, r7.x
+  80:         ge r7.y, l(0.000001), r6.x
+  81:         or r7.x, r7.y, r7.x
+  82:         if_nz r7.x
+  83:           mov r8.x, r3.w
+  84:         endif
+  85:         lt r3.w, r5.y, l(0)
+  86:         max r5.y, r5.w, l(0)
+  87:         min r5.y, r6.x, r5.y
+  88:         mad r5.y, r5.y, r1.x, r5.x
+  89:         add r5.w, -r5.w, cb0[0].y
+  90:         mul r5.z, r5.z, abs(r5.w)
+  91:         div r5.z, r5.z, r6.x
+  92:         frc r5.z, r5.z
+  93:         mad r1.w, r5.z, r1.w, r5.x
+  94:         movc r1.w, r3.w, r5.y, r1.w
+  95:         eq r3.w, r1.w, r1.w
+  96:         lt r5.x, l(-100000000.000000), r1.w
+  97:         and r3.w, r3.w, r5.x
+  98:         lt r5.x, r1.w, l(100000000.000000)
+  99:         and r3.w, r3.w, r5.x
+ 100:         if_z r3.w
+ 101:           mov r5.x, l(0)
+ 102:         endif
+ 103:         max r1.w, r1.w, l(0)
+ 104:         min r1.w, r0.z, r1.w
+ 105:         movc r1.w, r3.w, r1.w, r5.x
+ 106:         movc r8.x, r7.x, r8.x, r1.w
+ 107:       endif
+ 108:       movc r8.x, r4.x, r8.x, r3.z
+ 109:     endif
+ 110:   endif
+ 111:   iadd r3.zw, r3.yyyy, l(0, 0, 1, 3)
+ 112:   ld_structured_indexable(structured_buffer, stride=16)(mixed,mixed,mixed,mixed) r5.xyzw, r3.z, l(0), t0.xyzw
+ 113:   add r1.w, -r5.x, abs(r5.y)
+ 114:   if_z r6.y
+ 115:     mov r3.z, l(0)
+ 116:   endif
+ 117:   eq r4.x, r5.x, r5.x
+ 118:   lt r6.x, l(-100000000.000000), r5.x
+ 119:   and r4.x, r4.x, r6.x
+ 120:   lt r6.x, r5.x, l(100000000.000000)
+ 121:   and r4.x, r4.x, r6.x
+ 122:   if_z r4.x
+ 123:     mov r6.x, l(0)
+ 124:   endif
+ 125:   max r7.x, r5.x, l(0)
+ 126:   min r7.x, r0.z, r7.x
+ 127:   movc r4.x, r4.x, r7.x, r6.x
+ 128:   eq r6.x, r1.w, r1.w
+ 129:   lt r7.x, l(-100000000.000000), r1.w
+ 130:   and r6.x, r6.x, r7.x
+ 131:   lt r7.x, r1.w, l(100000000.000000)
+ 132:   and r6.x, r6.x, r7.x
+ 133:   not r6.x, r6.x
+ 134:   ge r7.x, l(0), r1.w
+ 135:   or r6.x, r6.x, r7.x
+ 136:   if_nz r6.x
+ 137:     mov r8.y, r4.x
+ 138:   endif
+ 139:   if_z r6.x
+ 140:     lt r6.x, r5.z, l(-0.000001)
+ 141:     if_nz r6.x
+ 142:       mad r7.x, r5.w, r1.w, r5.x
+ 143:       eq r7.y, r7.x, r7.x
+ 144:       lt r7.z, l(-100000000.000000), r7.x
+ 145:       and r7.y, r7.z, r7.y
+ 146:       lt r7.z, r7.x, l(100000000.000000)
+ 147:       and r7.y, r7.z, r7.y
+ 148:       if_z r7.y
+ 149:         mov r7.z, l(0)
+ 150:       endif
+ 151:       max r7.x, r7.x, l(0)
+ 152:       min r7.x, r0.z, r7.x
+ 153:       movc r8.y, r7.y, r7.x, r7.z
+ 154:     endif
+ 155:     if_z r6.x
+ 156:       max r4.y, r4.y, l(0)
+ 157:       min r4.y, r0.z, r4.y
+ 158:       movc r3.z, r6.y, r4.y, r3.z
+ 159:       lt r4.y, l(0.000001), r5.z
+ 160:       if_nz r4.y
+ 161:         mul r6.x, r1.w, cb0[0].w
+ 162:         eq r6.y, r6.x, r6.x
+ 163:         lt r7.x, l(-100000000.000000), r6.x
+ 164:         and r6.y, r6.y, r7.x
+ 165:         lt r7.x, r6.x, l(100000000.000000)
+ 166:         and r6.y, r6.y, r7.x
+ 167:         not r6.y, r6.y
+ 168:         ge r7.x, l(0.000001), r6.x
+ 169:         or r6.y, r6.y, r7.x
+ 170:         if_nz r6.y
+ 171:           mov r8.y, r4.x
+ 172:         endif
+ 173:         lt r4.x, r5.y, l(0)
+ 174:         max r5.y, r5.w, l(0)
+ 175:         min r5.y, r6.x, r5.y
+ 176:         mad r5.y, r5.y, r1.x, r5.x
+ 177:         add r5.w, -r5.w, cb0[0].y
+ 178:         mul r5.z, r5.z, abs(r5.w)
+ 179:         div r5.z, r5.z, r6.x
+ 180:         frc r5.z, r5.z
+ 181:         mad r1.w, r5.z, r1.w, r5.x
+ 182:         movc r1.w, r4.x, r5.y, r1.w
+ 183:         eq r4.x, r1.w, r1.w
+ 184:         lt r5.x, l(-100000000.000000), r1.w
+ 185:         and r4.x, r4.x, r5.x
+ 186:         lt r5.x, r1.w, l(100000000.000000)
+ 187:         and r4.x, r4.x, r5.x
+ 188:         if_z r4.x
+ 189:           mov r5.x, l(0)
+ 190:         endif
+ 191:         max r1.w, r1.w, l(0)
+ 192:         min r1.w, r0.z, r1.w
+ 193:         movc r1.w, r4.x, r1.w, r5.x
+ 194:         movc r8.y, r6.y, r8.y, r1.w
+ 195:       endif
+ 196:       movc r8.y, r4.y, r8.y, r3.z
+ 197:     endif
+ 198:   endif
+ 199:   iadd r1.w, r3.y, l(2)
+ 200:   ld_structured_indexable(structured_buffer, stride=16)(mixed,mixed,mixed,mixed) r5.xyzw, r1.w, l(0), t0.xyzw
+ 201:   add r1.w, -r5.x, abs(r5.y)
+ 202:   if_z r6.z
+ 203:     mov r3.y, l(0)
+ 204:   endif
+ 205:   eq r3.z, r5.x, r5.x
+ 206:   lt r4.x, l(-100000000.000000), r5.x
+ 207:   and r3.z, r3.z, r4.x
+ 208:   lt r4.x, r5.x, l(100000000.000000)
+ 209:   and r3.z, r3.z, r4.x
+ 210:   if_z r3.z
+ 211:     mov r4.x, l(0)
+ 212:   endif
+ 213:   max r4.y, r5.x, l(0)
+ 214:   min r4.y, r0.z, r4.y
+ 215:   movc r3.z, r3.z, r4.y, r4.x
+ 216:   eq r4.x, r1.w, r1.w
+ 217:   lt r4.y, l(-100000000.000000), r1.w
+ 218:   and r4.x, r4.y, r4.x
+ 219:   lt r4.y, r1.w, l(100000000.000000)
+ 220:   and r4.x, r4.y, r4.x
+ 221:   not r4.x, r4.x
+ 222:   ge r4.y, l(0), r1.w
+ 223:   or r4.x, r4.y, r4.x
+ 224:   if_nz r4.x
+ 225:     mov r8.z, r3.z
+ 226:   endif
+ 227:   if_z r4.x
+ 228:     lt r4.x, r5.z, l(-0.000001)
+ 229:     if_nz r4.x
+ 230:       mad r4.y, r5.w, r1.w, r5.x
+ 231:       eq r6.x, r4.y, r4.y
+ 232:       lt r6.y, l(-100000000.000000), r4.y
+ 233:       and r6.x, r6.y, r6.x
+ 234:       lt r6.y, r4.y, l(100000000.000000)
+ 235:       and r6.x, r6.y, r6.x
+ 236:       if_z r6.x
+ 237:         mov r6.y, l(0)
+ 238:       endif
+ 239:       max r4.y, r4.y, l(0)
+ 240:       min r4.y, r0.z, r4.y
+ 241:       movc r8.z, r6.x, r4.y, r6.y
+ 242:     endif
+ 243:     if_z r4.x
+ 244:       max r4.x, r4.z, l(0)
+ 245:       min r4.x, r0.z, r4.x
+ 246:       movc r3.y, r6.z, r4.x, r3.y
+ 247:       lt r4.x, l(0.000001), r5.z
+ 248:       if_nz r4.x
+ 249:         mul r4.y, r1.w, cb0[0].w
+ 250:         eq r4.z, r4.y, r4.y
+ 251:         lt r6.x, l(-100000000.000000), r4.y
+ 252:         and r4.z, r4.z, r6.x
+ 253:         lt r6.x, r4.y, l(100000000.000000)
+ 254:         and r4.z, r4.z, r6.x
+ 255:         not r4.z, r4.z
+ 256:         ge r6.x, l(0.000001), r4.y
+ 257:         or r4.z, r4.z, r6.x
+ 258:         if_nz r4.z
+ 259:           mov r8.z, r3.z
+ 260:         endif
+ 261:         lt r3.z, r5.y, l(0)
+ 262:         max r5.y, r5.w, l(0)
+ 263:         min r5.y, r4.y, r5.y
+ 264:         mad r5.y, r5.y, r1.x, r5.x
+ 265:         add r5.w, -r5.w, cb0[0].y
+ 266:         mul r5.z, r5.z, abs(r5.w)
+ 267:         div r4.y, r5.z, r4.y
+ 268:         frc r4.y, r4.y
+ 269:         mad r1.w, r4.y, r1.w, r5.x
+ 270:         movc r1.w, r3.z, r5.y, r1.w
+ 271:         eq r3.z, r1.w, r1.w
+ 272:         lt r4.y, l(-100000000.000000), r1.w
+ 273:         and r3.z, r3.z, r4.y
+ 274:         lt r4.y, r1.w, l(100000000.000000)
+ 275:         and r3.z, r3.z, r4.y
+ 276:         if_z r3.z
+ 277:           mov r4.y, l(0)
+ 278:         endif
+ 279:         max r1.w, r1.w, l(0)
+ 280:         min r1.w, r0.z, r1.w
+ 281:         movc r1.w, r3.z, r1.w, r4.y
+ 282:         movc r8.z, r4.z, r8.z, r1.w
+ 283:       endif
+ 284:       movc r8.z, r4.x, r8.z, r3.y
+ 285:     endif
+ 286:   endif
+ 287:   ld_structured_indexable(structured_buffer, stride=16)(mixed,mixed,mixed,mixed) r5.xyzw, r3.w, l(0), t0.xyzw
+ 288:   add r1.w, -r5.x, abs(r5.y)
+ 289:   if_z r6.w
+ 290:     mov r3.y, l(0)
+ 291:   endif
+ 292:   eq r3.z, r5.x, r5.x
+ 293:   lt r3.w, l(-100000000.000000), r5.x
+ 294:   and r3.z, r3.w, r3.z
+ 295:   lt r3.w, r5.x, l(100000000.000000)
+ 296:   and r3.z, r3.w, r3.z
+ 297:   if_z r3.z
+ 298:     mov r3.w, l(0)
+ 299:   endif
+ 300:   max r4.x, r5.x, l(0)
+ 301:   min r4.x, r0.z, r4.x
+ 302:   movc r3.z, r3.z, r4.x, r3.w
+ 303:   eq r3.w, r1.w, r1.w
+ 304:   lt r4.x, l(-100000000.000000), r1.w
+ 305:   and r3.w, r3.w, r4.x
+ 306:   lt r4.x, r1.w, l(100000000.000000)
+ 307:   and r3.w, r3.w, r4.x
+ 308:   not r3.w, r3.w
+ 309:   ge r4.x, l(0), r1.w
+ 310:   or r3.w, r3.w, r4.x
+ 311:   if_nz r3.w
+ 312:     mov r8.w, r3.z
+ 313:   endif
+ 314:   if_z r3.w
+ 315:     lt r3.w, r5.z, l(-0.000001)
+ 316:     if_nz r3.w
+ 317:       mad r4.x, r5.w, r1.w, r5.x
+ 318:       eq r4.y, r4.x, r4.x
+ 319:       lt r4.z, l(-100000000.000000), r4.x
+ 320:       and r4.y, r4.z, r4.y
+ 321:       lt r4.z, r4.x, l(100000000.000000)
+ 322:       and r4.y, r4.z, r4.y
+ 323:       if_z r4.y
+ 324:         mov r4.z, l(0)
+ 325:       endif
+ 326:       max r4.x, r4.x, l(0)
+ 327:       min r4.x, r0.z, r4.x
+ 328:       movc r8.w, r4.y, r4.x, r4.z
+ 329:     endif
+ 330:     if_z r3.w
+ 331:       max r3.w, r4.w, l(0)
+ 332:       min r3.w, r0.z, r3.w
+ 333:       movc r3.y, r6.w, r3.w, r3.y
+ 334:       lt r3.w, l(0.000001), r5.z
+ 335:       if_nz r3.w
+ 336:         mul r4.x, r1.w, cb0[0].w
+ 337:         eq r4.y, r4.x, r4.x
+ 338:         lt r4.z, l(-100000000.000000), r4.x
+ 339:         and r4.y, r4.z, r4.y
+ 340:         lt r4.z, r4.x, l(100000000.000000)
+ 341:         and r4.y, r4.z, r4.y
+ 342:         not r4.y, r4.y
+ 343:         ge r4.z, l(0.000001), r4.x
+ 344:         or r4.y, r4.z, r4.y
+ 345:         if_nz r4.y
+ 346:           mov r8.w, r3.z
+ 347:         endif
+ 348:         lt r3.z, r5.y, l(0)
+ 349:         max r4.z, r5.w, l(0)
+ 350:         min r4.z, r4.x, r4.z
+ 351:         mad r4.z, r4.z, r1.x, r5.x
+ 352:         add r4.w, -r5.w, cb0[0].y
+ 353:         mul r4.w, r5.z, abs(r4.w)
+ 354:         div r4.x, r4.w, r4.x
+ 355:         frc r4.x, r4.x
+ 356:         mad r1.w, r4.x, r1.w, r5.x
+ 357:         movc r1.w, r3.z, r4.z, r1.w
+ 358:         eq r3.z, r1.w, r1.w
+ 359:         lt r4.x, l(-100000000.000000), r1.w
+ 360:         and r3.z, r3.z, r4.x
+ 361:         lt r4.x, r1.w, l(100000000.000000)
+ 362:         and r3.z, r3.z, r4.x
+ 363:         if_z r3.z
+ 364:           mov r4.x, l(0)
+ 365:         endif
+ 366:         max r1.w, r1.w, l(0)
+ 367:         min r1.w, r0.z, r1.w
+ 368:         movc r1.w, r3.z, r1.w, r4.x
+ 369:         movc r8.w, r4.y, r8.w, r1.w
+ 370:       endif
+ 371:       movc r8.w, r3.w, r8.w, r3.y
+ 372:     endif
+ 373:   endif
+ 374:   store_structured u0.xyzw, r3.x, l(0), r8.xyzw
+ 375:   iadd r1.z, r0.w, r1.z
+ 376:   ld_structured_indexable(structured_buffer, stride=16)(mixed,mixed,mixed,mixed) r3.xyzw, r1.z, l(0), u0.xyzw
+ 377:   add r1.w, r3.y, r3.x
+ 378:   add r1.w, r3.z, r1.w
+ 379:   add r1.w, r3.w, r1.w
+ 380:   ge r4.x, l(0), r1.w
+ 381:   div r1.w, l(1.000000, 1.000000, 1.000000, 1.000000), r1.w
+ 382:   mul r5.xyzw, r1.wwww, r3.xyzw
+ 383:   mov r2.yzw, r3.yyzw
+ 384:   movc r3.xyzw, r4.xxxx, r2.xyzw, r5.xyzw
+ 385:   store_structured u0.xyzw, r1.z, l(0), r3.xyzw
+ 386:   iadd r1.y, r1.y, l(1)
+ 387: endloop
+ 388: ret

@@ -1,0 +1,918 @@
+{
+  "auditDate": "2026-09-26",
+  "scope": "Endfield Luoxi, Azur Promilia Luoluo, ZZZ Remielle; FSR excluded",
+  "note": "Constant values describe one captured frame, not a recovered CPU jitter sequence. Resource ids are local to each capture.",
+  "remielle": {
+    "capture": "leimi_all_resource.rdc",
+    "events": [
+      {
+        "event": 11948,
+        "shader": "Hidden/TemporalAntialiasing",
+        "sha256": "cc6b260a638026ab135ab2927392b0a85b22ff3b9277629b19b08b85c8b7dbd3",
+        "constantRows": {},
+        "samplers": [
+          {
+            "slot": 0,
+            "addressU": "AddressMode.ClampEdge",
+            "addressV": "AddressMode.ClampEdge",
+            "addressW": "AddressMode.ClampEdge",
+            "minLOD": "-3.4028234663852886e+38",
+            "maxLOD": "3.4028234663852886e+38",
+            "mipBias": "0.0",
+            "filter": {
+              "filter": "FilterFunction.Normal",
+              "magnify": "FilterMode.Linear",
+              "minify": "FilterMode.Linear",
+              "mip": "FilterMode.Point"
+            }
+          }
+        ],
+        "reads": [
+          {
+            "slot": 0,
+            "name": "TempBuffer 322 1716x720",
+            "format": "R8G8B8A8_TYPELESS",
+            "width": 1716,
+            "height": 720,
+            "samples": 1
+          }
+        ],
+        "writes": [
+          {
+            "slot": 0,
+            "name": "TempBuffer 258 3432x1440",
+            "format": "R11G11B10_FLOAT",
+            "width": 3432,
+            "height": 1440,
+            "samples": 1
+          }
+        ]
+      },
+      {
+        "event": 11966,
+        "shader": "Hidden/TemporalAntialiasing",
+        "sha256": "e801ee77421186d363af5ab55e3f108e3a8247d484fa13ab61ad4ccff280f8ac",
+        "constantRows": {
+          "138": [
+            3432.0,
+            1440.0,
+            0.00029137529782019556,
+            0.0006944444612599909
+          ],
+          "139": [
+            0.6000000238418579,
+            0.0,
+            14.0,
+            1.0
+          ],
+          "140": [
+            0.4375,
+            -0.24074074625968933,
+            0.00012747668370138854,
+            -0.0001671810750849545
+          ],
+          "167": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "samplers": [
+          {
+            "slot": 0,
+            "addressU": "AddressMode.ClampEdge",
+            "addressV": "AddressMode.ClampEdge",
+            "addressW": "AddressMode.ClampEdge",
+            "minLOD": "-3.4028234663852886e+38",
+            "maxLOD": "3.4028234663852886e+38",
+            "mipBias": "0.0",
+            "filter": {
+              "filter": "FilterFunction.Normal",
+              "magnify": "FilterMode.Linear",
+              "minify": "FilterMode.Linear",
+              "mip": "FilterMode.Point"
+            }
+          },
+          {
+            "slot": 1,
+            "addressU": "AddressMode.ClampEdge",
+            "addressV": "AddressMode.ClampEdge",
+            "addressW": "AddressMode.ClampEdge",
+            "minLOD": "-3.4028234663852886e+38",
+            "maxLOD": "3.4028234663852886e+38",
+            "mipBias": "0.0",
+            "filter": {
+              "filter": "FilterFunction.Normal",
+              "magnify": "FilterMode.Point",
+              "minify": "FilterMode.Point",
+              "mip": "FilterMode.Point"
+            }
+          }
+        ],
+        "reads": [
+          {
+            "slot": 0,
+            "name": "TempBuffer 267 3432x1440",
+            "format": "D32S8_TYPELESS",
+            "width": 3432,
+            "height": 1440,
+            "samples": 1
+          },
+          {
+            "slot": 1,
+            "name": "TempBuffer 285 3432x1440",
+            "format": "R10G10B10A2_TYPELESS",
+            "width": 3432,
+            "height": 1440,
+            "samples": 1
+          },
+          {
+            "slot": 2,
+            "name": "TempBuffer 258 3432x1440",
+            "format": "R11G11B10_FLOAT",
+            "width": 3432,
+            "height": 1440,
+            "samples": 1
+          },
+          {
+            "slot": 3,
+            "name": "_TAART1",
+            "format": "R11G11B10_FLOAT",
+            "width": 3432,
+            "height": 1440,
+            "samples": 1
+          },
+          {
+            "slot": 4,
+            "name": "_TAAIDRT1_3432x1440_R8",
+            "format": "R8_TYPELESS",
+            "width": 3432,
+            "height": 1440,
+            "samples": 1
+          }
+        ],
+        "writes": [
+          {
+            "slot": 0,
+            "name": "_TAART0",
+            "format": "R11G11B10_FLOAT",
+            "width": 3432,
+            "height": 1440,
+            "samples": 1
+          },
+          {
+            "slot": 1,
+            "name": "_TAAIDRT0_3432x1440_R8",
+            "format": "R8_TYPELESS",
+            "width": 3432,
+            "height": 1440,
+            "samples": 1
+          }
+        ]
+      }
+    ]
+  },
+  "azurPromilia": {
+    "capture": "蓝色星原PC三测.rdc",
+    "events": [
+      {
+        "event": 2562,
+        "shader": "Hidden/Lens Render Pipeline/PostProcessing/MobileTAA",
+        "sha256": "bf73837e1d30fbd1c3b955d4542c5302bf406800440f118226a8e7eda14d3bfe",
+        "constantRows": {
+          "2708": [
+            0.0002906976733356714,
+            0.0006944444612599909,
+            3440.0,
+            1440.0
+          ],
+          "2709": [
+            0.0002906976733356714,
+            0.0006944444612599909,
+            3440.0,
+            1440.0
+          ],
+          "2710": [
+            1.0,
+            1.0,
+            3.0,
+            10.0
+          ],
+          "2711": [
+            0.10000000149011612,
+            0.44999998807907104,
+            0.20000000298023224,
+            0.10000000149011612
+          ],
+          "2712": [
+            0.9800000190734863,
+            0.800000011920929,
+            6000.0,
+            1.0
+          ]
+        },
+        "samplers": [
+          {
+            "register": 0,
+            "arrayElement": 0,
+            "object": 773,
+            "addressU": "AddressMode.ClampEdge",
+            "addressV": "AddressMode.ClampEdge",
+            "addressW": "AddressMode.ClampEdge",
+            "compareFunction": "CompareFunction.Never",
+            "filter": "FilterFunction.Normal",
+            "minify": "FilterMode.Point",
+            "magnify": "FilterMode.Point",
+            "mip": "FilterMode.Point",
+            "mipBias": 0.0,
+            "maxAnisotropy": 0.0,
+            "minLOD": -3.4028234663852886e+38,
+            "maxLOD": 3.4028234663852886e+38,
+            "borderColor": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "register": 1,
+            "arrayElement": 0,
+            "object": 568,
+            "addressU": "AddressMode.ClampEdge",
+            "addressV": "AddressMode.ClampEdge",
+            "addressW": "AddressMode.ClampEdge",
+            "compareFunction": "CompareFunction.Never",
+            "filter": "FilterFunction.Normal",
+            "minify": "FilterMode.Linear",
+            "magnify": "FilterMode.Linear",
+            "mip": "FilterMode.Point",
+            "mipBias": 0.0,
+            "maxAnisotropy": 0.0,
+            "minLOD": -3.4028234663852886e+38,
+            "maxLOD": 3.4028234663852886e+38,
+            "borderColor": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "reads": [
+          {
+            "register": 0,
+            "arrayElement": 0,
+            "resourceId": 740,
+            "resourceName": "TempBuffer 7 3440x1440",
+            "byteOffset": 0,
+            "byteSize": 0,
+            "firstMip": 0,
+            "numMips": 1,
+            "firstSlice": 0,
+            "numSlices": 1,
+            "textureFormat": "D32S8_TYPELESS",
+            "width": 3440,
+            "height": 1440
+          },
+          {
+            "register": 1,
+            "arrayElement": 0,
+            "resourceId": 658,
+            "resourceName": "[Main Camera]_MotionVectorTexture",
+            "byteOffset": 0,
+            "byteSize": 0,
+            "firstMip": 0,
+            "numMips": 1,
+            "firstSlice": 0,
+            "numSlices": 1,
+            "textureFormat": "R10G10B10A2_TYPELESS",
+            "width": 3440,
+            "height": 1440
+          },
+          {
+            "register": 2,
+            "arrayElement": 0,
+            "resourceId": 718,
+            "resourceName": "TempBuffer 2 3440x1440",
+            "byteOffset": 0,
+            "byteSize": 0,
+            "firstMip": 0,
+            "numMips": 1,
+            "firstSlice": 0,
+            "numSlices": 1,
+            "textureFormat": null
+          },
+          {
+            "register": 3,
+            "arrayElement": 0,
+            "resourceId": 662,
+            "resourceName": "_TAATempRT_0",
+            "byteOffset": 0,
+            "byteSize": 0,
+            "firstMip": 0,
+            "numMips": 1,
+            "firstSlice": 0,
+            "numSlices": 1,
+            "textureFormat": "R11G11B10_FLOAT",
+            "width": 3440,
+            "height": 1440
+          },
+          {
+            "register": 4,
+            "arrayElement": 0,
+            "resourceId": 670,
+            "resourceName": "_TAAMotionMaskTempRT_0",
+            "byteOffset": 0,
+            "byteSize": 0,
+            "firstMip": 0,
+            "numMips": 1,
+            "firstSlice": 0,
+            "numSlices": 1,
+            "textureFormat": "R8_TYPELESS",
+            "width": 3440,
+            "height": 1440
+          }
+        ],
+        "writes": [
+          {
+            "resourceId": 830,
+            "name": "TempBuffer 20 3440x1440",
+            "textureFormat": "R11G11B10_FLOAT"
+          }
+        ]
+      },
+      {
+        "event": 2687,
+        "shader": "Hidden/Lens Render Pipeline/PostProcessing/TAA",
+        "sha256": "500d9f4fe0de06105c3a4d1b0a3554c85aa9a4f0968ad4ee20b2a64730dba12c",
+        "constantRows": {
+          "2708": [
+            0.0002906976733356714,
+            0.0006944444612599909,
+            3440.0,
+            1440.0
+          ],
+          "2709": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "2710": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "2711": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "2712": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "2713": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "2714": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "2715": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "2716": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "2717": [
+            0.949999988079071,
+            0.6000000238418579,
+            6000.0,
+            0.5
+          ],
+          "2718": [
+            1.25,
+            0.5,
+            3000.0,
+            0.0
+          ]
+        },
+        "samplers": [
+          {
+            "register": 0,
+            "arrayElement": 0,
+            "object": 773,
+            "addressU": "AddressMode.ClampEdge",
+            "addressV": "AddressMode.ClampEdge",
+            "addressW": "AddressMode.ClampEdge",
+            "compareFunction": "CompareFunction.Never",
+            "filter": "FilterFunction.Normal",
+            "minify": "FilterMode.Point",
+            "magnify": "FilterMode.Point",
+            "mip": "FilterMode.Point",
+            "mipBias": 0.0,
+            "maxAnisotropy": 0.0,
+            "minLOD": -3.4028234663852886e+38,
+            "maxLOD": 3.4028234663852886e+38,
+            "borderColor": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "register": 1,
+            "arrayElement": 0,
+            "object": 773,
+            "addressU": "AddressMode.ClampEdge",
+            "addressV": "AddressMode.ClampEdge",
+            "addressW": "AddressMode.ClampEdge",
+            "compareFunction": "CompareFunction.Never",
+            "filter": "FilterFunction.Normal",
+            "minify": "FilterMode.Point",
+            "magnify": "FilterMode.Point",
+            "mip": "FilterMode.Point",
+            "mipBias": 0.0,
+            "maxAnisotropy": 0.0,
+            "minLOD": -3.4028234663852886e+38,
+            "maxLOD": 3.4028234663852886e+38,
+            "borderColor": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "register": 2,
+            "arrayElement": 0,
+            "object": 773,
+            "addressU": "AddressMode.ClampEdge",
+            "addressV": "AddressMode.ClampEdge",
+            "addressW": "AddressMode.ClampEdge",
+            "compareFunction": "CompareFunction.Never",
+            "filter": "FilterFunction.Normal",
+            "minify": "FilterMode.Point",
+            "magnify": "FilterMode.Point",
+            "mip": "FilterMode.Point",
+            "mipBias": 0.0,
+            "maxAnisotropy": 0.0,
+            "minLOD": -3.4028234663852886e+38,
+            "maxLOD": 3.4028234663852886e+38,
+            "borderColor": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "register": 3,
+            "arrayElement": 0,
+            "object": 568,
+            "addressU": "AddressMode.ClampEdge",
+            "addressV": "AddressMode.ClampEdge",
+            "addressW": "AddressMode.ClampEdge",
+            "compareFunction": "CompareFunction.Never",
+            "filter": "FilterFunction.Normal",
+            "minify": "FilterMode.Linear",
+            "magnify": "FilterMode.Linear",
+            "mip": "FilterMode.Point",
+            "mipBias": 0.0,
+            "maxAnisotropy": 0.0,
+            "minLOD": -3.4028234663852886e+38,
+            "maxLOD": 3.4028234663852886e+38,
+            "borderColor": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        "reads": [
+          {
+            "register": 0,
+            "arrayElement": 0,
+            "resourceId": 734,
+            "resourceName": "TempBuffer 6 3440x1440",
+            "byteOffset": 0,
+            "byteSize": 0,
+            "firstMip": 0,
+            "numMips": 1,
+            "firstSlice": 0,
+            "numSlices": 1,
+            "textureFormat": "D32S8_TYPELESS",
+            "width": 3440,
+            "height": 1440
+          },
+          {
+            "register": 1,
+            "arrayElement": 0,
+            "resourceId": 662,
+            "resourceName": "_TAATempRT_0",
+            "byteOffset": 0,
+            "byteSize": 0,
+            "firstMip": 0,
+            "numMips": 1,
+            "firstSlice": 0,
+            "numSlices": 1,
+            "textureFormat": "R11G11B10_FLOAT",
+            "width": 3440,
+            "height": 1440
+          },
+          {
+            "register": 2,
+            "arrayElement": 0,
+            "resourceId": 722,
+            "resourceName": "TempBuffer 3 3440x1440",
+            "byteOffset": 0,
+            "byteSize": 0,
+            "firstMip": 0,
+            "numMips": 1,
+            "firstSlice": 0,
+            "numSlices": 1,
+            "textureFormat": "R8G8B8A8_TYPELESS",
+            "width": 3440,
+            "height": 1440
+          },
+          {
+            "register": 3,
+            "arrayElement": 0,
+            "resourceId": 658,
+            "resourceName": "[Main Camera]_MotionVectorTexture",
+            "byteOffset": 0,
+            "byteSize": 0,
+            "firstMip": 0,
+            "numMips": 1,
+            "firstSlice": 0,
+            "numSlices": 1,
+            "textureFormat": "R10G10B10A2_TYPELESS",
+            "width": 3440,
+            "height": 1440
+          },
+          {
+            "register": 4,
+            "arrayElement": 0,
+            "resourceId": 814,
+            "resourceName": "TempBuffer 18 3440x1440",
+            "byteOffset": 0,
+            "byteSize": 0,
+            "firstMip": 0,
+            "numMips": 1,
+            "firstSlice": 0,
+            "numSlices": 1,
+            "textureFormat": "R11G11B10_FLOAT",
+            "width": 3440,
+            "height": 1440
+          }
+        ],
+        "writes": [
+          {
+            "resourceId": 666,
+            "name": "_TAATempRT_1",
+            "textureFormat": "R11G11B10_FLOAT"
+          }
+        ]
+      }
+    ],
+    "textureFormatSource": "Peanut/Assets/model/azur_promilia_luoluo/capture/manifest.json; physical texture format, not a substituted SRV view format"
+  },
+  "endfield": {
+    "capture": "终末地洛熙.rdc",
+    "events": [
+      {
+        "event": 948,
+        "shaderResourceId": 5289,
+        "sha256": "2ddb6c8cd9f5fedffc9bf20e9c05761be2a79fd2d4ac9cc09eeed5325948f643",
+        "reads": [
+          {
+            "resourceId": 28259,
+            "resourceName": "2D Depth/Stencil Attachment 28259",
+            "semanticName": "res13",
+            "format": "D32S8",
+            "width": 3440,
+            "height": 1440
+          },
+          {
+            "resourceId": 28264,
+            "resourceName": "2D Color Attachment 28264",
+            "semanticName": "res16",
+            "format": "R10G10B10A2_UNORM",
+            "width": 3440,
+            "height": 1440
+          },
+          {
+            "resourceId": 28357,
+            "resourceName": "2D Color Attachment 28357",
+            "semanticName": "res15",
+            "format": "R16_FLOAT",
+            "width": 3440,
+            "height": 1440
+          },
+          {
+            "resourceId": 28296,
+            "resourceName": "2D Color Attachment 28296",
+            "semanticName": "res14",
+            "format": "R10G10B10A2_UNORM",
+            "width": 3440,
+            "height": 1440
+          }
+        ],
+        "writes": [
+          {
+            "resourceId": 28235,
+            "resourceName": "2D Color Attachment 28235",
+            "semanticName": "",
+            "format": "R16_FLOAT",
+            "width": 3440,
+            "height": 1440
+          },
+          {
+            "resourceId": 28238,
+            "resourceName": "2D Color Attachment 28238",
+            "semanticName": "",
+            "format": "R10G10B10A2_UNORM",
+            "width": 3440,
+            "height": 1440
+          }
+        ],
+        "constantRows": {
+          "0": [
+            1.0,
+            1.0,
+            0.949999988079071,
+            0.8500000238418579
+          ],
+          "1": [
+            2000.0,
+            0.00019999999494757503,
+            0.30000001192092896,
+            0.0
+          ],
+          "2": [
+            0.0,
+            0.8999999761581421,
+            0.0,
+            0.0
+          ],
+          "3": [
+            0.8999999761581421,
+            0.0,
+            0.10000000149011612,
+            0.10000000149011612
+          ],
+          "4": [
+            0.4000000059604645,
+            9.999999747378752e-06,
+            4.999999873689376e-05,
+            1.0
+          ],
+          "5": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "6": [
+            3440.0,
+            1440.0,
+            0.0002906976733356714,
+            0.0006944444612599909
+          ],
+          "7": [
+            3440.0,
+            1440.0,
+            0.0002906976733356714,
+            0.0006944444612599909
+          ],
+          "8": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      },
+      {
+        "event": 957,
+        "shaderResourceId": 5294,
+        "sha256": "c68a159d423e230b725f5bdada08a97db366ab9bdde71a47045936874cc735c8",
+        "reads": [
+          {
+            "resourceId": 28238,
+            "resourceName": "2D Color Attachment 28238",
+            "semanticName": "res10",
+            "format": "R10G10B10A2_UNORM",
+            "width": 3440,
+            "height": 1440
+          }
+        ],
+        "writes": [
+          {
+            "resourceId": 28336,
+            "resourceName": "2D Color Attachment 28336",
+            "semanticName": "",
+            "format": "R8_UNORM",
+            "width": 860,
+            "height": 360
+          }
+        ],
+        "constantRows": {
+          "0": [
+            1.0,
+            1.0,
+            0.949999988079071,
+            0.8500000238418579
+          ],
+          "1": [
+            2000.0,
+            0.00019999999494757503,
+            0.30000001192092896,
+            0.0
+          ],
+          "2": [
+            0.0,
+            0.8999999761581421,
+            0.0,
+            0.0
+          ],
+          "3": [
+            0.8999999761581421,
+            0.0,
+            0.10000000149011612,
+            0.10000000149011612
+          ],
+          "4": [
+            0.4000000059604645,
+            9.999999747378752e-06,
+            4.999999873689376e-05,
+            1.0
+          ],
+          "5": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "6": [
+            3440.0,
+            1440.0,
+            0.0002906976733356714,
+            0.0006944444612599909
+          ],
+          "7": [
+            3440.0,
+            1440.0,
+            0.0002906976733356714,
+            0.0006944444612599909
+          ],
+          "8": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      },
+      {
+        "event": 966,
+        "shaderResourceId": 5298,
+        "sha256": "f5099e56210e54915767fbcb516533ce45318f1b77cc85d72389f454e9175a91",
+        "reads": [
+          {
+            "resourceId": 28259,
+            "resourceName": "2D Depth/Stencil Attachment 28259",
+            "semanticName": "res14",
+            "format": "D32S8",
+            "width": 3440,
+            "height": 1440
+          },
+          {
+            "resourceId": 29444,
+            "resourceName": "2D Color Attachment 29444",
+            "semanticName": "res13",
+            "format": "R11G11B10_FLOAT",
+            "width": 3440,
+            "height": 1440
+          },
+          {
+            "resourceId": 29441,
+            "resourceName": "2D Color Attachment 29441",
+            "semanticName": "res17",
+            "format": "R16G16B16A16_FLOAT",
+            "width": 3440,
+            "height": 1440
+          },
+          {
+            "resourceId": 28336,
+            "resourceName": "2D Color Attachment 28336",
+            "semanticName": "res16",
+            "format": "R8_UNORM",
+            "width": 860,
+            "height": 360
+          },
+          {
+            "resourceId": 28238,
+            "resourceName": "2D Color Attachment 28238",
+            "semanticName": "res15",
+            "format": "R10G10B10A2_UNORM",
+            "width": 3440,
+            "height": 1440
+          }
+        ],
+        "writes": [
+          {
+            "resourceId": 28241,
+            "resourceName": "2D Color Attachment 28241",
+            "semanticName": "",
+            "format": "R16G16B16A16_FLOAT",
+            "width": 3440,
+            "height": 1440
+          }
+        ],
+        "constantRows": {
+          "0": [
+            1.0,
+            1.0,
+            0.949999988079071,
+            0.8500000238418579
+          ],
+          "1": [
+            2000.0,
+            0.00019999999494757503,
+            0.30000001192092896,
+            0.0
+          ],
+          "2": [
+            0.0,
+            0.8999999761581421,
+            0.0,
+            0.0
+          ],
+          "3": [
+            0.8999999761581421,
+            0.0,
+            0.10000000149011612,
+            0.10000000149011612
+          ],
+          "4": [
+            0.4000000059604645,
+            9.999999747378752e-06,
+            4.999999873689376e-05,
+            1.0
+          ],
+          "5": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "6": [
+            3440.0,
+            1440.0,
+            0.0002906976733356714,
+            0.0006944444612599909
+          ],
+          "7": [
+            3440.0,
+            1440.0,
+            0.0002906976733356714,
+            0.0006944444612599909
+          ],
+          "8": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "frameJitter_c19": [
+          -0.25,
+          0.1666666865348816,
+          -7.267441833391786e-05,
+          0.00011574075324460864
+        ]
+      }
+    ]
+  }
+}

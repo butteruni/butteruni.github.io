@@ -1,0 +1,8 @@
+Shader hash 615b985a-7791a5e6-8e791443-4f3a7505
+
+ps_4_0
+      dcl_input_ps linear v1.x
+      dcl_output o0.xyzw
+   0: mov o0.xyz, v1.xxxx
+   1: mov o0.w, l(1.000000)
+   2: ret

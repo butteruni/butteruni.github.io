@@ -1,0 +1,226 @@
+SPIR-V 1.3 module, <id> bound of 94
+
+Generator: spiregg from Google - Contact Steven Perron, stevenperron@google.com
+Generator Version: 0
+
+Capability(Shader);
+Capability(StorageImageExtendedFormats);
+
+
+
+MemoryModel(Logical, GLSL450);
+
+EntryPoint(GLCompute, _1, "main", {
+    _2
+  });
+
+ExecutionMode(_1, LocalSize(8, 8, 1));
+
+
+
+
+
+struct _3 : [[Block]] {
+  float4 _child0 : [[Offset(0)]];
+  float4 _child1 : [[Offset(16)]];
+  float4 _child2 : [[Offset(32)]];
+  float4 _child3 : [[Offset(48)]];
+  float4 _child4 : [[Offset(64)]];
+  float4 _child5 : [[Offset(80)]];
+  [6] _child6 : [[Offset(96)]] : [[ArrayStride(16)]];
+  [6] _child7 : [[Offset(192)]] : [[ArrayStride(16)]];
+  float4 _child8 : [[Offset(288)]];
+  float4 _child9 : [[Offset(304)]];
+  float4 _child10 : [[Offset(320)]];
+  float4 _child11 : [[Offset(336)]];
+  float4 _child12 : [[Offset(352)]];
+  float4 _child13 : [[Offset(368)]];
+  float4 _child14 : [[Offset(384)]];
+  float4 _child15 : [[Offset(400)]];
+  float _child16 : [[Offset(416)]];
+  float _child17 : [[Offset(420)]];
+  float _child18 : [[Offset(424)]];
+  uint _child19 : [[Offset(428)]];
+  float4 _child20 : [[Offset(432)]];
+  int4 _child21 : [[Offset(448)]];
+  float4 _child22 : [[Offset(464)]];
+  float4 _child23 : [[Offset(480)]];
+  float4 _child24 : [[Offset(496)]];
+  float4 _child25 : [[Offset(512)]];
+  float4 _child26 : [[Offset(528)]];
+  float4 _child27 : [[Offset(544)]];
+  float4 _child28 : [[Offset(560)]];
+  float4 _child29 : [[Offset(576)]];
+  float4 _child30 : [[Offset(592)]];
+  float4 _child31 : [[Offset(608)]];
+  [4] _child32 : [[Offset(624)]] : [[ArrayStride(16)]];
+  [4] _child33 : [[Offset(688)]] : [[ArrayStride(16)]];
+  [4] _child34 : [[Offset(752)]] : [[ArrayStride(16)]];
+  [4] _child35 : [[Offset(816)]] : [[ArrayStride(16)]];
+  float4 _child36 : [[Offset(880)]];
+  float4 _child37 : [[Offset(896)]];
+  [4] _child38 : [[Offset(912)]] : [[ArrayStride(16)]];
+  [4] _child39 : [[Offset(976)]] : [[ArrayStride(16)]];
+  [4] _child40 : [[Offset(1040)]] : [[ArrayStride(16)]];
+  float4 _child41 : [[Offset(1104)]];
+  float4 _child42 : [[Offset(1120)]];
+  float4 _child43 : [[Offset(1136)]];
+  float4 _child44 : [[Offset(1152)]];
+  float4 _child45 : [[Offset(1168)]];
+  float4 _child46 : [[Offset(1184)]];
+  float4 _child47 : [[Offset(1200)]];
+  float4 _child48 : [[Offset(1216)]];
+  float4 _child49 : [[Offset(1232)]];
+  float4 _child50 : [[Offset(1248)]];
+  float4 _child51 : [[Offset(1264)]];
+  float4 _child52 : [[Offset(1280)]];
+  float4 _child53 : [[Offset(1296)]];
+  float4 _child54 : [[Offset(1312)]];
+  float4 _child55 : [[Offset(1328)]];
+  float4 _child56 : [[Offset(1344)]];
+  float4 _child57 : [[Offset(1360)]];
+  float4 _child58 : [[Offset(1376)]];
+  float4 _child59 : [[Offset(1392)]];
+  float4 _child60 : [[Offset(1408)]];
+  float4 _child61 : [[Offset(1424)]];
+  float4 _child62 : [[Offset(1440)]];
+  float4 _child63 : [[Offset(1456)]];
+  float4 _child64 : [[Offset(1472)]];
+  float4 _child65 : [[Offset(1488)]];
+  float4 _child66 : [[Offset(1504)]];
+  float4 _child67 : [[Offset(1520)]];
+  float4 _child68 : [[Offset(1536)]];
+  float4 _child69 : [[Offset(1552)]];
+  float4 _child70 : [[Offset(1568)]];
+  float4 _child71 : [[Offset(1584)]];
+  float4 _child72 : [[Offset(1600)]];
+  float4 _child73 : [[Offset(1616)]];
+  float4 _child74 : [[Offset(1632)]];
+  float4 _child75 : [[Offset(1648)]];
+  float4 _child76 : [[Offset(1664)]];
+  float4 _child77 : [[Offset(1680)]];
+  float4 _child78 : [[Offset(1696)]];
+  float4 _child79 : [[Offset(1712)]];
+  float4 _child80 : [[Offset(1728)]];
+  float4 _child81 : [[Offset(1744)]];
+  float4 _child82 : [[Offset(1760)]];
+  float4 _child83 : [[Offset(1776)]];
+  float4 _child84 : [[Offset(1792)]];
+  float4 _child85 : [[Offset(1808)]];
+  float4 _child86 : [[Offset(1824)]];
+  float4 _child87 : [[Offset(1840)]];
+  float4 _child88 : [[Offset(1856)]];
+  float4 _child89 : [[Offset(1872)]];
+  float4 _child90 : [[Offset(1888)]];
+  float4 _child91 : [[Offset(1904)]];
+  float4 _child92 : [[Offset(1920)]];
+  float4 _child93 : [[Offset(1936)]];
+  float4 _child94 : [[Offset(1952)]];
+  float4 _child95 : [[Offset(1968)]];
+  float4 _child96 : [[Offset(1984)]];
+  float4 _child97 : [[Offset(2000)]];
+  float4 _child98 : [[Offset(2016)]];
+  [2] _child99 : [[Offset(2032)]] : [[ArrayStride(16)]];
+  [2] _child100 : [[Offset(2064)]] : [[ArrayStride(16)]];
+  float _child101 : [[Offset(2096)]];
+  float _child102 : [[Offset(2100)]];
+  float _child103 : [[Offset(2104)]];
+  float _child104 : [[Offset(2108)]];
+  float4 _child105 : [[Offset(2112)]];
+  float4 _child106 : [[Offset(2128)]];
+  float4 _child107 : [[Offset(2144)]];
+  float4 _child108 : [[Offset(2160)]];
+  float4 _child109 : [[Offset(2176)]];
+  float4 _child110 : [[Offset(2192)]];
+  float4 _child111 : [[Offset(2208)]];
+  float4 _child112 : [[Offset(2224)]];
+  float4 _child113 : [[Offset(2240)]];
+  float4 _child114 : [[Offset(2256)]];
+  float4 _child115 : [[Offset(2272)]];
+  float4 _child116 : [[Offset(2288)]];
+  float4 _child117 : [[Offset(2304)]];
+  float4 _child118 : [[Offset(2320)]];
+  float4 _child119 : [[Offset(2336)]];
+  float4 _child120 : [[Offset(2352)]];
+  float4 _child121 : [[Offset(2368)]];
+  float4 _child122 : [[Offset(2384)]];
+  float4 _child123 : [[Offset(2400)]];
+  float4 _child124 : [[Offset(2416)]];
+  float4 _child125 : [[Offset(2432)]];
+  float4 _child126 : [[Offset(2448)]];
+  float4 _child127 : [[Offset(2464)]];
+  float4 _child128 : [[Offset(2480)]];
+  float4 _child129 : [[Offset(2496)]];
+  float4 _child130 : [[Offset(2512)]];
+  float4 _child131 : [[Offset(2528)]];
+  float4 _child132 : [[Offset(2544)]];
+  float4 _child133 : [[Offset(2560)]];
+  float4 _child134 : [[Offset(2576)]];
+  float4x4 _child135 : [[RowMajor, MatrixStride(16), Offset(2592)]];
+  float4 _child136 : [[Offset(2656)]];
+  float4 _child137 : [[Offset(2672)]];
+  [32] _child138 : [[Offset(2688)]] : [[ArrayStride(16)]];
+}
+Uniform struct3* _4 : [[DescriptorSet(1), Binding(0)]];
+UniformConstant sampler* _6 : [[DescriptorSet(0), Binding(2)]];
+UniformConstant Image<float, 2D>* _9 : [[DescriptorSet(0), Binding(1)]];
+UniformConstant StorageImage<float, 2D>* _10 : [[DescriptorSet(0), Binding(0)]];
+Input uint3* _2 : [[BuiltIn(GlobalInvocationId)]];
+
+void _1() {
+  uint3 _43 = *_2;
+  uint2 _44 = _43.xy;
+  float2 _45 = ConvertUToF(_44);
+  float2 _46 = _45 + {0.5000, 0.5000};
+  float4* _47 = &_4._child0;
+  float4 _48 = *_47;
+  float2 _49 = _48.zw;
+  float2 _50 = _46 * _49;
+  Image<float, 2D> _51 = *_9;
+  sampler _52 = *_6;
+  SampledImage<float, 2D> _53 = SampledImage(_51, _52);
+  float4 _54 = ImageSampleExplicitLod(_53, _50, Lod(0.0000));
+  float _55 = _54.x;
+  Image<float, 2D> _56 = *_9;
+  sampler _57 = *_6;
+  float _58 = _48.z;
+  float _59 = -_58;
+  float _60 = _48.w;
+  float _61 = -_60;
+  float2 _62 = CompositeConstruct({_59, _61});
+  float2 _63 = _50 + _62;
+  SampledImage<float, 2D> _64 = SampledImage(_56, _57);
+  float4 _65 = ImageSampleExplicitLod(_64, _63, Lod(0.0000));
+  float _66 = _65.x;
+  Image<float, 2D> _67 = *_9;
+  sampler _68 = *_6;
+  float2 _69 = CompositeConstruct({_58, _61});
+  float2 _70 = _50 + _69;
+  SampledImage<float, 2D> _71 = SampledImage(_67, _68);
+  float4 _72 = ImageSampleExplicitLod(_71, _70, Lod(0.0000));
+  float _73 = _72.x;
+  Image<float, 2D> _74 = *_9;
+  sampler _75 = *_6;
+  float2 _76 = CompositeConstruct({_59, _60});
+  float2 _77 = _50 + _76;
+  SampledImage<float, 2D> _78 = SampledImage(_74, _75);
+  float4 _79 = ImageSampleExplicitLod(_78, _77, Lod(0.0000));
+  float _80 = _79.x;
+  Image<float, 2D> _81 = *_9;
+  sampler _82 = *_6;
+  float2 _83 = CompositeConstruct({_58, _60});
+  float2 _84 = _50 + _83;
+  SampledImage<float, 2D> _85 = SampledImage(_81, _82);
+  float4 _86 = ImageSampleExplicitLod(_85, _84, Lod(0.0000));
+  float _87 = _86.x;
+  float _88 = _55 + _66;
+  float _89 = _88 + _73;
+  float _90 = _89 + _80;
+  float _91 = _90 + _87;
+  float _92 = _91 * 0.2000;
+  StorageImage<float, 2D> _93 = *_10;
+  ImageWrite(_93, _44, _92, );
+  return;
+}
+
+

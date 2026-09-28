@@ -1,0 +1,34 @@
+Shader hash 92cb2f2a-7410116e-b202644c-abf22a83
+
+ps_5_0
+      dcl_globalFlags refactoringAllowed
+      dcl_sampler s0, mode_default
+      dcl_resource_texture2d (float,float,float,float) t0
+      dcl_resource_texture2d (float,float,float,float) t1
+      dcl_input_ps linear v1.xy
+      dcl_input_ps linear v2.xyzw
+      dcl_input_ps linear v4.xyzw
+      dcl_output o0.xyzw
+      dcl_temps 2
+   0: gather4(texture2d)(float,float,float,float) r0.xyz, v4.xyxx, t1.xyzw, s0.x
+   1: gather4(texture2d)(float,float,float,float) r1.xy, v4.zwzz, t1.xzyw, s0.x
+   2: add r0.xyz, r0.yxzy, l(-0.019608, -0.019608, -0.019608, 0.000000)
+   3: lt r0.xyz, l(0.001961, 0.001961, 0.001961, 0.000000), abs(r0.xyzx)
+   4: and r0.x, r0.y, r0.x
+   5: and r0.x, r0.z, r0.x
+   6: add r0.yz, r1.yyxy, l(0.000000, -0.019608, -0.019608, 0.000000)
+   7: lt r0.yz, l(0.000000, 0.001961, 0.001961, 0.000000), abs(r0.yyzy)
+   8: and r0.x, r0.y, r0.x
+   9: and r0.x, r0.z, r0.x
+  10: discard_nz r0.x
+  11: sample_indexable(texture2d)(float,float,float,float) r0.xyz, v1.xyxx, t0.xyzw, s0
+  12: dp3 r0.x, r0.xyzx, l(0.212600, 0.715200, 0.072200, 0.000000)
+  13: sample_indexable(texture2d)(float,float,float,float) r0.yzw, v2.xyxx, t0.wxyz, s0
+  14: dp3 r1.x, r0.yzwy, l(0.212600, 0.715200, 0.072200, 0.000000)
+  15: sample_indexable(texture2d)(float,float,float,float) r0.yzw, v2.zwzz, t0.wxyz, s0
+  16: dp3 r1.y, r0.yzwy, l(0.212600, 0.715200, 0.072200, 0.000000)
+  17: add r0.xy, r0.xxxx, -r1.xyxx
+  18: ge r0.xy, abs(r0.xyxx), l(0.100000, 0.100000, 0.000000, 0.000000)
+  19: and o0.xy, r0.xyxx, l(1.000000, 1.000000, 0.000000, 0.000000)
+  20: mov o0.zw, l(0, 0, 0, 0)
+  21: ret

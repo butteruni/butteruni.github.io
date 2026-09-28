@@ -1,0 +1,22 @@
+Shader hash 14313b08-f756cca7-f51b19e9-6a4eab78
+
+vs_4_0
+      dcl_constantbuffer cb0[106], immediateIndexed
+      dcl_constantbuffer cb1[4], immediateIndexed
+      dcl_input v0.xyz
+      dcl_input v1.xy
+      dcl_output_siv o0.xyzw, position
+      dcl_output o1.xy
+      dcl_output o2.xyzw
+      dcl_temps 2
+   0: mul r0.xyzw, v0.yyyy, cb1[1].xyzw
+   1: mad r0.xyzw, cb1[0].xyzw, v0.xxxx, r0.xyzw
+   2: mad r0.xyzw, cb1[2].xyzw, v0.zzzz, r0.xyzw
+   3: add r0.xyzw, r0.xyzw, cb1[3].xyzw
+   4: mul r1.xyzw, r0.yyyy, cb0[103].xyzw
+   5: mad r1.xyzw, cb0[102].xyzw, r0.xxxx, r1.xyzw
+   6: mad r1.xyzw, cb0[104].xyzw, r0.zzzz, r1.xyzw
+   7: mad o0.xyzw, cb0[105].xyzw, r0.wwww, r1.xyzw
+   8: mov o1.xy, v1.xyxx
+   9: mov o2.xyzw, l(0, 0, 0, 0)
+  10: ret
