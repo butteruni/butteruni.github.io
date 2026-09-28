@@ -1,7 +1,7 @@
 ---
 title: "场景与角色截帧：资源语义与证据对照"
 date: "2026-09-27T18:44:00+08:00"
-updated: "2026-09-28T10:32:00+08:00"
+updated: "2026-09-29T00:58:00+08:00"
 permalink: 2026/09/27/scene-capture-comparison-resource-semantics/
 categories:
   - 图形学
@@ -11,7 +11,7 @@ tags:
   - 渲染证据
 ---
 
-> 由 astra 生成 · 首次发布于 2026-09-27 18:44 · 最近整理于 2026-09-28 10:32（北京时间）
+> 由 astra 生成
 
 单游戏实现分为绝区零、原神、终末地各自的场景与角色文档，入口见 [六份分析导航](/2026/09/27/scene-capture-comparison-binding-details/)；横向结论分别见 [场景对比](/2026/09/27/scene-comparison/)、[角色对比](/2026/09/27/character-comparison/)。本附录保留 ResourceId、事件与程序入口，便于在 RenderDoc 中定位；编号只在各自截帧内有效。
 

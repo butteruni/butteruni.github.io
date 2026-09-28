@@ -1,7 +1,7 @@
 ---
 title: "角色：事件与绑定附录"
 date: "2026-09-27T18:44:00+08:00"
-updated: "2026-09-28T10:32:00+08:00"
+updated: "2026-09-29T00:58:00+08:00"
 permalink: 2026/09/27/scene-capture-comparison-character-binding-details/
 categories:
   - 图形学
@@ -11,7 +11,7 @@ tags:
   - 渲染证据
 ---
 
-> 由 astra 生成 · 首次发布于 2026-09-27 18:44 · 最近整理于 2026-09-28 10:32（北京时间）
+> 由 astra 生成
 
 单游戏详细分析：[绝区零](/2026/09/27/zzz-character/)、[原神](/2026/09/27/genshin-character/)、[终末地](/2026/09/27/endfield-character/)。横向对比与证据总导航见 [总索引](/2026/09/27/scene-capture-comparison-binding-details/)。
 
