@@ -1,23 +1,23 @@
 ---
 title: "场景与角色截帧：资源语义与证据对照"
 date: "2026-09-27T18:44:00+08:00"
-updated: "2026-09-28T20:56:00+08:00"
+updated: "2026-09-28T10:32:00+08:00"
 permalink: 2026/09/27/scene-capture-comparison-resource-semantics/
 categories:
   - 图形学
 tags:
   - astra
-  - 技术文档
-  - 渲染架构
+  - 渲染分析
+  - 渲染证据
 ---
 
-> 由 astra 生成 · 首次发布于 2026-09-27 18:44 · 最近整理于 2026-09-28 20:56（北京时间）
+> 由 astra 生成 · 首次发布于 2026-09-27 18:44 · 最近整理于 2026-09-28 10:32（北京时间）
 
 单游戏实现分为绝区零、原神、终末地各自的场景与角色文档，入口见 [六份分析导航](/2026/09/27/scene-capture-comparison-binding-details/)；横向结论分别见 [场景对比](/2026/09/27/scene-comparison/)、[角色对比](/2026/09/27/character-comparison/)。本附录保留 ResourceId、事件与程序入口，便于在 RenderDoc 中定位；编号只在各自截帧内有效。
 
-命名依据优先为**写入公式 + 消费公式 + 阶段顺序**，其次才是调试名称与图像。`已确认`指表中列出的用途已得到证据支持，不代表整张图的所有通道都已解码；`部分确认`明确列出剩余未知字段；`推断`不作为精确算法还原结论。
-
 <!-- more -->
+
+命名依据优先为**写入公式 + 消费公式 + 阶段顺序**，其次才是调试名称与图像。`已确认`指表中列出的用途已得到证据支持，不代表整张图的所有通道都已解码；`部分确认`明确列出剩余未知字段；`推断`不作为精确算法还原结论。
 
 ## 1. 木偶：同一资源由法线改作运动矢量
 
@@ -57,7 +57,7 @@ tags:
 4. [时序融合 PS](/scene-capture-comparison/muou/shaders/ResourceId_26316.ps.txt) 的 `t3` 绑定同一资源。指令 46–61 从 RG 取值，计算 `q=RG-0.498039216`、`v=sign(q)*(2q)^2`、`historyUV=currentUV-v`。因此后半帧它是**运动矢量图**。
 5. 同一时序程序还消费附加通道；几何运动 PS 将 B 写成 1。故 RGB 预览里的蓝/紫角色区域不等于高速运动，不能把完整 RGB 当成二维速度热力图。
 
-前后回放图：[材质阶段法线](/scene-capture-comparison/muou/semantic-images/e10774_rt0.png)、[运动阶段结束](/scene-capture-comparison/muou/semantic-images/e25027_rt0.png)。补充导出的 [details.json](/scene-capture-comparison/muou/semantic-images/details.json) 保留两个阶段的真实附件和格式。
+前后回放图：材质阶段法线、[运动阶段结束](/scene-capture-comparison/muou/semantic-images/e25027_rt0.png)。补充导出的 [details.json](/scene-capture-comparison/muou/semantic-images/details.json) 保留两个阶段的真实附件和格式。
 
 ## 2. 蕾米：材质颜色、已着色颜色与法线分开
 
@@ -121,7 +121,7 @@ tags:
 
 ### 后续几何是否包含角色着色
 
-对照 [全屏光照结束](/scene-capture-comparison/endfield/semantic-images/e5361_rt0.png) 与 [后续几何结束](/scene-capture-comparison/endfield/semantic-images/e5717_rt0.png)，同一 HDR 目标中的角色从黑色轮廓变成具有服装与身体颜色的表面。这支持“该组包含角色着色”，但不能把组内 74 个 draw 全部认定为角色，仍需逐 draw 检查。辅助 1024² 视图的对象归属也仍待确认。
+对照 全屏光照结束 与 后续几何结束，同一 HDR 目标中的角色从黑色轮廓变成具有服装与身体颜色的表面。这支持“该组包含角色着色”，但不能把组内 74 个 draw 全部认定为角色，仍需逐 draw 检查。辅助 1024² 视图的对象归属也仍待确认。
 
 ## 4. 读图规则与可追溯性
 

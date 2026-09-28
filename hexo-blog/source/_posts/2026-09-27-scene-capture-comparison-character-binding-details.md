@@ -1,23 +1,23 @@
 ---
 title: "角色：事件与绑定附录"
 date: "2026-09-27T18:44:00+08:00"
-updated: "2026-09-28T20:56:00+08:00"
+updated: "2026-09-28T10:32:00+08:00"
 permalink: 2026/09/27/scene-capture-comparison-character-binding-details/
 categories:
   - 图形学
 tags:
   - astra
-  - 技术文档
-  - 渲染架构
+  - 渲染分析
+  - 渲染证据
 ---
 
-> 由 astra 生成 · 首次发布于 2026-09-27 18:44 · 最近整理于 2026-09-28 20:56（北京时间）
+> 由 astra 生成 · 首次发布于 2026-09-27 18:44 · 最近整理于 2026-09-28 10:32（北京时间）
 
 单游戏详细分析：[绝区零](/2026/09/27/zzz-character/)、[原神](/2026/09/27/genshin-character/)、[终末地](/2026/09/27/endfield-character/)。横向对比与证据总导航见 [总索引](/2026/09/27/scene-capture-comparison-binding-details/)。
 
-按用途阅读请先看 [语义与证据对照](/2026/09/27/scene-capture-comparison-resource-semantics/)。注意木偶第一材质附件先保存法线，运动阶段再改写为运动矢量；同一 ResourceId 不能在所有事件中使用同一种解释。
-
 <!-- more -->
+
+按用途阅读请先看 [语义与证据对照](/2026/09/27/scene-capture-comparison-resource-semantics/)。注意木偶第一材质附件先保存法线，运动阶段再改写为运动矢量；同一 ResourceId 不能在所有事件中使用同一种解释。
 
 主报告：[角色实现对比](/2026/09/27/character-comparison/)；公共消费者见 [场景绑定附录](/2026/09/27/scene-capture-comparison-scene-binding-details/)。
 

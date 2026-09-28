@@ -1,29 +1,29 @@
 ---
 title: "截帧文件、原始统计与回放定位索引"
 date: "2026-09-27T18:44:00+08:00"
-updated: "2026-09-28T20:56:00+08:00"
+updated: "2026-09-28T10:32:00+08:00"
 permalink: 2026/09/27/scene-capture-comparison-capture-index/
 categories:
   - 图形学
 tags:
   - astra
-  - 技术文档
-  - 渲染架构
+  - 渲染分析
+  - 渲染证据
 ---
 
-> 由 astra 生成 · 首次发布于 2026-09-27 18:44 · 最近整理于 2026-09-28 20:56（北京时间）
+> 由 astra 生成 · 首次发布于 2026-09-27 18:44 · 最近整理于 2026-09-28 10:32（北京时间）
 
 这里保留输入身份、统计口径和定位编号，供回放时查找；单游戏实现逻辑见 [六份分析导航](/2026/09/27/scene-capture-comparison-binding-details/)，横向结论见 [场景对比](/2026/09/27/scene-comparison/) 与 [角色对比](/2026/09/27/character-comparison/)。编号只在所属截帧内有效，提交次数不等于对象数量或算法复杂度。
+
+<!-- more -->
 
 ## 输入文件
 
 | 简称 | 实际文件 | 文件 bytes | SHA-256 前 16 位 |
 |---|---|---:|---|
-| 蕾米／绝区零 | `leimi_all_resource.rdc` | 989,587,952 | `e35c1098baacf1033` |
-| 木偶／原神 | `muou_light.rdc` | 1,195,391,517 | `c9a3200512d54e4d8` |
-| 终末地场景 | `终末地场景.rdc` | 3,323,666,127 | `b88376e2e1c98b680` |
-
-<!-- more -->
+| 蕾米／绝区零 | `D:\Capture\leimi_all_resource.rdc` | 989,587,952 | `e35c1098baacf1033` |
+| 木偶／原神 | `D:\Capture\muou_light.rdc` | 1,195,391,517 | `c9a3200512d54e4d8` |
+| 终末地场景 | `D:\Capture\终末地场景.rdc` | 3,323,666,127 | `b88376e2e1c98b680` |
 
 完整指纹见 [输入指纹](/scene-capture-comparison/capture-hashes.json)。
 
