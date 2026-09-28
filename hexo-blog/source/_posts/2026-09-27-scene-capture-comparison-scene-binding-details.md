@@ -1,23 +1,23 @@
 ---
 title: "场景与整帧处理：逐事件绑定附录"
 date: "2026-09-27T18:44:00+08:00"
-updated: "2026-09-28T10:32:00+08:00"
+updated: "2026-09-28T20:56:00+08:00"
 permalink: 2026/09/27/scene-capture-comparison-scene-binding-details/
 categories:
   - 图形学
 tags:
   - astra
-  - 渲染分析
-  - 渲染证据
+  - 技术文档
+  - 渲染架构
 ---
 
-> 由 astra 生成 · 首次发布于 2026-09-27 18:44 · 最近整理于 2026-09-28 10:32（北京时间）
+> 由 astra 生成 · 首次发布于 2026-09-27 18:44 · 最近整理于 2026-09-28 20:56（北京时间）
 
 单游戏详细分析：[绝区零](/2026/09/27/zzz-scene/)、[原神](/2026/09/27/genshin-scene/)、[终末地](/2026/09/27/endfield-scene/)。横向对比与证据总导航见 [总索引](/2026/09/27/scene-capture-comparison-binding-details/)。
 
-<!-- more -->
-
 按用途阅读请先看 [语义与证据对照](/2026/09/27/scene-capture-comparison-resource-semantics/)。本页的编号、寄存器和槽位仅用于回放定位；正文已使用法线、运动矢量、光照颜色、阴影与历史图等实际名称。
+
+<!-- more -->
 
 本附录保留场景光照、反射、体积、AO 和整帧后处理的原始回放绑定。资源编号只在所属截帧内有效；TYPELESS 是资源格式，具体 view、mip/slice、sampler、常量偏移见各 `details.json`。
 

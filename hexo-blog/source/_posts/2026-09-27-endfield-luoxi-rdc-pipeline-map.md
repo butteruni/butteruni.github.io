@@ -1,22 +1,20 @@
 ---
 title: "Endfield Luoxi capture pipeline map"
 date: "2026-09-27T18:44:00+08:00"
-updated: "2026-09-28T10:32:00+08:00"
+updated: "2026-09-28T20:56:00+08:00"
 permalink: 2026/09/27/endfield-luoxi-rdc-pipeline-map/
 categories:
   - 图形学
 tags:
   - astra
-  - 渲染分析
-  - 终末地
+  - 技术文档
+  - 渲染架构
 ---
 
-> 由 astra 生成 · 首次发布于 2026-09-27 18:44 · 最近整理于 2026-09-28 10:32（北京时间）
+> 由 astra 生成 · 首次发布于 2026-09-27 18:44 · 最近整理于 2026-09-28 20:56（北京时间）
 
 This map records observed resource flow. Names marked **inferred** still need a
 shader-level replacement comparison before becoming final semantic names.
-
-<!-- more -->
 
 | Events | Stage | Evidence and current interpretation |
 |---:|---|---|
@@ -48,6 +46,8 @@ shader-level replacement comparison before becoming final semantic names.
 | 1061 | character backdrop overlay | Validated semantic overlay adds the pale character silhouette; color, D24S8, and Post-VS are exact. |
 | 1070 | final scene blit | Validated semantic blit writes swapchain resource 459; color, D24S8, and Post-VS are exact. |
 | 1076–1504 | UI | Draws the character menu and HUD after scene presentation. |
+
+<!-- more -->
 
 ## BasePass programs
 

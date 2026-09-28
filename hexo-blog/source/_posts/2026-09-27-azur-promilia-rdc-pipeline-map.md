@@ -1,27 +1,25 @@
 ---
 title: "蓝色星原略略卡 RDC Pipeline Map"
 date: "2026-09-27T18:44:00+08:00"
-updated: "2026-09-28T10:32:00+08:00"
+updated: "2026-09-28T20:56:00+08:00"
 permalink: 2026/09/27/azur-promilia-rdc-pipeline-map/
 categories:
   - 图形学
 tags:
   - astra
-  - 渲染分析
-
+  - 技术文档
+  - 渲染架构
 ---
 
-> 由 astra 生成 · 首次发布于 2026-09-27 18:44 · 最近整理于 2026-09-28 10:32（北京时间）
+> 由 astra 生成 · 首次发布于 2026-09-27 18:44 · 最近整理于 2026-09-28 20:56（北京时间）
 
 ## 范围和隔离规则
 
-- Capture: `D:\Capture\蓝色星原PC三测.rdc`，D3D11，frame 6639。
+- Capture: `蓝色星原PC三测.rdc`，D3D11，frame 6639。
 - 每个捕获事件拥有独立 program、DXBC、反汇编、CB 快照、资源绑定和固定状态；Azur program 使用 `azur.promilia.luoluo.*` 命名空间。
 - Remielle、Genshin、普通 PBR 的 shader 只作为引擎能力参考，不参与本 profile 的 shader 或 pass 实现。
 - 几何和纹理由当前 RDC 直接导出；游戏目录不再是本复现的资产依赖。
 - 已导出 84 个事件：5 个阴影、18 个角色、61 个后处理；共 167 个原始 shader stage 和 269 个逐事件 CB 快照。
-
-<!-- more -->
 
 ## 帧内数据流
 
@@ -36,6 +34,8 @@ tags:
 | 289 | `azur.promilia.luoluo.shadow.e289.cloth-transparent-shadow-depth` | VERTEX 63052 `4673ca364f45`<br>PIXEL 63054 `74fd1d428a9a` | ve:b0=43200,b1=112 | - | D 63133:R16_TYPELESS | NoCull, GreaterEqual, DW=1, S=0, B=0 |
 | 302 | `azur.promilia.luoluo.shadow.e302.hair-shadow-depth` | VERTEX 60253 `4673ca364f45`<br>PIXEL 63692 `6b6dcd49cf09` | ve:b0=43200,b1=112<br>pi:b0=864 | pi SRV 0:308 | D 63133:R16_TYPELESS | Back, GreaterEqual, DW=1, S=0, B=0 |
 | 311 | `azur.promilia.luoluo.shadow.e311.face-shadow-depth` | VERTEX 60274 `4673ca364f45`<br>PIXEL 63717 `3e14ac7c22bf` | ve:b0=43200,b1=112<br>pi:b0=592 | pi SRV 0:308 | D 63133:R16_TYPELESS | NoCull, GreaterEqual, DW=1, S=0, B=0 |
+
+<!-- more -->
 
 ## 角色阶段
 

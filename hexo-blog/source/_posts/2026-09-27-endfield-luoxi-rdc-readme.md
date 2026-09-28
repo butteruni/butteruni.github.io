@@ -1,30 +1,28 @@
 ---
 title: "Arknights: Endfield Luoxi RDC reverse engineering"
 date: "2026-09-27T18:44:00+08:00"
-updated: "2026-09-28T10:32:00+08:00"
+updated: "2026-09-28T20:56:00+08:00"
 permalink: 2026/09/27/endfield-luoxi-rdc-readme/
 categories:
   - 图形学
 tags:
   - astra
-  - 渲染分析
-  - 终末地
+  - 技术文档
+  - 渲染架构
 ---
 
-> 由 astra 生成 · 首次发布于 2026-09-27 18:44 · 最近整理于 2026-09-28 10:32（北京时间）
+> 由 astra 生成 · 首次发布于 2026-09-27 18:44 · 最近整理于 2026-09-28 20:56（北京时间）
 
 ## Capture identity
 
-- Capture: `D:\Capture\终末地洛熙.rdc`
-- Game: `E:\Hypergryph Launcher\games\Arknights Endfield`
+- Capture: `终末地洛熙.rdc`
+- Game: `《明日方舟：终末地》游戏安装目录`
 - Engine/API: Unity IL2CPP, Vulkan
 - RenderDoc: 1.45
 - Frame: 2201
 - Reference extent: 3440 × 1440
 - Actions: 358 total, 246 draws, 47 dispatches
 - Character shown by the capture UI: 洛茜. The capture file uses the spelling `洛熙`.
-
-<!-- more -->
 
 This profile is isolated from ZZZ, Genshin, and Azur Promilia. Its future
 runtime identity is `endfield.luoxi`; no shader or pass identity from another
@@ -35,6 +33,8 @@ belongs to the Endfield profile.
 ## Completed extraction baseline
 
 The first extraction pass has produced:
+
+<!-- more -->
 
 - all 293 graphics/compute pass contracts;
 - 172 unique original SPIR-V modules: 73 vertex, 73 fragment, and 26 compute;
@@ -118,7 +118,7 @@ The preview can be loaded after building the editor:
 
 ```text
 scene.load -path model/endfield_luoxi/luoxi_capture.gltf
-editor.screenshot -path D:\Capture\endfield-luoxi-preview.png
+editor.screenshot -path endfield-luoxi-preview.png
 ```
 
 ## Semantic replacement rules

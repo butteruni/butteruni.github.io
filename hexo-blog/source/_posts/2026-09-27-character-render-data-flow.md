@@ -1,22 +1,20 @@
 ---
 title: "角色渲染数据流"
 date: "2026-09-27T18:44:00+08:00"
-updated: "2026-09-28T10:32:00+08:00"
+updated: "2026-09-28T20:56:00+08:00"
 permalink: 2026/09/27/character-render-data-flow/
 categories:
   - 图形学
 tags:
   - astra
-  - 渲染分析
-
+  - 技术文档
+  - 渲染架构
 ---
 
-> 由 astra 生成 · 首次发布于 2026-09-27 18:44 · 最近整理于 2026-09-28 10:32（北京时间）
+> 由 astra 生成 · 首次发布于 2026-09-27 18:44 · 最近整理于 2026-09-28 20:56（北京时间）
 
 状态：Implemented
 日期：2026-09-27
-
-<!-- more -->
 
 ## 1. 架构约束
 
@@ -47,6 +45,8 @@ flowchart LR
 `CharacterDrawData` 是自定义角色 Pass 的实时 CPU 视图。它从 `RenderPrimitive` 构建，包含
 node、instance、current/previous object-to-world 以及共享 GPU scene descriptor。各游戏
 Pass 必须从这个对象打包自己的常量 ABI，不能从提取快照恢复运行时姿态。
+
+<!-- more -->
 
 ## 2. 共享与专用边界
 

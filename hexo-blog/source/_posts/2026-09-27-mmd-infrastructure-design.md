@@ -1,23 +1,21 @@
 ---
 title: "MMD 基建设计(Phase 2 垂直切片)"
 date: "2026-09-27T18:44:00+08:00"
-updated: "2026-09-28T10:32:00+08:00"
+updated: "2026-09-28T20:56:00+08:00"
 permalink: 2026/09/27/mmd-infrastructure-design/
 categories:
   - 图形学
 tags:
   - astra
-  - 渲染分析
-
+  - 技术文档
+  - 渲染架构
 ---
 
-> 由 astra 生成 · 首次发布于 2026-09-27 18:44 · 最近整理于 2026-09-28 10:32（北京时间）
+> 由 astra 生成 · 首次发布于 2026-09-27 18:44 · 最近整理于 2026-09-28 20:56（北京时间）
 
 > 2026-08-17 起稿。目标:在现有 Render Graph / StyleRegistry 上,做出
 > **可播放的 PMX+VMD → toon 渲染 → 序列帧/视频**最小闭环。渲染效果平台
 > 已具备扩展性;本切片补的是**资产 + 动画**层,与 pass/shader 插件解耦。
-
-<!-- more -->
 
 ## 1. 现状与缺口
 
@@ -29,6 +27,8 @@ tags:
 | 变形 | 无 | PMX morph(顶点/骨骼/材质/UV/组) |
 | 材质 | toon / outline / StyleRegistry 已落地 | PMX 材质→toon 自动接线(边缘色、toon 图) |
 | 输出 | `editor.screenshot` | 离线逐帧 dump + ffmpeg |
+
+<!-- more -->
 
 说明:仓库内 `external/assimp/.../MMD/` 有 PMX/PMD/VMD **解析代码**,但
 路线图原写「assimp 不支持」偏过时——应用层从未接线。**决策见 §3.1**。

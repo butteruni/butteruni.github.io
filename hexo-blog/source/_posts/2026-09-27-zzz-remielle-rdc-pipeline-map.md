@@ -1,23 +1,23 @@
 ---
 title: "Remielle Character Rendering Reconstruction"
 date: "2026-09-27T18:44:00+08:00"
-updated: "2026-09-28T10:32:00+08:00"
+updated: "2026-09-28T20:56:00+08:00"
 permalink: 2026/09/27/zzz-remielle-rdc-pipeline-map/
 categories:
   - 图形学
 tags:
   - astra
-  - 渲染分析
-  - 绝区零
+  - 技术文档
+  - 渲染架构
 ---
 
-> 由 astra 生成 · 首次发布于 2026-09-27 18:44 · 最近整理于 2026-09-28 10:32（北京时间）
+> 由 astra 生成 · 首次发布于 2026-09-27 18:44 · 最近整理于 2026-09-28 20:56（北京时间）
 
-Capture: `D:\Capture\leimi_all_resource.rdc`
+Capture: `leimi_all_resource.rdc`
+
+Game: `《绝区零》游戏安装目录`
 
 <!-- more -->
-
-Game: `D:\HoYoPlay\games\ZenlessZoneZero Game`
 
 API/frame: D3D11, frame 5469, 3432×1440 internal render size.
 
