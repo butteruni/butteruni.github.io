@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1100" viewBox="0 0 1000 1100" role="img" aria-labelledby="title desc">
+  <title id="title">终末地：屏幕反射与环境探针的组合</title>
+  <desc id="desc">左侧由当前深度与材质筛选屏幕块，查询反射命中，验证旧帧位置，再分别过滤颜色和有效权重。右侧按位置与方向查询环境探针。两路在场景照明中按最终权重混合。</desc>
+  <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#657b94"/></marker></defs>
+  <style>
+    text{font-family:"Microsoft YaHei","Noto Sans CJK SC",sans-serif;fill:#263b50}
+    .title{font-size:29px;font-weight:700}.heading{font-size:23px;font-weight:700}.body{font-size:19px}.note{font-size:17px;fill:#52687d}
+    .card{fill:#eef5fc;stroke:#b5cbe1;stroke-width:1.5}.probe{fill:#edf7ef;stroke:#b6d5bf;stroke-width:1.5}.final{fill:#faf3e8;stroke:#dcc5a5;stroke-width:1.5}
+    .arrow{fill:none;stroke:#657b94;stroke-width:3;marker-end:url(#arrow)}
+  </style>
+  <rect width="1000" height="1100" fill="#fff"/>
+  <text x="40" y="48" class="title">反射的颜色从哪里来，什么时候采用</text>
+  <text x="40" y="79" class="note">算法示意 · 当前竹林截帧；箭头表达已确认的数据依赖</text>
+
+  <rect x="40" y="110" width="560" height="95" rx="12" class="card"/>
+  <text x="62" y="146" class="heading">当前可见表面</text>
+  <text x="62" y="178" class="body">深度、法线、粗糙度与表面控制 → 半分辨率准备</text>
+  <path d="M320 205V239" class="arrow"/>
+  <rect x="40" y="240" width="560" height="100" rx="12" class="card"/>
+  <text x="62" y="277" class="heading">按 8×8 块分配查询工作</text>
+  <text x="62" y="309" class="body">高类别 128 个候选 · 低类别 16 个 · 无效则跳过</text>
+  <path d="M320 340V374" class="arrow"/>
+  <rect x="40" y="375" width="560" height="110" rx="12" class="card"/>
+  <text x="62" y="413" class="heading">在当前深度中搜索屏幕落点</text>
+  <text x="62" y="445" class="body">投影反射方向 → 四候选一组 → 容差判断与插值</text>
+  <text x="62" y="472" class="note">未命中：当前有效权重为零，坐标仍按统一接口写入</text>
+  <path d="M320 485V519" class="arrow"/>
+  <rect x="40" y="520" width="560" height="100" rx="12" class="card"/>
+  <text x="62" y="557" class="heading">检查旧帧对应</text>
+  <text x="62" y="589" class="body">边缘淡出 · 运动重投影 · 当前与历史深度校验</text>
+  <path d="M320 620V654" class="arrow"/>
+  <rect x="40" y="655" width="560" height="115" rx="12" class="card"/>
+  <text x="62" y="692" class="heading">读取旧 HDR，分别稳定两类数据</text>
+  <text x="62" y="725" class="body">颜色：亮度压缩、色差空间中的历史裁剪</text>
+  <text x="62" y="754" class="body">权重：独立标量历史，受当前邻域约束</text>
+  <path d="M320 770V804" class="arrow"/>
+  <rect x="40" y="805" width="560" height="100" rx="12" class="card"/>
+  <text x="62" y="842" class="heading">按粗糙度足迹过滤</text>
+  <text x="62" y="875" class="body">颜色层级、深度差权重 → 恢复 HDR 与最终混合量</text>
+
+  <rect x="650" y="110" width="310" height="510" rx="12" class="probe"/>
+  <text x="674" y="149" class="heading">环境反射输入</text>
+  <text x="674" y="187" class="body">着色位置与反射方向</text>
+  <text x="674" y="223" class="body">局部探针范围与参数</text>
+  <text x="674" y="259" class="body">二维数组中的环境颜色</text>
+  <text x="674" y="299" class="note">由方向展开后查询</text>
+  <text x="674" y="326" class="note">无需在当前画面中找到</text>
+  <text x="674" y="353" class="note">对应的屏幕命中位置</text>
+  <path d="M805 620V654" class="arrow"/>
+  <text x="680" y="443" class="note">屏幕区与深度区筛选</text>
+  <text x="680" y="478" class="note">检查局部范围与边界</text>
+  <text x="680" y="513" class="note">按记录决定方向修正</text>
+  <text x="680" y="548" class="note">按粗糙程度选择颜色层级</text>
+  <rect x="650" y="655" width="310" height="180" rx="12" class="probe"/>
+  <text x="674" y="695" class="heading">组合环境探针</text>
+  <text x="674" y="734" class="body">局部记录逐项消耗</text>
+  <text x="674" y="765" class="body">剩余权重</text>
+  <text x="674" y="804" class="body">默认环境层补足余量</text>
+
+  <path d="M320 905V939" class="arrow"/>
+  <path d="M805 835V939" class="arrow"/>
+  <rect x="210" y="940" width="750" height="112" rx="12" class="final"/>
+  <text x="237" y="980" class="heading">按最终有效权重混合两路反射</text>
+  <text x="237" y="1016" class="body">w × 屏幕反射颜色 + (1 − w) × 环境探针颜色</text>
+  <text x="40" y="1080" class="note">混合结果还需乘材质镜面响应与遮蔽，再进入场景照明；w 是过滤后的权重，不是本帧命中率。</text>
+</svg>
