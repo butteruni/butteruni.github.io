@@ -1,7 +1,7 @@
 ---
 title: "原神渲染实现分析：雪城资源、木偶材质与时序重建"
 date: "2026-09-27T18:44:00+08:00"
-updated: "2026-09-29T23:56:54+08:00"
+updated: "2026-09-30T01:37:15+08:00"
 permalink: 2026/09/27/genshin-rendering-analysis/
 categories:
   - 图形学
@@ -253,11 +253,11 @@ mathjax: true
 |---|---|
 | [积雪覆盖与亮点](#snow-material) | 双层材质、方向覆盖、导数约束和历史控制 |
 | [投影阴影](#shadows) | 静态／动态深度汇合、四叉树与量化解码 |
-| [环境照明与反射](#environment) | 空间索引、候选生成与照明消费 |
+| [环境照明与反射](#environment) | 反射候选、探针权重与盒投影、低分辨率表面对应及照明重建 |
 | [特定材质的屏幕扩散](#screen-diffusion) | 材质选择、RGB 距离权重；本帧参与区域极少 |
-| [局部遮蔽](#environment-occlusion) | 半分辨率遮蔽、过滤和空间遮蔽输入 |
+| [局部遮蔽](#environment-occlusion) | 六层距离场、六方向查询、开放程度与开放方向 |
 | [天空背景](#sky-layers) | 大气、星空与染色层的输入和混合 |
-| [雾与空气](#fog) | 局部体积、光源遮挡、历史与沿视线累积 |
+| [雾与空气](#fog) | 介质与光照分离、体积历史与修复、非均匀分层、双项积分和透射合成 |
 | [天气、云片与粒子](#weather-particles) | 形状输入、空间遮挡、HDR 混合与阶段对照 |
 | [角色环境受光](#character-environment) | 颜色和阴影分开采样、独立反馈与材质读取 |
 | [头发与腿部高光、闪点](#hair-shading) | 双高光带、边缘色、随机点簇与法线图通道分工 |
@@ -338,7 +338,7 @@ mathjax: true
 <div class="rendering-flow-card">
 <p class="rendering-flow-title"><span class="rendering-flow-phase">照明</span><a href="#environment">主体延迟照明</a>与<a href="#screen-diffusion">材质扩散</a></p>
 <dl class="rendering-flow-detail">
-<dt>工作</dt><dd>按表面类别消费颜色、方向、材质控制和受光信息，建立主体照明颜色，并完成相应扩散处理。</dd>
+<dt>工作</dt><dd>先组合反射候选与环境探针，查询距离场的开放程度和方向，生成并重建空间照明；再按表面类别消费材质和受光信息，建立主体 HDR，并完成相应扩散处理。</dd>
 <dt>输出</dt><dd>当前主体 HDR 颜色 → 天空、雾与后续效果。</dd>
 </dl>
 </div>
@@ -347,7 +347,7 @@ mathjax: true
 <div class="rendering-flow-card">
 <p class="rendering-flow-title"><span class="rendering-flow-phase">合成</span><a href="#sky-layers">天空背景</a>、<a href="#fog">雾与空间效果</a></p>
 <dl class="rendering-flow-detail">
-<dt>工作</dt><dd>接入天空以及空气中的散射、遮挡和相关空间效果，补齐远景与空气对当前颜色的贡献。</dd>
+<dt>工作</dt><dd>绘制天空分层；更新介质与两份体积光照，复用历史并修复无效位置，按 128 个非均匀深度段积累颜色与透射率。随后结合距离／高度空气项，按表面深度合成到 HDR。</dd>
 <dt>输出</dt><dd>含天空和雾的 HDR 颜色 → 透明与粒子。</dd>
 </dl>
 </div>
@@ -665,13 +665,74 @@ $$
 
 ### 场景环境照明与反射
 
-环境照明与反射为表面补充周围场景的信息。当前材料可以追到空间索引、候选颜色与照明消费之间的关系，以下按这条已确认的数据流说明。
+环境照明提供周围场景的颜色，镜面反射还要随表面方向、视角和粗糙度改变。本帧把反射候选、局部探针、空间照明查询与低分辨率重建分成多条处理链，再交给后续材质照明。
 
 <span id="间接光反射与体积雾的接入位置"></span>
 
-场景建立三维索引与结构数据，再结合屏幕法线、深度和颜色生成较低分辨率的间接／反射候选。这些结果经过不同尺度的整理，由后续照明消费。
+#### 反射先使用已有候选，再分配探针权重
 
-索引数据负责“找到什么”，候选颜色负责“取得什么光照值”，二者不是同一种体积。当前可以确认它们进入照明的关系，完整追踪、候选分量拆分与未命中处理仍不完整，不能仅凭三维数据就指定一套全局光照产品名称。
+代表性的反射合成程序读取场景深度、法线、材质参数、已有反射候选的层级图、局部立方体探针数组及全局立方体环境图。深度恢复表面位置，法线与视线确定反射方向，材质 R 对应的光滑量经 $r=1-R$ 转成粗糙度相关控制。
+
+候选颜色按粗糙程度选择层级并取得有效权重。随后程序根据屏幕位置和线性深度查询 32×24×16 的空间分组，每个分组的两个位掩码指出应检查哪些探针。位掩码只用于筛选候选，探针记录还必须提供位置、局部变换、包围盒、过渡宽度与采样参数。
+
+将位置变换到探针局部空间后，用它到包围盒外侧的距离 $d_{box}$ 和过渡宽度 $b$ 得到权重：
+
+$$
+w_p=\operatorname{saturate}\left(1-\frac{d_{box}}b\right)
+$$
+
+在盒内，$d_{box}=0$；越出盒边界后，贡献随距离衰减。对镜面颜色，实际使用的权重还受剩余额度限制：
+
+$$
+\Delta w=\min(w_p,1-w_{used}),\qquad
+C_{sum}\leftarrow C_{sum}+\Delta w\,C_{probe}
+$$
+
+已有反射候选先占用权重，局部探针补充剩余部分。如果全部局部探针处理后仍未填满，全局立方体环境图继续补足。候选覆盖不足与“反射颜色为零”不是同一件事，前者可以触发环境回退。
+
+#### 盒投影修正反射方向，粗糙度选择过滤层级
+
+有盒投影标记的探针，会先求反射射线与探针包围范围的交点，再使用“交点相对探针中心”的方向读取立方体贴图。附近墙面和地板因此能随表面位置改变反射采样方向。未开启此标记的分支直接用反射方向读取。
+
+粗糙度同时参与探针采样的层级选择；细节较多的环境输入并不意味着每个表面都显示锐利倒影。这里的空间筛选、位置校正与粗糙过滤分别回答“用哪个探针”“朝哪里读取”“读取多模糊的结果”。
+
+<div class="rendering-figures">
+<figure><a href="/images/rendering-analysis/genshin/reflection-combined-detail.png"><img src="/images/rendering-analysis/genshin/reflection-combined-detail.png" alt="环境反射合成颜色；HDR 预览范围 0—0.5。" loading="lazy" width="1200" height="502"></a><figcaption>环境反射合成颜色；HDR 预览范围 0—0.5。</figcaption></figure>
+</div>
+
+图中是供后续照明使用的环境反射颜色，HDR 预览范围为零到 0.5，尚未乘齐最终材质与显示处理。角色等部分区域由独立分类路径处理，黑色区域不能解释成最终画面没有环境受光。反射候选在此前还经历了自己的历史限制与层级生成；其最前端的完整追踪和未命中判断仍需单独展开，本节不把这张合成图当成纯屏幕反射。
+
+#### 空间照明先保持低分辨率表面的对应关系
+
+另一条空间照明链使用较低分辨率的深度、法线与[距离场开放方向](#distance-field-occlusion)。预处理先检查全分辨率 2×2 深度，在交错位置分别选取极小或极大值，并取同一个像素的法线。选中位置的两个低位坐标编码到 RGB10A2 的 alpha，保留它在原始 2×2 中的位置。
+
+因此，1720×720 的深度和法线不是各自任意缩小的图。选定同一表面很重要：若前景人物的法线与后方墙面的深度拼在一起，后续空间查询会从错误位置出发。
+
+空间查询得到 860×360 的颜色，再经过半分辨率整理和全分辨率重建。索引与结构数据决定找到哪些空间信息；颜色目标保存求得的环境颜色。这些数据有不同职责，不能仅凭三维数据结构就认定某个全局光照产品或完整算法。
+
+#### 重建按深度与方向拒绝跨表面混色
+
+<div class="rendering-figures">
+<figure><a href="/images/rendering-analysis/genshin/environment-quarter-detail.png"><img src="/images/rendering-analysis/genshin/environment-quarter-detail.png" alt="860×360 空间照明候选，放大到文章宽度。" loading="lazy" width="1200" height="502"></a><figcaption>860×360 空间照明候选，放大到文章宽度。</figcaption></figure>
+<figure><a href="/images/rendering-analysis/genshin/environment-full-detail.png"><img src="/images/rendering-analysis/genshin/environment-full-detail.png" alt="经过表面约束重建的 3440×1440 环境结果。" loading="lazy" width="1200" height="502"></a><figcaption>经过表面约束重建的 3440×1440 环境结果。</figcaption></figure>
+</div>
+
+两图为四分之一宽高的空间照明颜色与重建后的全尺寸结果，均按零到 0.5 HDR 范围显示。它们提供环境照明输入，画面中的人物剪影与粗略结构不代表最终人物着色；也不能用这两张图衡量直接光的贡献。
+
+最终重建对当前全分辨率像素分别取深度 $z$、法线 $N$，对四个已整理的低分辨率候选使用：
+
+$$
+w_i=\max\left(10^{-4},
+\max\left(0,1-20\frac{|z_i-z|}{z}\right)
+\max(0,N_i\cdot N-0.5)\right)
+$$
+$$
+C=\max\left(0,\frac{\sum_iw_iC_i}{\sum_iw_i}\right)
+$$
+
+相对深度差达到 5%，或者法线点积不超过 0.5，候选的主要权重便降为零，但仍保留 $10^{-4}$ 下限。因此它是强烈抑制跨表面混合，不能表述成绝对禁止所有跨边缘贡献。
+
+每个计算线程继续处理相应的四个全分辨率像素，各像素根据自己的深度与方向重算权重。程序另支持与已有输出混合，但本帧该控制为一，直接采用新结果；不能把这一步再描述成固定比例的历史平滑。之后的延迟照明才读取全尺寸环境结果，继续组织表面颜色。
 
 <span id="screen-diffusion"></span>
 
@@ -699,9 +760,67 @@ RGB 分别累加加权照明、分别除以权重和；没有有效邻居时退�
 
 ### 场景局部遮蔽
 
-局部遮蔽参与建立邻近表面的暗部，使用的输入与光源投影阴影不同。这里说明本帧已确认的生成与过滤关系，具体内核仍未完整展开。
+邻近建筑与地表会遮住一部分环境方向，使接缝、台阶和墙边的环境受光改变。本帧除屏幕深度遮蔽及其过滤外，还执行一条读取三维距离场的路径。下面展开这条路径的实际计算；屏幕遮蔽的完整搜索内核仍需分别分析。
 
-屏幕遮蔽也有半分辨率结果、计算过滤和空间遮蔽相关处理。它与直接阴影分别提供环境与光源方向的遮挡输入，最终暗部由多项共同形成。
+<span id="distance-field-occlusion"></span>
+
+#### 不只输出暗度，还输出更开放的方向
+
+<div class="rendering-figures">
+<figure><a href="/images/rendering-analysis/genshin/distance-visibility.png"><img src="/images/rendering-analysis/genshin/distance-visibility.png" alt="距离场开放程度：白色更开放，暗部表示受到局部几何限制。" loading="lazy" width="1200" height="502"></a><figcaption>距离场开放程度：白色更开放，暗部表示受到局部几何限制。</figcaption></figure>
+<figure><a href="/images/rendering-analysis/genshin/distance-bent-normal.png"><img src="/images/rendering-analysis/genshin/distance-bent-normal.png" alt="开放方向的 RGB 编码：用于后续环境查询，不是光照颜色。" loading="lazy" width="1200" height="502"></a><figcaption>开放方向的 RGB 编码：用于后续环境查询，不是光照颜色。</figcaption></figure>
+</div>
+
+两图来自同一个 860×360 结果：alpha 是开放程度，白色接近无遮挡，变暗表示较少环境方向可见；RGB 为编码后的开放方向。方向图的颜色不表示照明色，也不能当作普通材质法线贴回模型。输出会进入后续空间照明查询。
+
+开放程度回答“还剩多少环境”，开放方向回答“剩余环境更偏向哪里”。例如表面一侧紧贴墙体，正上方与另一侧可能更开放；把结果压成一个标量会丢掉这种方向差别。
+
+#### 六层距离场覆盖不同空间尺度
+
+距离场保存在 128×128×780 的单通道三维纹理中。程序使用六组中心与范围，当前半范围依次为 16、32、64、128、256、512 个场景单位；沿纹理深度打包不同覆盖层，并在层间保留边界采样空间。
+
+像素先由对应的深度和法线恢复表面位置，再选择能够容纳当前位置及查询半径的最细覆盖层。当前只对视深小于 600 的表面执行这组查询，搜索半径为：
+
+$$
+R=\max(1,0.125z)
+$$
+
+$z$ 为该路径恢复的线性视深。半径随深度变化，使远处表面使用更大的空间范围。它不是把一个固定屏幕像素半径直接投到三维世界。
+
+将所选层半范围记为 $E$，基准单元尺度为 $h=2E/128$。纹理采样值 $s$ 解码成有符号距离：
+
+$$
+d=(8s-4)h
+$$
+
+这说明纹理中的灰度表示邻近几何距离。它本身既不保存物体颜色，也不直接保存最终遮蔽。
+
+#### 六个方向分别最多走五步
+
+程序由表面方向建立局部正交基，将预存的六个半球方向转到表面附近。每个方向从一个基准单元尺度开始，最多采样五次；一旦走到查询半径就停止。
+
+第 $i$ 个方向的开放权重初始为一。在行进距离 $t$ 处取得距离场值 $d$ 后，用以下约束更新：
+
+$$
+v_i\leftarrow\min\left(v_i,
+\max\left[
+\operatorname{saturate}\left(\frac{d}{0.497493744t}\right),
+\min\left(1,0.6\left(\frac{d+t}{R}\right)^2\right)
+\right]\right)
+$$
+
+第一项比较到几何的距离与随行进长度扩张的查询尺度；第二项为较远位置提供距离相关限制。接着按 $\max(d,h/4)$ 前进，既利用距离场跳过空旷区，也保留最小步长，避免贴近表面时停止推进。
+
+全部方向完成后，标量与方向分别整理为：
+
+$$
+A=\frac16\sum_{i=1}^{6}v_i,\qquad
+B=\operatorname{normalize}\left(\sum_{i=1}^{6}v_i\hat d_i\right)
+$$
+
+权重过小时，方向退回原表面方向。接近覆盖层边缘时，还会在相邻较粗层重复查询并混合，减轻空间层切换造成的突变。最后把 $B$ 编码为 $0.5B+0.5$ 写入 RGB，把 $A$ 写入 alpha。
+
+直接读取当前结果，约 57.6% 的输出像素具有小于一的量化开放程度，说明本帧确有非零的空间遮蔽结果；该比例不是最终画面被压暗的面积。后续仍会结合颜色、材质和其他受光项，本节也没有把距离场遮蔽、屏幕遮蔽与光源投影阴影合成一个效果开关。
 
 <span id="sky-layers"></span>
 
@@ -728,9 +847,110 @@ RGB 分别累加加权照明、分别除以权重和；没有有效邻居时退�
 
 ### 雾与空间层次
 
-雾把相机与表面之间的空气接入 HDR 画面。实现中既要计算空间里空气怎样受光，也要沿观察方向累积，并处理已有体积的历史。
+雪城的空气效果既增加沿视线积累的颜色，也降低远处场景的可见度。本帧使用 160×68×128 的视锥体积，将局部介质、两组受光颜色、历史状态与沿视线积分分开保存。最后按表面深度读取已经累积好的颜色和透射率。
 
-体积雾使用 160×68×128 的空间网格。局部更新读取灯光、阴影、噪声与已有体积，后续再处理历史与累积，并合成到主 HDR 颜色。阴影可以影响空间里空气收到的光，因此不是只按表面距离盖一层固定颜色。这里保留已确认的数据关系，不补入尚未展开的散射相函数。
+<figure class="rendering-diagram"><a href="/images/rendering-analysis/genshin/fog-volume-flow.svg" target="_blank" rel="noopener"><img src="/images/rendering-analysis/genshin/fog-volume-flow.svg" alt="雪城体积雾：从局部状态到表面合成" loading="lazy" width="1120" height="836"></a><figcaption>算法示意 · 点击查看大图</figcaption></figure>
+
+#### 先分清介质、光照和累积结果
+
+| 数据 | 当前格式与尺寸 | 保存的含义 |
+|---|---|---|
+| 介质系数 | RGBA16F，160×68×128 | 两项指数衰减系数，以及第二项随距离变化的控制 |
+| 两组局部光照 | 各为 R11G11B10F，160×68×128 | 参加后续积分的两份颜色输入 |
+| 上一次体积状态 | 与前三份数据对应 | 在旧视锥中查询的介质与光照 |
+| 累积体积 | RGBA16F，160×68×128 | RGB 为从近处积累到当前深度的颜色，alpha 为透射率 |
+
+前两项是单个体素的输入，最后一项已经包含它前方的多个体素。将它们都笼统叫作“雾贴图”，会无法解释为何后续表面一次采样就能得到整个视线区间的效果。
+
+#### 近处均匀，远处按指数分层
+
+深度并非均匀切成 128 份。本帧前 16 段以 0.3125 个场景单位为间距，覆盖到深度 5；后 112 段按指数分布延伸到 500。令段边界 $j=1,\ldots,128$，$d_0=0$：
+
+$$
+d_j=\begin{cases}
+0.3125j,&j\le16,\\
+5\cdot100^{(j-16)/112},&j>16.
+\end{cases}
+$$
+
+这样近处保留细分辨率，远处用更厚的段覆盖更大范围。这里的 5、50、500 都是视深，不是地图上某个物体的距离，也未假定一个场景单位必然等于一米。
+
+<div class="rendering-figures">
+<figure><a href="/images/rendering-analysis/genshin/fog-near-colour.png"><img src="/images/rendering-analysis/genshin/fog-near-colour.png" alt="累积到视深约 5 的空气颜色，HDR 预览范围 0—0.1。" loading="lazy" width="960" height="408"></a><figcaption>累积到视深约 5 的空气颜色，HDR 预览范围 0—0.1。</figcaption></figure>
+<figure><a href="/images/rendering-analysis/genshin/fog-middle-colour.png"><img src="/images/rendering-analysis/genshin/fog-middle-colour.png" alt="累积到视深约 50 的空气颜色，相同预览范围。" loading="lazy" width="960" height="408"></a><figcaption>累积到视深约 50 的空气颜色，相同预览范围。</figcaption></figure>
+<figure><a href="/images/rendering-analysis/genshin/fog-far-colour.png"><img src="/images/rendering-analysis/genshin/fog-far-colour.png" alt="累积到视深约 500 的空气颜色，相同预览范围。" loading="lazy" width="960" height="408"></a><figcaption>累积到视深约 500 的空气颜色，相同预览范围。</figcaption></figure>
+</div>
+
+三张图分别显示累积到视深约 5、50、500 时的 RGB，均用零到 0.1 的 HDR 范围预览。近处颜色较弱，深度增加后可见更强的暖色局部分布；超过预览范围的亮部会截亮。它们是体积平面的累积数据，没有用场景几何轮廓裁出最终可见区。
+
+#### 体积历史重投影与无效位置修复
+
+局部更新读取灯光数据、阴影、噪声及旧体积。每个当前体素的位置转换到旧相机，再按同样的深度分层规则计算旧体积坐标。当前历史使用开关为一；对进入完整更新、且旧坐标落在允许范围内的体素，介质与两份光照分别执行：
+
+$$
+X_{new}=0.95X_{old}+0.05X_{current}
+$$
+
+这条平滑发生在沿线积分之前，稳定的是局部介质与光照。另有复用已有光照的分支，并非所有体素都在每次调用里重新计算同样多的工作。
+
+无法采用有效历史的完整更新位置还会进入修复列表。随后两个独立阶段先对列表中体素收集 3×3×3 的 27 个邻居平均值，再把结果写回。边界坐标先夹在有效范围内；只修复列表中的位置，不是无条件模糊整份体积。先收集再写回，也避免某个体素读到同一次处理中刚被改写的邻居。
+
+#### 一条视线里，同时累积两项散射与透射
+
+积分按每个视锥 XY 位置从近到远遍历全部 128 层。令段长 $\Delta_j=d_j-d_{j-1}$，视线斜率长度因子为 $q=\sqrt{1+q_x^2+q_y^2}$，段中点的相机距离估计为：
+
+$$
+r_j=q\left(d_j-\frac{\Delta_j}{2}\right),\qquad
+f_j=\operatorname{saturate}(10-0.02r_j)
+$$
+
+距离不超过 450 时，$f_j=1$；450 到 500 之间逐渐淡出，之后为零。有效段长是 $\delta_j=\Delta_j f_j s$，当前缩放 $s=1$。实际程序只用 $q$ 参与中点距离和远处淡出，没有额外把整个 $\Delta_j$ 乘上 $q$；公式在这里保留这一区别。
+
+把介质四个通道记为 $(k_0,k_1,g_0,g_1)$，两份局部光照记为 $I_0,I_1$，则：
+
+$$
+t_0=2^{k_0\delta_j},\qquad
+t_1=2^{k_1\operatorname{saturate}(r_jg_0+g_1)\delta_j}
+$$
+$$
+L_{j}=L_{j-1}+T_{j-1}\left[(1-t_0)I_0+(1-t_1)I_1\right]
+$$
+$$
+T_j=T_{j-1}t_0t_1
+$$
+
+初始 $L_0=0,T_0=1$。本帧实际系数的前两通道非正，使指数形成衰减；它们是编码后的计算系数，不直接当作未经换算的物理密度。两组颜色共同参加累积，第二项另受随距离变化的门控。
+
+每走完一段，就写下该段末尾的 $(L_j/\pi,T_j)$。颜色除以 $\pi$ 来自当前参数 4 与程序中的 $1/(4\pi)$；不能脱离参数把这一倍率概括成所有设置都固定不变。当前积分遍历全部深度层，没有根据 $T$ 很小提前退出。
+
+<div class="rendering-figures">
+<figure><a href="/images/rendering-analysis/genshin/fog-far-transmittance.png"><img src="/images/rendering-analysis/genshin/fog-far-transmittance.png" alt="最远层透射率，按 0—1 灰度显示；亮处保留更多背景。" loading="lazy" width="960" height="408"></a><figcaption>最远层透射率，按 0—1 灰度显示；亮处保留更多背景。</figcaption></figure>
+</div>
+
+同一份累积体积的透射率可以直接读取：视深 5 的整层约为 0.9956，视深 50 的整层约为 0.9604，最远层在约 0.656—0.7925 之间。前两层虽然透射接近均匀，RGB 仍有明显局部变化，因为空气受光与透射衰减使用了不同数据。
+
+#### 表面按自己的深度接入雾
+
+后续全屏空气合成先从场景深度恢复距离，计算距离／高度相关的空气项，再读取累积体积。若前者为 $(L_h,T_h)$，体积取样为 $(L_v,T_v)$，核心组合是：
+
+$$
+L=L_v+T_vL_h,\qquad T=T_vT_h
+$$
+
+合成程序还读取较粗的附加光照及深度，以深度相关权重恢复该颜色输入，最后加入量化抖动。当前末尾可选颜色模式未开启。RGB 混合采用“源一、背景乘源 alpha”，其中输出 alpha 保存组合透射率：
+
+$$
+C_{out}=L+T\,C_{scene}
+$$
+
+<div class="rendering-figures">
+<figure><a href="/images/rendering-analysis/genshin/fog-composite-before.png"><img src="/images/rendering-analysis/genshin/fog-composite-before.png" alt="全屏空气合成之前，HDR 预览范围 0—1。" loading="lazy" width="1200" height="502"></a><figcaption>全屏空气合成之前，HDR 预览范围 0—1。</figcaption></figure>
+<figure><a href="/images/rendering-analysis/genshin/fog-composite-after.png"><img src="/images/rendering-analysis/genshin/fog-composite-after.png" alt="全屏空气合成之后，相同预览范围。" loading="lazy" width="1200" height="502"></a><figcaption>全屏空气合成之后，相同预览范围。</figcaption></figure>
+</div>
+
+这组图取该全屏空气合成的相邻前后，固定零到一 HDR 范围。它同时包含距离／高度项、体积项和附加颜色，说明整个空气合成阶段怎样改变远近层次；它不是仅关闭体积积分的对照。
+
+之后的雪风、云片等材质也读取这份累积体积，按自身位置接入空气条件。若只在最末尾给所有内容罩一张固定颜色，就会丢掉不同深度处粒子与背景之间的关系。本节展开了介质状态、历史修复、分层积分及其消费；局部灯光注入中所有光型、噪声与散射参数仍需逐项核对。
 
 <span id="weather-particles"></span>
 
@@ -1567,6 +1787,6 @@ $$
 
 头发与腿部的双高光和闪点、晶体饰件的高光与环境反射、天空分层、天气及晚期粒子也分别进入上述流程。屏幕扩散确有执行，但当前分类只覆盖极少像素；晶体的折射方向没有进入本帧启用的颜色分支。这些状态决定了什么能够作为本帧可见效果来解释。
 
-仍需进一步确认的是空间间接光与反射的完整追踪、局部遮蔽和雾的完整内核、其他材质及粒子的全部分支、泛光与运动模糊的全部参数、环境槽位分配和跨帧更新频率。已说明输入与接入顺序的阶段，不等于其内部算法都已还原。
+环境部分已补充探针筛选与权重补足、受表面约束的照明重建、距离场遮蔽和开放方向；雾已展开体积历史、无效位置修复、非均匀分层及双项积分。仍需进一步确认的是空间间接光与反射最前端的完整追踪、屏幕遮蔽搜索的全部内核、雾的各类局部光注入、其他材质及粒子的全部分支、泛光与运动模糊的全部参数、环境槽位分配和跨帧更新频率。已说明输入与接入顺序的阶段，不等于其内部算法都已还原。
 
 </div>

@@ -1,7 +1,7 @@
 ---
 title: "绝区零渲染实现分析：大厅材质、蕾米角色与整帧合成"
 date: "2026-09-27T18:44:00+08:00"
-updated: "2026-09-29T23:56:54+08:00"
+updated: "2026-09-30T01:37:15+08:00"
 permalink: 2026/09/27/zzz-rendering-analysis/
 categories:
   - 图形学
@@ -176,7 +176,7 @@ mathjax: true
 <figure><a href="/images/rendering-analysis/zzz/device-geometry.png"><img src="/images/rendering-analysis/zzz/device-geometry.png" alt="黄色线框定位中央圆形设备的这次提交，底图为当时的材质颜色。" loading="lazy" width="1280" height="537"></a><figcaption>黄色线框定位中央圆形设备的这次提交，底图为当时的材质颜色。</figcaption></figure>
 </div>
 
-这次显示设备绘制绑定的是专用电视／显示材质，输入中可确认 2048×2048 法线和默认方向纹理。它没有沿用上面通风口完整的底色、法线、控制、烘焙光组合。不能把背景建筑的纹理表同时当成屏幕内容的来源，也不能仅凭最终高亮外观就声称屏幕通过某张发光贴图实现；还需要追踪这条程序的颜色生产。
+线框定位中央设备的几何。这里展示的是较早的表面准备：读取 2048×2048 法线和默认方向，写入表面方向等数据，颜色输出本身尚未给出完整设备外观。后续颜色阶段再次使用这套网格，才读取底色、控制图、显示序列及照明输入。两阶段的职责和实际显示内容见[设备外壳与显示画面](#device-display)。
 
 ### 镜像、环境与共享照明资源
 
@@ -200,7 +200,8 @@ mathjax: true
 | [大厅照明](#lights) | 烘焙漫反射、实时直接光、局部光筛选与分项关闭对照 |
 | [阴影与接触暗部](#shadows) | 光源深度、屏幕方向搜索、角度积分、独立 AO 历史与胶囊遮蔽 |
 | [反射](#reflections) | 镜像视图与局部探针的方向采样 |
-| [雾与空气](#atmosphere) | 屏幕雾结果及其已确认的合成位置 |
+| [设备显示](#device-display) | 外壳受光、两组材质、序列图块与颜色输出 |
+| [雾与空气](#atmosphere) | 盒内步进、阴影调制、面片淡出、三点历史约束及加色合成 |
 | [屏幕光束](#light-shafts) | 遮挡提取与径向采样；本帧输出无可见贡献 |
 | [人物形变与翼部轮廓](#character-shape) | 稀疏形态混合、观察尺度细分、顶点和索引生成 |
 | [翼部花纹与背向受光](#wing-shading) | 花纹三通道、方向响应与指数颜色调制 |
@@ -273,7 +274,7 @@ mathjax: true
 <div class="rendering-flow-card">
 <p class="rendering-flow-title"><span class="rendering-flow-phase">照明输入</span><a href="#shadows">阴影、雾与局部遮蔽准备</a></p>
 <dl class="rendering-flow-detail">
-<dt>工作</dt><dd>由相机深度恢复表面，查询光源深度并解析遮挡；结合角色分类、屏幕遮蔽及胶囊遮蔽，准备雾的相关输入。</dd>
+<dt>工作</dt><dd>由相机深度恢复表面，查询光源深度并解析遮挡；结合角色分类、屏幕遮蔽及胶囊遮蔽，准备表面受光限制。局部雾另以盒体步进和面片淡出生成颜色，并完成自身历史过滤。</dd>
 <dt>输出</dt><dd>当前表面的受光限制与环境辅助结果 → 后续照明和合成。</dd>
 </dl>
 </div>
@@ -291,7 +292,7 @@ mathjax: true
 <div class="rendering-flow-card">
 <p class="rendering-flow-title"><span class="rendering-flow-phase">合成</span><a href="#character-layer-composition">后续几何、透明与光束合成</a></p>
 <dl class="rendering-flow-detail">
-<dt>工作</dt><dd>继续绘制显示设备等几何、透明材质和局部效果，处理较早亮部链与场景调色；光束链也会执行，但本帧光束结果为零。各路径按自己的深度和混合规则写入。</dd>
+<dt>工作</dt><dd>继续绘制<a href="#device-display">设备外壳与显示内容</a>、透明材质和局部效果，处理较早亮部链与场景调色，并将过滤后的<a href="#atmosphere">局部雾加到 HDR</a>；光束链也会执行，但本帧光束结果为零。各路径按自己的深度和混合规则写入。</dd>
 <dt>输出</dt><dd>当前 HDR 颜色、运动及身份信息 → 整帧历史融合。</dd>
 </dl>
 </div>
@@ -830,13 +831,172 @@ $$
 
 因此，即使局部光的镜面权重为零，表面仍可能通过探针呈现环境反射；关闭局部光高光也不等于把所有镜面贡献都关掉。探针颜色可以来自预先准备的数据，运行时进行的是当前位置、反射方向、采样层级和材质权重的求值。
 
+<span id="device-display"></span>
+
+### 设备外壳与显示画面
+
+中央设备同时具有受环境照明影响的实体外壳和独立显示内容。实现把表面准备与完整颜色分开提交，又在颜色程序里区分两组材质区域。本节的对象由下面的线框定位；台面前的红色终端、人物和后方招牌各有自己的绘制。
+
+<div class="rendering-figures">
+<figure><a href="/images/rendering-analysis/zzz/device-colour-geometry.png"><img src="/images/rendering-analysis/zzz/device-colour-geometry.png" alt="后续颜色阶段的线框定位：分析对象仍为中央圆形设备。" loading="lazy" width="1200" height="503"></a><figcaption>后续颜色阶段的线框定位：分析对象仍为中央圆形设备。</figcaption></figure>
+</div>
+
+#### 早期建立表面，后续补齐颜色
+
+已核对的前后两阶段复用了相同顶点与索引缓冲，每次提交 4,896 个三角形。早期像素程序读取法线，写出编码后的世界方向，并给颜色与控制目标写入约定值；仅检查这个阶段，会漏掉设备真正使用的颜色资源。
+
+| 阶段 | 读取与计算 | 实际写入 |
+|---|---|---|
+| 表面准备 | 用网格区域标记选择法线输入，转换为世界方向 | 材质相关目标与法线；这里尚无完整设备颜色 |
+| 后续颜色 | 底色、材质控制、法线、烘焙光、局部光、反射探针及显示内容 | 当前 HDR 颜色 |
+
+后续程序声明了附加运动输出，但本次这组绘制只绑定了颜色目标。声明和计算一个输出，不等于本次一定有附件接收它。
+
+#### 外壳的贴图通道怎样参加受光
+
+颜色阶段绑定了两组材质输入：一组底色、法线与控制图均为 2048×2048；另一组底色为 32×32、控制图为 128×128，并使用默认法线。由几何传入的区域标记在两组之间选择，不能把小尺寸输入当成大图的某一级缩略图。
+
+<div class="rendering-figures">
+<figure><a href="/images/rendering-analysis/zzz/device-base.png"><img src="/images/rendering-analysis/zzz/device-base.png" alt="设备的 2K 底色图集；图案位置对应模型 UV，不是屏幕最终画面。" loading="lazy" width="768" height="768"></a><figcaption>设备的 2K 底色图集；图案位置对应模型 UV，不是屏幕最终画面。</figcaption></figure>
+</div>
+
+控制图 R 调节金属度 $m$，底色 $C$ 随之参与构造法向入射反射率：
+
+$$
+F_0=(1-m)\,0.04+mC
+$$
+
+G 经材质缩放后控制感知粗糙度：$r=1-(1-G)s_r$，先限制下限为 0.01，进入镜面计算前再限制到 0.045—1。当前两组缩放 $s_r$ 都为一，因此进入该计算的是 $\operatorname{clamp}(G,0.045,1)$；后面还会使用它的平方与四次方。法线输入使用 R、G、A：先由 $x=2RA-1$、$y=2G-1$ 恢复两个分量，再令 $z=\sqrt{1-\min(1,x^2+y^2)}$，最后通过网格方向基转换并归一化。
+
+在另一材质区域，控制图 B 还可以调节随底色生成的自发光。当前该开关开启，发光色乘数为白色，因此这一路为 $E=B_{control}C$；它与后面的显示图集分支分开。法线图 B 与控制图 B 是不同输入，也不能因通道字母相同而混用。
+
+这组材质仍接入烘焙漫反射、运行时局部光与探针镜面反射。显示内容是另一路颜色贡献，不能用屏幕的亮暗替代外壳的金属、粗糙度和受光计算。两类照明的职责见[烘焙光与运行时求值](#baked-and-listed-lighting)。
+
+#### 显示内容来自图集内的一个矩形
+
+显示分支读取一张 1024×1024 的序列图集。下面分别展示完整图集和本帧参数选中的图块；它们都是实际绑定纹理的预览，图块为方便阅读放大。
+
+<div class="rendering-figures">
+<figure><a href="/images/rendering-analysis/zzz/device-sequence-atlas.png"><img src="/images/rendering-analysis/zzz/device-sequence-atlas.png" alt="实际显示序列图集，原尺寸 1024×1024。" loading="lazy" width="768" height="768"></a><figcaption>实际显示序列图集，原尺寸 1024×1024。</figcaption></figure>
+<figure><a href="/images/rendering-analysis/zzz/device-sequence-patch.png"><img src="/images/rendering-analysis/zzz/device-sequence-patch.png" alt="本帧 UV 参数选择的 150×94 图块，放大预览。" loading="lazy" width="600" height="376"></a><figcaption>本帧 UV 参数选择的 150×94 图块，放大预览。</figcaption></figure>
+</div>
+
+本帧采用的 UV 变换是：
+
+$$
+uv_{display}=uv\odot(0.146484375,0.091796875)
+ +(0.5859375,0.08203125)
+$$
+
+乘图集尺寸，可得到源图坐标中的矩形：起点约 $(600,84)$，宽 150、高 94。上图显示时处理了图像纵向方向，公式仍保留 shader 使用的 UV 约定。
+
+取样后先乘显示颜色，再按图块 alpha 组织覆盖。当前颜色乘数为白色，色相／饱和度／明度的额外偏移均为零，对比度缩放为一；第二显示层绑定黑色默认输入，不提供额外 RGB。程序支持更多图层混合和颜色调整，但当前参数并未启用那些变化。
+
+从一帧可以确认“本次选了哪块内容”，不能据此确定动画帧率、图块更新周期，或断言它是视频解码。这里显示的是 shader 对现有图集的读取。
+
+#### 显示贡献与目标 alpha 的含义
+
+材质参数可以控制显示贡献在局部颜色变换之前或之后加入。当前选择后加；整条颜色输出的 alpha 固定为零。此绘制的 RGB 混合因子为“源一、背景乘源 alpha”，因此在通过深度测试的像素上：
+
+$$
+C_{new}=C_{device}+0\,C_{old}=C_{device}
+$$
+
+输出 alpha 为零在这里表示不保留旧背景颜色，不能解释成设备完全透明。显示发光、实体受光和材质内的空气处理已在源 RGB 中组织好，再交给后续场景颜色与泛光处理。
+
 <span id="atmosphere"></span>
 
 ### 大厅雾与空气合成
 
-雾在已有表面颜色上加入空气的影响。本帧已确认屏幕结果及其合成位置，可与整帧流程中的照明、后续几何相互对照。
+大厅局部雾先在 1920×805 的浮点颜色目标中生成，再作独立历史过滤，最后加到场景 HDR。本帧既有在局部盒体内沿视线取样的体积路径，也有直接画在面片上的柔和颜色层。二者服务局部空气与亮部层次，生成方式和混合规则各不相同。
 
-本帧雾可以追到屏幕结果与合成关系，但其内部介质表示不完整。因此本篇只在执行顺序中保留已知雾合成，不套用其他项目的体积雾公式。
+<figure class="rendering-diagram"><a href="/images/rendering-analysis/zzz/local-fog-flow.svg" target="_blank" rel="noopener"><img src="/images/rendering-analysis/zzz/local-fog-flow.svg" alt="大厅局部雾：两种生成方式，共用颜色历史" loading="lazy" width="1120" height="694"></a><figcaption>算法示意 · 点击查看大图</figcaption></figure>
+
+#### 盒体限定空气范围，深度限定可见长度
+
+体积路径用盒体几何限定屏幕覆盖。像素程序把相机和视线变换到局部空间，求与盒子的交点；再读取场景深度，将积分终点限制在可见表面之前。深度查询包含四组 Gather，共 16 个深度值，从中取得约束，避免粗分辨率雾直接穿过前景物体。
+
+没有有效视线区间就返回零。存在区间时，步长为：
+
+$$
+h=\max(0.01,0.25s)+\frac{\max(0,\ell)}{64}
+$$
+
+其中 $\ell$ 是截断后的视线区间长度，$s$ 为局部体积的步长参数。本帧两个代表体积的 $s$ 分别为 5 和 0.5，对应固定步长部分 1.25 和 0.125；长区间再增加 $\ell/64$。这不是固定走 64 次：程序另将遍历区间限制在至多 100 个步长，并允许提前结束。
+
+起点加入随屏幕位置和帧状态变化的抖动，使相邻像素不总在同一组平面取样。后面的历史融合负责稳定这些取样差异。
+
+#### 空气受光使用方向权重和阴影比较
+
+这条代表路径用主光颜色、局部体积颜色和以下方向项形成散射颜色 $I$：
+
+$$
+I=C_{light}\odot C_{volume}
+\left[1+g\max(\hat v\cdot\hat l,0)^2\right]
+$$
+
+$\hat v$ 为当前视线方向，$\hat l$ 为程序中的光方向。当前两组 $g$ 为 0.1 和 1.1。这是该 shader 的方向性调制；没有把它替换为另一种常见散射相函数。
+
+沿线样本根据覆盖范围选择阴影层，再作深度比较，得到受光比例 $S$。单步衰减系数和状态更新为：
+
+$$
+q=2^{-0.144269511\rho h}=e^{-0.1\rho h}
+$$
+$$
+L_{next}=L+T\,S\,I(1-q),\qquad T_{next}=Tq
+$$
+
+初始 $L=0,T=1$；当前两组密度参数 $\rho$ 为 0.125 和 0.0875。**这里的状态更新只在 $S>0.01$ 时执行。** 阴影较深的样本同时跳过这次颜色和 $T$ 更新，因此应按这一具体控制解释结果，不能把它写成对所有介质段都计算消光的完整物理模型。$T<0.05$ 时可提前退出。
+
+体积输出 alpha 为 $\max(T,a_{min})$，两组下限分别为 0.1 和 0.35；当前 RGB 混合为“源 alpha、背景一”。于是加入局部雾颜色目标的是 $\max(T,a_{min})L$。这个目标采用 R11G11B10 浮点格式，只保存 RGB，未把 $T$ 作为第四通道留给最后合成。
+
+#### 面片路径用径向衰减补充局部颜色
+
+另两次局部绘制使用平面，当前选择的权重形式为：
+
+$$
+w=0.15\,[\operatorname{saturate}(1-ar^2)]^2
+\operatorname{saturate}(z_{scene}-z_{plane})
+\min\left[\left(\frac{d_{camera}}4\right)^2,1\right]
+$$
+
+$r$ 来自面片的局部径向坐标，深度差在恢复后的深度空间比较，当前交界偏移为零。两组 $a$ 为 0.16 和约 0.08163，对应局部径向支持范围 2.5 和 3.5。最后一项让靠近相机的面片平缓消失。
+
+这条路径输出 $(wC,w)$，以“源一、背景一减源 alpha”混合，故 $F_{new}=wC+(1-w)F_{old}$。它没有执行前面的盒内多步积分。把两条路径一并叫作体积光，会掩盖它们在空间覆盖、深度交界和颜色组合上的差别。
+
+#### 独立历史只稳定雾颜色
+
+<div class="rendering-figures">
+<figure><a href="/images/rendering-analysis/zzz/fog-current-detail.png"><img src="/images/rendering-analysis/zzz/fog-current-detail.png" alt="局部盒体与面片绘制后的雾颜色，HDR 预览范围 0—0.03。" loading="lazy" width="1200" height="503"></a><figcaption>局部盒体与面片绘制后的雾颜色，HDR 预览范围 0—0.03。</figcaption></figure>
+<figure><a href="/images/rendering-analysis/zzz/fog-resolved-detail.png"><img src="/images/rendering-analysis/zzz/fog-resolved-detail.png" alt="重投影与三点范围约束后的雾颜色，相同预览范围。" loading="lazy" width="1200" height="503"></a><figcaption>重投影与三点范围约束后的雾颜色，相同预览范围。</figcaption></figure>
+</div>
+
+两图分别为局部绘制后的雾和历史过滤结果，均使用零到 0.03 的 HDR 预览范围，使较弱的冷色斜向分布可读；高于范围的部分会截亮。黑色表示该颜色目标中贡献较小，图里的明暗不表示几何深度。
+
+过滤阶段使用深度重建位置，投影到旧视图后读取历史雾 $H$。当前邻域由中心及偏移 $(-1,-1)$、$(1,1)$ 的两个样本组成，按通道求最小／最大值，将历史夹在其中：
+
+$$
+F_{new}=0.2F_{current}+0.8\operatorname{clamp}(H,F_{min},F_{max})
+$$
+
+这是三点颜色范围约束，没有使用整幅画面的身份通道，也没有使用当前 3×3 的均值和方差。雾历史先完成自己的稳定，再进入后面的整帧历史流程。
+
+#### 最后合成的是加色雾
+
+<div class="rendering-figures">
+<figure><a href="/images/rendering-analysis/zzz/fog-composite-before.png"><img src="/images/rendering-analysis/zzz/fog-composite-before.png" alt="局部雾全屏合成之前，HDR 预览范围 0—1。" loading="lazy" width="1200" height="503"></a><figcaption>局部雾全屏合成之前，HDR 预览范围 0—1。</figcaption></figure>
+<figure><a href="/images/rendering-analysis/zzz/fog-composite-after.png"><img src="/images/rendering-analysis/zzz/fog-composite-after.png" alt="局部雾全屏加色之后，相同预览范围。" loading="lazy" width="1200" height="503"></a><figcaption>局部雾全屏加色之后，相同预览范围。</figcaption></figure>
+</div>
+
+这组图取雾全屏合成的紧邻前后，固定零到一 HDR 预览。局部亮部与右侧空气颜色发生变化；大厅整体受光已经在此前形成。
+
+该次全屏绘制的 RGB 混合为“源一、背景一”，因此：
+
+$$
+C_{out}=C_{scene}+F_{filtered}
+$$
+
+前面体积循环中的 $T$ 用于生成局部雾贡献，没有在这一步再次乘场景颜色。大厅其他材质仍可有自己的距离／高度空气项；本节核实的是这条独立屏幕雾链，不能据此概括所有空气处理都只有加色。
 
 <span id="light-shafts"></span>
 
@@ -1518,6 +1678,6 @@ $$
 
 本文已展开贴花投影、烘焙光与实时照明分工、屏幕遮蔽搜索及历史、形变与细分、翼部背向受光、头发区域参数、脸部阴影、眼睛查表、描边与透明层次，以及两套泛光、运动模糊和整帧历史。光束虽然执行，本帧结果为零；运动模糊也没有明显拖曳，不能把程序存在等同于画面中有强烈效果。
 
-仍未完整覆盖的是中央显示设备等其他材质的颜色生成、各探针与镜像在所有材质中的选择、胶囊与骨骼的对应、雾内部表示和跨帧缓存更新。连续运动中的闪烁与拖影还需要连续画面验证。
+中央设备的外壳与显示图块、局部雾的两种生成方式和独立颜色历史也已分别展开。仍未完整覆盖的是其他材质的全部颜色分支、各探针与镜像在所有材质中的选择、胶囊与骨骼的对应、体积参数在连续运动中的更新及缓存管理。连续运动中的闪烁与拖影还需要连续画面验证。
 
 </div>

@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="836" viewBox="0 0 1120 836" role="img" aria-labelledby="title desc">
+<title id="title">雪城体积雾：从局部状态到表面合成</title>
+<desc id="desc">局部体素更新：灯光 + 阴影 + 噪声 → 介质四通道 + 两份光照 RGB，160×68×128；此时保存单个体素的输入，尚未沿视线累积。；复用历史并修复无效位置：当前位置 → 旧视锥坐标 → 有效历史 95% / 当前 5%，需修复的位置进入列表：27 邻居收集 → 独立写回。；从近到远积分：前 16 段均匀覆盖至 5；后 112 段指数延伸至 500，每段更新两项颜色贡献及透射率；保存当前累计的 RGB 与 T。；在表面深度读取累计值：场景深度 → 体积坐标 → 累积颜色 Lv、透射率 Tv，与距离／高度空气项结合；后续粒子也可读取同一体积。；按透射率合成场景：最终 RGB = 累积空气颜色 + 组合透射率 × 原场景颜色，本节前后对照覆盖整个空气合成，包含体积以外的空气项。</desc>
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10" fill="#547b95"/></marker></defs>
+<rect width="1120" height="836" rx="20" fill="#f4f7fb"/>
+<g font-family="Microsoft YaHei, PingFang SC, sans-serif" fill="#203248">
+<text x="50" y="51" font-size="28" font-weight="700">雪城体积雾：从局部状态到表面合成</text>
+<text x="50" y="83" font-size="17" fill="#596c80">根据本帧程序与绑定整理的算法示意；框内写明输入、处理和输出。</text>
+<rect x="48" y="108" width="1024" height="112" rx="12" fill="white" stroke="#b7cedf"/>
+<rect x="48" y="108" width="7" height="112" rx="3" fill="#387ea6"/>
+<text x="76" y="138" font-size="22" font-weight="700">局部体素更新</text>
+<text x="76" y="168" font-size="19">灯光 + 阴影 + 噪声 → 介质四通道 + 两份光照 RGB</text>
+<text x="76" y="196" font-size="19" fill="#4f6378">160×68×128；此时保存单个体素的输入，尚未沿视线累积。</text>
+<path d="M560,222 v23" stroke="#547b95" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="48" y="250" width="1024" height="112" rx="12" fill="white" stroke="#b7cedf"/>
+<rect x="48" y="250" width="7" height="112" rx="3" fill="#387ea6"/>
+<text x="76" y="280" font-size="22" font-weight="700">复用历史并修复无效位置</text>
+<text x="76" y="310" font-size="19">当前位置 → 旧视锥坐标 → 有效历史 95% / 当前 5%</text>
+<text x="76" y="338" font-size="19" fill="#4f6378">需修复的位置进入列表：27 邻居收集 → 独立写回。</text>
+<path d="M560,364 v23" stroke="#547b95" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="48" y="392" width="1024" height="112" rx="12" fill="white" stroke="#b7cedf"/>
+<rect x="48" y="392" width="7" height="112" rx="3" fill="#387ea6"/>
+<text x="76" y="422" font-size="22" font-weight="700">从近到远积分</text>
+<text x="76" y="452" font-size="19">前 16 段均匀覆盖至 5；后 112 段指数延伸至 500</text>
+<text x="76" y="480" font-size="19" fill="#4f6378">每段更新两项颜色贡献及透射率；保存当前累计的 RGB 与 T。</text>
+<path d="M560,506 v23" stroke="#547b95" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="48" y="534" width="1024" height="112" rx="12" fill="white" stroke="#b7cedf"/>
+<rect x="48" y="534" width="7" height="112" rx="3" fill="#387ea6"/>
+<text x="76" y="564" font-size="22" font-weight="700">在表面深度读取累计值</text>
+<text x="76" y="594" font-size="19">场景深度 → 体积坐标 → 累积颜色 Lv、透射率 Tv</text>
+<text x="76" y="622" font-size="19" fill="#4f6378">与距离／高度空气项结合；后续粒子也可读取同一体积。</text>
+<path d="M560,648 v23" stroke="#547b95" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="48" y="676" width="1024" height="112" rx="12" fill="white" stroke="#b7cedf"/>
+<rect x="48" y="676" width="7" height="112" rx="3" fill="#387ea6"/>
+<text x="76" y="706" font-size="22" font-weight="700">按透射率合成场景</text>
+<text x="76" y="736" font-size="19">最终 RGB = 累积空气颜色 + 组合透射率 × 原场景颜色</text>
+<text x="76" y="764" font-size="19" fill="#4f6378">本节前后对照覆盖整个空气合成，包含体积以外的空气项。</text>
+</g></svg>

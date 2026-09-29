@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="694" viewBox="0 0 1120 694" role="img" aria-labelledby="title desc">
+<title id="title">大厅局部雾：两种生成方式，共用颜色历史</title>
+<desc id="desc">准备局部覆盖与可见区间：盒体 + 场景深度 → 局部视线段；面片 + 深度 → 局部覆盖权重，盒体限制空气区域，深度约束前景交界。；分别生成雾颜色：盒体：抖动步进、主光方向权重、阴影比较；面片：径向和深度淡出，两条路径按各自混合规则进入 1920×805 RGB 浮点目标。；重投影并限制旧雾颜色：深度重建 → 旧视图坐标 → 历史颜色 → 当前三点范围夹取，输出 = 20% 当前 + 80% 被限制的历史；保存新的雾颜色。；加到已有 HDR 场景：当前场景颜色 + 过滤后的雾颜色 → 后续整帧处理，这个合成接口只有 RGB 加法，没有再用透射率衰减背景。</desc>
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10" fill="#547b95"/></marker></defs>
+<rect width="1120" height="694" rx="20" fill="#f4f7fb"/>
+<g font-family="Microsoft YaHei, PingFang SC, sans-serif" fill="#203248">
+<text x="50" y="51" font-size="28" font-weight="700">大厅局部雾：两种生成方式，共用颜色历史</text>
+<text x="50" y="83" font-size="17" fill="#596c80">根据本帧程序与绑定整理的算法示意；框内写明输入、处理和输出。</text>
+<rect x="48" y="108" width="1024" height="112" rx="12" fill="white" stroke="#b7cedf"/>
+<rect x="48" y="108" width="7" height="112" rx="3" fill="#387ea6"/>
+<text x="76" y="138" font-size="22" font-weight="700">准备局部覆盖与可见区间</text>
+<text x="76" y="168" font-size="19">盒体 + 场景深度 → 局部视线段；面片 + 深度 → 局部覆盖权重</text>
+<text x="76" y="196" font-size="19" fill="#4f6378">盒体限制空气区域，深度约束前景交界。</text>
+<path d="M560,222 v23" stroke="#547b95" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="48" y="250" width="1024" height="112" rx="12" fill="white" stroke="#b7cedf"/>
+<rect x="48" y="250" width="7" height="112" rx="3" fill="#387ea6"/>
+<text x="76" y="280" font-size="22" font-weight="700">分别生成雾颜色</text>
+<text x="76" y="310" font-size="19">盒体：抖动步进、主光方向权重、阴影比较；面片：径向和深度淡出</text>
+<text x="76" y="338" font-size="19" fill="#4f6378">两条路径按各自混合规则进入 1920×805 RGB 浮点目标。</text>
+<path d="M560,364 v23" stroke="#547b95" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="48" y="392" width="1024" height="112" rx="12" fill="white" stroke="#b7cedf"/>
+<rect x="48" y="392" width="7" height="112" rx="3" fill="#387ea6"/>
+<text x="76" y="422" font-size="22" font-weight="700">重投影并限制旧雾颜色</text>
+<text x="76" y="452" font-size="19">深度重建 → 旧视图坐标 → 历史颜色 → 当前三点范围夹取</text>
+<text x="76" y="480" font-size="19" fill="#4f6378">输出 = 20% 当前 + 80% 被限制的历史；保存新的雾颜色。</text>
+<path d="M560,506 v23" stroke="#547b95" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="48" y="534" width="1024" height="112" rx="12" fill="white" stroke="#b7cedf"/>
+<rect x="48" y="534" width="7" height="112" rx="3" fill="#387ea6"/>
+<text x="76" y="564" font-size="22" font-weight="700">加到已有 HDR 场景</text>
+<text x="76" y="594" font-size="19">当前场景颜色 + 过滤后的雾颜色 → 后续整帧处理</text>
+<text x="76" y="622" font-size="19" fill="#4f6378">这个合成接口只有 RGB 加法，没有再用透射率衰减背景。</text>
+</g></svg>
