@@ -1,7 +1,7 @@
 ---
 title: "渲染分析文章概要：绝区零、原神与终末地"
 date: "2026-09-27T18:44:59+08:00"
-updated: "2026-09-29T18:31:09+08:00"
+updated: "2026-09-29T20:48:32+08:00"
 permalink: 2026/09/27/rendering-analysis-overview/
 categories:
   - 图形学
@@ -13,11 +13,11 @@ tags:
 
 > 由 astra 生成
 
-三篇按项目组织的渲染分析，分别覆盖绝区零大厅与蕾米、原神雪城与木偶、终末地竹林及角色。每篇依次展开美术资源与渲染概况、按对象划分的资源统计、整帧流程及具体效果。模型范围、贴图、尺寸与阶段画面来自各自截帧，复杂算法另配示意图。
+三篇按项目组织的渲染分析，分别覆盖绝区零大厅与蕾米、原神雪城与木偶、终末地竹林及角色。每篇依次展开美术资源与渲染概况、按对象划分的资源统计、以箭头连接的整帧流程及具体效果。流程逐阶段列出工作与输出，并标明历史输入和反馈关系。模型范围、贴图、尺寸与阶段画面来自各自截帧，复杂算法另配示意图。
 
 <!-- more -->
 
-<link rel="stylesheet" href="/css/rendering-articles.css">
+<link rel="stylesheet" href="/css/rendering-articles.css?v=20260929-flow">
 
 <div class="rendering-article">
 
@@ -31,7 +31,7 @@ tags:
 
 **本篇图解：**灯光列表、翼部细分、角色颜色与可见性分层、身份拒绝与完整时序颜色处理。正文进一步展开烘焙光解码、眼睛颜色查找表和实际分支状态。
 
-[阅读全文](/2026/09/27/zzz-rendering-analysis/)
+[查看整帧流程](/2026/09/27/zzz-rendering-analysis/#pipeline) · [阅读全文](/2026/09/27/zzz-rendering-analysis/)
 
 ## [原神：雪城资源、木偶材质与时序重建](/2026/09/27/genshin-rendering-analysis/)
 
@@ -43,7 +43,7 @@ tags:
 
 **本篇图解：**阴影四叉树、脸部 SDF、裙装闪光、角色环境反馈、当前十六点与历史五点重建。正文进一步展开眼内视差、Matcap、积雪与跨阶段状态。
 
-[阅读全文](/2026/09/27/genshin-rendering-analysis/)
+[查看整帧流程](/2026/09/27/genshin-rendering-analysis/#pipeline) · [阅读全文](/2026/09/27/genshin-rendering-analysis/)
 
 ## [终末地：竹林光照、角色着色与 HDR 后处理](/2026/09/27/endfield-rendering-analysis/)
 
@@ -55,6 +55,6 @@ tags:
 
 **本篇图解：**压缩人物几何与双时刻数据、三层方向光照、AO 地平线搜索、雾积分、历史颜色与置信状态、泛光层级重建。正文进一步展开角色材质、辅助反馈与运动分类。
 
-[阅读全文](/2026/09/27/endfield-rendering-analysis/)
+[查看整帧流程](/2026/09/27/endfield-rendering-analysis/#pipeline) · [阅读全文](/2026/09/27/endfield-rendering-analysis/)
 
 </div>

@@ -1,7 +1,7 @@
 ---
 title: "原神渲染实现分析：雪城资源、木偶材质与时序重建"
 date: "2026-09-27T18:44:00+08:00"
-updated: "2026-09-29T18:31:09+08:00"
+updated: "2026-09-29T20:48:32+08:00"
 permalink: 2026/09/27/genshin-rendering-analysis/
 categories:
   - 图形学
@@ -18,7 +18,7 @@ mathjax: true
 
 <!-- more -->
 
-<link rel="stylesheet" href="/css/rendering-articles.css">
+<link rel="stylesheet" href="/css/rendering-articles.css?v=20260929-flow">
 
 <div class="rendering-article">
 
@@ -249,18 +249,159 @@ mathjax: true
 
 ### 整帧流程
 
-| 阶段 | 主要工作 | 输出交给谁 |
-|---|---|---|
-| 场景准备 | 风场、局部交互、表面高度候选和角色几何准备 | 后续材质与几何 |
-| 深度与主材质 | 建立可见表面，写入颜色、法线和分类 | 阴影解析、环境处理和延迟照明 |
-| 遮挡与环境 | 构造分级深度、遮蔽与反射候选，准备阴影 | 表面受光计算 |
-| 角色环境取样 | 从材质颜色与阴影取得样本，汇总反馈 | 之后的角色环境使用 |
-| 照明与合成 | 按类别求值，加入雾、透明与效果 | 当前 HDR 颜色 |
-| 运动写入 | 比较相机与几何的前后位置 | 运动模糊及历史重投影 |
-| 显示处理 | 运动模糊、泛光、最终颜色映射 | 当前显示域颜色 |
-| 边缘与历史 | 当前帧边缘混合、颜色重建和状态更新 | 最终输出与下次历史 |
-
-角色环境取样虽然位于流程中较后的位置，前面的角色材质已经读取了其已有结果。这是跨次使用的反馈关系，而不是把表格理解成“当前角色先等本帧取样全部完成”。
+<p class="rendering-flow-intro">从上向下跟随箭头阅读。每个阶段说明实际工作与输出结果；阶段标题可跳转到对应分析。箭头表示主要执行次序，颜色、深度等数据可以跨过多个阶段继续使用。</p>
+<ol class="rendering-frame-flow" aria-label="原神整帧执行流程">
+<li class="rendering-flow-step rendering-flow-prepare">
+<div class="rendering-flow-card">
+<p class="rendering-flow-title"><span class="rendering-flow-phase">准备</span><a href="#height-cache">形变、环境与高度准备</a></p>
+<dl class="rendering-flow-detail">
+<dt>工作</dt><dd>处理风场、局部交互、表面高度候选和角色几何准备，为后续物体形状及材质查询提供输入。</dd>
+<dt>输出</dt><dd>几何与环境状态、表面高度缓存 → 深度和材质阶段。</dd>
+</dl>
+</div>
+</li>
+<li class="rendering-flow-step rendering-flow-surface">
+<div class="rendering-flow-card">
+<p class="rendering-flow-title"><span class="rendering-flow-phase">可见性</span><a href="#gbuffer">早期深度与几何</a></p>
+<dl class="rendering-flow-detail">
+<dt>工作</dt><dd>从主视图绘制早期深度和相应几何，建立后续表面处理所需的可见性基础。</dd>
+<dt>输出</dt><dd>主视图深度及几何覆盖 → 材质、分级深度和屏幕查询。</dd>
+</dl>
+</div>
+</li>
+<li class="rendering-flow-step rendering-flow-surface">
+<div class="rendering-flow-card">
+<p class="rendering-flow-title"><span class="rendering-flow-phase">表面</span><a href="#gbuffer">主材质与贴花</a></p>
+<dl class="rendering-flow-detail">
+<dt>工作</dt><dd>场景写入颜色、方向和分类，雪层在材质内形成覆盖；人物执行脸部、眼睛、衣料等专用分支，随后处理贴花。</dd>
+<dt>输出</dt><dd>六路表面数据及深度 → 阴影解析、环境查询与照明。</dd>
+</dl>
+<p class="rendering-flow-note"><strong>跨次输入</strong>角色在这里已经读取已有的环境反馈；本帧稍后的取样更新不会倒流到这次已完成的绘制。</p>
+</div>
+</li>
+<li class="rendering-flow-step rendering-flow-prepare">
+<div class="rendering-flow-card">
+<p class="rendering-flow-title"><span class="rendering-flow-phase">筛选</span><a href="#environment">分级深度、剔除与屏幕遮蔽</a></p>
+<dl class="rendering-flow-detail">
+<dt>工作</dt><dd>整理深度层级，进行相应剔除，并准备屏幕遮蔽和反射相关候选，供后续环境与表面处理使用。</dd>
+<dt>输出</dt><dd>屏幕空间的可见性与环境辅助数据 → 受光和反射相关处理。</dd>
+</dl>
+</div>
+</li>
+<li class="rendering-flow-step rendering-flow-lighting">
+<div class="rendering-flow-card">
+<p class="rendering-flow-title"><span class="rendering-flow-phase">照明输入</span><a href="#shadows">静态阴影解压、阴影绘制与解析</a></p>
+<dl class="rendering-flow-detail">
+<dt>工作</dt><dd>把静态压缩深度恢复为可查询的阴影输入，结合当前阴影几何，再按可见表面位置解析阴影并准备空间照明输入。</dd>
+<dt>输出</dt><dd>表面对应的阴影与空间照明数据 → 环境取样和延迟照明。</dd>
+</dl>
+</div>
+</li>
+<li class="rendering-flow-step rendering-flow-history">
+<div class="rendering-flow-card">
+<p class="rendering-flow-title"><span class="rendering-flow-phase">反馈</span><a href="#character-environment">角色环境取样与反馈更新</a></p>
+<dl class="rendering-flow-detail">
+<dt>工作</dt><dd>分别从材质颜色与阴影取得空间样本，筛选有效样本并汇总；颜色与阴影按各自规则更新反馈。</dd>
+<dt>输出</dt><dd>更新后的环境颜色与阴影反馈 → 之后的角色环境使用。</dd>
+</dl>
+<p class="rendering-flow-note"><strong>反馈方向</strong>这条更新为后续使用保存结果；流程的下一步照明与此前角色材质各有自己的输入关系。</p>
+</div>
+</li>
+<li class="rendering-flow-step rendering-flow-lighting">
+<div class="rendering-flow-card">
+<p class="rendering-flow-title"><span class="rendering-flow-phase">照明</span><a href="#gbuffer">主体延迟照明与扩散</a></p>
+<dl class="rendering-flow-detail">
+<dt>工作</dt><dd>按表面类别消费颜色、方向、材质控制和受光信息，建立主体照明颜色，并完成相应扩散处理。</dd>
+<dt>输出</dt><dd>当前主体 HDR 颜色 → 天空、雾与后续效果。</dd>
+</dl>
+</div>
+</li>
+<li class="rendering-flow-step rendering-flow-lighting">
+<div class="rendering-flow-card">
+<p class="rendering-flow-title"><span class="rendering-flow-phase">合成</span><a href="#environment">天空、雾与空间效果</a></p>
+<dl class="rendering-flow-detail">
+<dt>工作</dt><dd>接入天空以及空气中的散射、遮挡和相关空间效果，补齐远景与空气对当前颜色的贡献。</dd>
+<dt>输出</dt><dd>含天空和雾的 HDR 颜色 → 透明与粒子。</dd>
+</dl>
+</div>
+</li>
+<li class="rendering-flow-step rendering-flow-lighting">
+<div class="rendering-flow-card">
+<p class="rendering-flow-title"><span class="rendering-flow-phase">合成</span><a href="#environment">透明与粒子合成</a></p>
+<dl class="rendering-flow-detail">
+<dt>工作</dt><dd>绘制透明表面和粒子效果，按各自覆盖及混合条件加入当前场景。</dd>
+<dt>输出</dt><dd>当前合成颜色 → 运动模糊与显示处理。</dd>
+</dl>
+</div>
+</li>
+<li class="rendering-flow-step rendering-flow-prepare">
+<div class="rendering-flow-card">
+<p class="rendering-flow-title"><span class="rendering-flow-phase">运动</span><a href="#motion">运动矢量写入与目标复用</a></p>
+<dl class="rendering-flow-detail">
+<dt>工作</dt><dd>在法线消费者结束后，以相机和几何的前后位置生成运动，改写原先保存法线的目标。</dd>
+<dt>输出</dt><dd>当前屏幕位移 → 运动模糊和稍后的历史重投影。</dd>
+</dl>
+<p class="rendering-flow-note"><strong>资源顺序</strong>法线与运动复用同一张图。运动开始覆盖之前，所有仍需要法线的读取必须结束。</p>
+</div>
+</li>
+<li class="rendering-flow-step rendering-flow-display">
+<div class="rendering-flow-card">
+<p class="rendering-flow-title"><span class="rendering-flow-phase">后处理</span><a href="#postprocessing">运动模糊</a></p>
+<dl class="rendering-flow-detail">
+<dt>工作</dt><dd>按运动信息组织颜色采样，对移动造成的画面变化进行模糊处理。</dd>
+<dt>输出</dt><dd>运动模糊后的 HDR 颜色 → 泛光与后续显示合成。</dd>
+</dl>
+</div>
+</li>
+<li class="rendering-flow-step rendering-flow-display">
+<div class="rendering-flow-card">
+<p class="rendering-flow-title"><span class="rendering-flow-phase">后处理</span><a href="#postprocessing">泛光准备与过滤</a></p>
+<dl class="rendering-flow-detail">
+<dt>工作</dt><dd>从当前颜色准备高亮贡献，并经过多层过滤得到扩散结果。</dd>
+<dt>输出</dt><dd>泛光颜色 → 最终颜色映射与合成。</dd>
+</dl>
+</div>
+</li>
+<li class="rendering-flow-step rendering-flow-display">
+<div class="rendering-flow-card">
+<p class="rendering-flow-title"><span class="rendering-flow-phase">显示域</span><a href="#postprocessing">颜色映射与显示合成</a></p>
+<dl class="rendering-flow-detail">
+<dt>工作</dt><dd>将 HDR 颜色映射到当前显示域，并组合前面的后处理贡献。</dd>
+<dt>输出</dt><dd>当前显示域颜色 → 空间边缘处理及整帧历史重建。</dd>
+</dl>
+<p class="rendering-flow-note"><strong>本帧顺序</strong>这一阶段在整帧时序之前，因此下游重建的输入已经经过本次显示颜色处理。</p>
+</div>
+</li>
+<li class="rendering-flow-step rendering-flow-display">
+<div class="rendering-flow-card">
+<p class="rendering-flow-title"><span class="rendering-flow-phase">抗锯齿</span><a href="#spatial-aa">当前帧边缘处理</a></p>
+<dl class="rendering-flow-detail">
+<dt>工作</dt><dd>在当前图像中检测边缘，计算混合权重，再按权重混合相邻颜色。</dd>
+<dt>输出</dt><dd>空间抗锯齿后的当前颜色 → 时序重建。</dd>
+</dl>
+</div>
+</li>
+<li class="rendering-flow-step rendering-flow-history">
+<div class="rendering-flow-card">
+<p class="rendering-flow-title"><span class="rendering-flow-phase">历史</span><a href="#temporal">整帧时序重建与状态更新</a></p>
+<dl class="rendering-flow-detail">
+<dt>工作</dt><dd>选择前景运动并重投影，重建当前颜色和旧颜色；检查差异、控制历史贡献，同时更新积累状态。</dd>
+<dt>输出</dt><dd>重建后的画面 → 末段输出；颜色和积累状态 → 后续帧。</dd>
+</dl>
+<p class="rendering-flow-note"><strong>跨帧输入</strong>这里读取自己的旧颜色与积累状态；它与前面的角色环境反馈承担不同任务。</p>
+</div>
+</li>
+<li class="rendering-flow-step rendering-flow-display">
+<div class="rendering-flow-card">
+<p class="rendering-flow-title"><span class="rendering-flow-phase">显示</span><a href="#conclusion">界面与最终输出</a></p>
+<dl class="rendering-flow-detail">
+<dt>工作</dt><dd>完成末段界面及最终画面合成，形成本次显示结果。</dd>
+<dt>输出</dt><dd>最终显示画面。</dd>
+</dl>
+</div>
+</li>
+</ol>
+<p class="rendering-flow-caption">依据本次截帧的执行顺序整理；下方阶段画面用于观察颜色怎样逐步建立，详细算法继续在后文展开。</p>
 
 #### 沿同一视角观察颜色的建立
 
