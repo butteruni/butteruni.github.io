@@ -25,12 +25,54 @@
   border: 0;
 }
 
+.rendering-article .rendering-figures img[src$="-geometry.png"] {
+  width: 100%;
+  max-width: 100%;
+  max-height: 420px;
+  object-fit: contain;
+  margin: 0 auto;
+}
+
 .rendering-article .rendering-figures figcaption {
   padding-top: 0.6em;
   font-size: 0.85em;
   line-height: 1.7;
   color: #555;
   text-align: left;
+}
+
+.rendering-article .rendering-stages {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.rendering-article .rendering-figures:has(> figure:nth-child(4)) {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.rendering-article .rendering-texture-preview {
+  display: block;
+  width: 150px;
+  height: auto;
+  max-width: 100%;
+  max-height: 180px;
+  object-fit: contain;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.rendering-article .rendering-strip img {
+  display: block;
+  width: 100%;
+  height: 56px;
+  object-fit: fill;
+  image-rendering: pixelated;
+}
+
+.rendering-article .rendering-strip figcaption {
+  font-size: 0.85em;
+  line-height: 1.7;
+  color: #555;
 }
 
 .rendering-article table {
@@ -84,6 +126,12 @@
 }
 
 @media (max-width: 560px) {
+  .rendering-article th,
+  .rendering-article td {
+    min-width: 0;
+    padding: 6px;
+  }
+
   .rendering-article .rendering-diagram a {
     overflow-x: auto;
   }
@@ -97,7 +145,8 @@
     content: "可横向滑动 · ";
   }
 
-  .rendering-article .rendering-figures {
+  .rendering-article .rendering-figures,
+  .rendering-article .rendering-figures:has(> figure:nth-child(4)) {
     grid-template-columns: 1fr;
     gap: 24px;
   }
