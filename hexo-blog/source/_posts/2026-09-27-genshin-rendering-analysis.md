@@ -1,7 +1,7 @@
 ---
 title: "原神渲染实现分析：雪城资源、木偶材质与时序重建"
 date: "2026-09-27T18:44:00+08:00"
-updated: "2026-09-29T20:48:32+08:00"
+updated: "2026-09-29T22:35:48+08:00"
 permalink: 2026/09/27/genshin-rendering-analysis/
 categories:
   - 图形学
@@ -14,7 +14,7 @@ mathjax: true
 
 > 由 astra 生成
 
-以雪城与木偶这份截帧为例，先统计人物、地表、岩石、建筑和植被的几何与贴图，再从整帧流程展开积雪、阴影、环境、专用角色材质和抗锯齿。配图区分实际材质输入、绘制范围和阶段输出，读者无需持有截帧文件。
+以雪城与木偶这份截帧为例，先统计人物与场景资源，再用整帧流程建立阶段关系。渲染分析按积雪、阴影、环境、脸部、眼睛、衣料、后处理和画面稳定组织，每个效果内展开对应算法、数据流与实际图像，读者无需持有截帧文件。
 
 <!-- more -->
 
@@ -37,13 +37,13 @@ mathjax: true
 
 ### 渲染分析概况
 
-| 环节 | 本帧的组织方式 |
+| 画面效果 | 本帧的主要实现 |
 |---|---|
-| 材质 | 六路表面输出承载颜色、方向、类别及附加控制，雪层在此形成覆盖 |
-| 阴影与环境 | 静态压缩深度与动态深度汇合，屏幕／空间环境输入再进入照明 |
-| 角色 | 脸部 SDF、几何可见性、眼内视差与分区衣料形成专用外观；本帧表情图集叠加关闭 |
-| 环境反馈 | 角色先消费已有取样结果，后面的场景取样更新颜色与阴影状态 |
-| 运动与抗锯齿 | 法线目标结束使用后改写为运动；显示转换后再进行边缘与历史重建 |
+| 积雪与表面亮点 | 双层材质形成方向覆盖，细节采样受屏幕导数与历史状态控制 |
+| 阴影与环境 | 静态压缩深度和动态深度汇合，环境颜色、反射、局部遮蔽与雾继续接入 |
+| 人物明暗与层次 | 脸部 SDF 和几何覆盖、眼内视差、分区衣料及程序闪点；本帧表情叠加关闭 |
+| 角色环境受光 | 分别采样、更新颜色与阴影状态，供人物材质读取 |
+| 泛光、模糊与画面稳定 | 先完成当前颜色与显示转换，再进行边缘处理和历史重建 |
 
 ### 样本条件
 
@@ -245,9 +245,31 @@ mathjax: true
 
 ## 渲染分析
 
+<span id="effects"></span>
+
+先用[整帧流程](#pipeline)定位执行阶段，再按下面的画面效果阅读。每个效果章节先交代画面作用，再展开实现技术、数据流与截帧证据；资源尺寸和几何统计见前一部分。章节顺序用于阅读，实际执行先后以流程图为准。
+
+| 画面效果 | 本文展开的实现与证据 |
+|---|---|
+| [积雪覆盖与亮点](#snow-material) | 双层材质、方向覆盖、导数约束和历史控制 |
+| [投影阴影](#shadows) | 静态／动态深度汇合、四叉树与量化解码 |
+| [环境照明与反射](#environment) | 空间索引、候选生成与照明消费 |
+| [局部遮蔽](#environment-occlusion) | 半分辨率遮蔽、过滤和空间遮蔽输入 |
+| [雾与空气](#fog) | 局部体积、光源遮挡、历史与沿视线累积 |
+| [角色环境受光](#character-environment) | 颜色和阴影分开采样、独立反馈与材质读取 |
+| [脸部明暗与表情](#face-effects) | 几何可见性、脸部 SDF、图集及分支状态 |
+| [眼睛层次与高光](#eyes) | 内部落点搜索、多层合成与 Matcap |
+| [衣料明暗与闪光](#cloth-effects) | 区域表、双面法线、随机点簇和相机相位 |
+| [泛光、运动模糊与色彩](#postprocessing) | 历史重建之前的当前帧颜色处理 |
+| [抗锯齿与画面稳定](#image-stability) | 运动、边缘查表、当前及历史重建与反馈 |
+
 <span id="pipeline"></span>
 
-### 整帧流程
+<span id="整帧流程"></span>
+
+### 整帧流程与表面数据
+
+先沿箭头了解场景、角色和后处理怎样衔接。六路表面输出是多个效果共用的输入；高度缓存尚未确认全部下游用途，在这里单独说明其准备过程。
 
 <p class="rendering-flow-intro">从上向下跟随箭头阅读。每个阶段说明实际工作与输出结果；阶段标题可跳转到对应分析。箭头表示主要执行次序，颜色、深度等数据可以跨过多个阶段继续使用。</p>
 <ol class="rendering-frame-flow" aria-label="原神整帧执行流程">
@@ -281,7 +303,7 @@ mathjax: true
 </li>
 <li class="rendering-flow-step rendering-flow-prepare">
 <div class="rendering-flow-card">
-<p class="rendering-flow-title"><span class="rendering-flow-phase">筛选</span><a href="#environment">分级深度、剔除与屏幕遮蔽</a></p>
+<p class="rendering-flow-title"><span class="rendering-flow-phase">筛选</span><a href="#environment-occlusion">分级深度、剔除与屏幕遮蔽</a></p>
 <dl class="rendering-flow-detail">
 <dt>工作</dt><dd>整理深度层级，进行相应剔除，并准备屏幕遮蔽和反射相关候选，供后续环境与表面处理使用。</dd>
 <dt>输出</dt><dd>屏幕空间的可见性与环境辅助数据 → 受光和反射相关处理。</dd>
@@ -309,7 +331,7 @@ mathjax: true
 </li>
 <li class="rendering-flow-step rendering-flow-lighting">
 <div class="rendering-flow-card">
-<p class="rendering-flow-title"><span class="rendering-flow-phase">照明</span><a href="#gbuffer">主体延迟照明与扩散</a></p>
+<p class="rendering-flow-title"><span class="rendering-flow-phase">照明</span><a href="#environment">主体延迟照明与扩散</a></p>
 <dl class="rendering-flow-detail">
 <dt>工作</dt><dd>按表面类别消费颜色、方向、材质控制和受光信息，建立主体照明颜色，并完成相应扩散处理。</dd>
 <dt>输出</dt><dd>当前主体 HDR 颜色 → 天空、雾与后续效果。</dd>
@@ -318,7 +340,7 @@ mathjax: true
 </li>
 <li class="rendering-flow-step rendering-flow-lighting">
 <div class="rendering-flow-card">
-<p class="rendering-flow-title"><span class="rendering-flow-phase">合成</span><a href="#environment">天空、雾与空间效果</a></p>
+<p class="rendering-flow-title"><span class="rendering-flow-phase">合成</span><a href="#fog">天空、雾与空间效果</a></p>
 <dl class="rendering-flow-detail">
 <dt>工作</dt><dd>接入天空以及空气中的散射、遮挡和相关空间效果，补齐远景与空气对当前颜色的贡献。</dd>
 <dt>输出</dt><dd>含天空和雾的 HDR 颜色 → 透明与粒子。</dd>
@@ -418,7 +440,9 @@ mathjax: true
 
 <span id="gbuffer"></span>
 
-### 六路表面输出怎样承载不同材质
+<span id="六路表面输出怎样承载不同材质"></span>
+
+#### 效果共用的材质、方向与分类
 
 主材质写出六路颜色类目标，另有深度与模板。它们共同组成供后续着色读取的表面描述，通常称为 G-buffer。
 
@@ -445,9 +469,45 @@ mathjax: true
 
 贴花阶段还能修改颜色与法线，同时保留某些扩展标记。表面输入不仅要看最初由谁写入，也要看照明读取之前是否经过局部修改。
 
+<span id="height-cache"></span>
+
+<span id="高度层缓存选择可以写入的表面候选"></span>
+
+#### 高度缓存准备：已确认更新，具体视觉用途仍待核对
+
+这一帧还执行了表面高度更新。它通过光栅覆盖调用像素计算，但不向当前可见颜色写入，而是更新 2048×2048 的精细高度缓存和 256×256 的粗网格标记。
+
+##### 进入缓存前的过滤
+
+归一化法线的竖直分量必须大于约 0.642788，也就是表面与向上方向的夹角小于约 50°。程序还检查换算后的深度变化率，排除不适合当前高度层的陡斜或不连续区域。
+
+像素坐标加上当前环形偏移后，以 2048 为周期寻址。缓存能够围绕局部区域移动使用，不必始终以固定世界原点解释同一个像素。
+
+##### 粗网格先判断高度分布是否连续
+
+每个 8×8 精细区域对应一个粗格。归一化高度区间被分成 32 层，由位集合表示哪些层被表面占据。加入当前候选后，程序只继续接受集中在最低两个相邻层附近的情况。
+
+这样做是在高度更新前限制多层重叠：若一个区域里存在彼此远离的表面，不能轻易把它们当成同一连续高度层。
+
+##### 精细更新以高度优先竞争
+
+高度被量化到约 65532 的整数范围，再与旧值比较。允许厚度由当前高度范围与厚度系数换算，本次对应阈值为：
+
+$$
+\left\lceil\frac{65532\times1.2}{32}\right\rceil=2458
+$$
+
+程序把新高度放在高位、高度差放在低位，对组合整数取原子最大值。高位的高度优先决定谁能赢得竞争；只有真正更新成功的像素才标记粗网格发生变化。
+
+已确认的是高度候选的选择、组织和更新。它与可见双层雪材质同处这个雪城流程，但全部下游连接尚未还原，因而不能把它直接命名为完整足迹或动态压雪系统。
+
 <span id="snow-material"></span>
 
-### 雪层：覆盖分区、方向细节与历史控制
+<span id="雪层覆盖分区方向细节与历史控制"></span>
+
+### 积雪覆盖与细碎亮点
+
+栏杆、台阶与场景表面的覆雪同时改变配色、方向和受光响应。本节先看材质阶段与最终外观的对应，再展开双层混合、闪点细节及交给抗锯齿的材质状态。
 
 <div class="rendering-figures">
 <figure><a href="/scene-capture-comparison/figures/replay/genshin-snow-material.png"><img src="/scene-capture-comparison/figures/replay/genshin-snow-material.png" alt="光照前：雪覆盖已经进入材质颜色" loading="lazy" width="640" height="402"></a><figcaption>光照前：雪覆盖已经进入材质颜色</figcaption></figure>
@@ -494,39 +554,13 @@ $$
 
 因此，雪的设计并未止于当前颜色。材质阶段还告诉后面的历史处理：当前表面应该怎样保留或限制旧结果。这是一条从具体雪材质延伸到整帧显示的直接联系。
 
-<span id="height-cache"></span>
-
-### 高度层缓存：选择可以写入的表面候选
-
-这一帧还执行了表面高度更新。它通过光栅覆盖调用像素计算，但不向当前可见颜色写入，而是更新 2048×2048 的精细高度缓存和 256×256 的粗网格标记。
-
-#### 进入缓存前的过滤
-
-归一化法线的竖直分量必须大于约 0.642788，也就是表面与向上方向的夹角小于约 50°。程序还检查换算后的深度变化率，排除不适合当前高度层的陡斜或不连续区域。
-
-像素坐标加上当前环形偏移后，以 2048 为周期寻址。缓存能够围绕局部区域移动使用，不必始终以固定世界原点解释同一个像素。
-
-#### 粗网格先判断高度分布是否连续
-
-每个 8×8 精细区域对应一个粗格。归一化高度区间被分成 32 层，由位集合表示哪些层被表面占据。加入当前候选后，程序只继续接受集中在最低两个相邻层附近的情况。
-
-这样做是在高度更新前限制多层重叠：若一个区域里存在彼此远离的表面，不能轻易把它们当成同一连续高度层。
-
-#### 精细更新以高度优先竞争
-
-高度被量化到约 65532 的整数范围，再与旧值比较。允许厚度由当前高度范围与厚度系数换算，本次对应阈值为：
-
-$$
-\left\lceil\frac{65532\times1.2}{32}\right\rceil=2458
-$$
-
-程序把新高度放在高位、高度差放在低位，对组合整数取原子最大值。高位的高度优先决定谁能赢得竞争；只有真正更新成功的像素才标记粗网格发生变化。
-
-已确认的是高度候选的选择、组织和更新。它与可见双层雪材质同处这个雪城流程，但全部下游连接尚未还原，因而不能把它直接命名为完整足迹或动态压雪系统。
-
 <span id="shadows"></span>
 
-### 阴影：把压缩静态深度恢复到统一查询流程
+<span id="阴影把压缩静态深度恢复到统一查询流程"></span>
+
+### 场景与角色的投影阴影
+
+静态建筑与动态角色都要为后续受光提供遮挡关系。本节围绕这一效果，依次解释两类深度如何汇合，以及静态深度如何通过分块、树形索引和量化载荷恢复。
 
 ![本帧场景阴影图集的深度预览](/images/rendering-analysis/genshin/shadow-atlas.png)
 
@@ -624,371 +658,39 @@ $$
 
 <span id="environment"></span>
 
-### 间接光、反射与体积雾的接入位置
+### 场景环境照明与反射
+
+环境照明与反射为表面补充周围场景的信息。当前材料可以追到空间索引、候选颜色与照明消费之间的关系，以下按这条已确认的数据流说明。
+
+<span id="间接光反射与体积雾的接入位置"></span>
 
 场景建立三维索引与结构数据，再结合屏幕法线、深度和颜色生成较低分辨率的间接／反射候选。这些结果经过不同尺度的整理，由后续照明消费。
 
 索引数据负责“找到什么”，候选颜色负责“取得什么光照值”，二者不是同一种体积。当前可以确认它们进入照明的关系，完整追踪、候选分量拆分与未命中处理仍不完整，不能仅凭三维数据就指定一套全局光照产品名称。
 
+<span id="environment-occlusion"></span>
+
+### 场景局部遮蔽
+
+局部遮蔽参与建立邻近表面的暗部，使用的输入与光源投影阴影不同。这里说明本帧已确认的生成与过滤关系，具体内核仍未完整展开。
+
 屏幕遮蔽也有半分辨率结果、计算过滤和空间遮蔽相关处理。它与直接阴影分别提供环境与光源方向的遮挡输入，最终暗部由多项共同形成。
+
+<span id="fog"></span>
+
+### 雾与空间层次
+
+雾把相机与表面之间的空气接入 HDR 画面。实现中既要计算空间里空气怎样受光，也要沿观察方向累积，并处理已有体积的历史。
 
 体积雾使用 160×68×128 的空间网格。局部更新读取灯光、阴影、噪声与已有体积，后续再处理历史与累积，并合成到主 HDR 颜色。阴影可以影响空间里空气收到的光，因此不是只按表面距离盖一层固定颜色。这里保留已确认的数据关系，不补入尚未展开的散射相函数。
 
-
-<span id="face-vertex-visibility"></span>
-
-### 脸部几何：可见性标签在投影之前生效
-
-脸部颜色出现之前，顶点程序已经用材质状态和第二组附加 UV 中的标签决定哪些顶点参与当前形状。当前脸／眼区域的一条规则是：在本次启用条件下，将 $UV_2.x>0.05$ 的顶点位置折叠到局部零点，然后才继续执行物体、观察和投影变换。
-
-这份绘制中，检查到的 2520 个输入顶点有 589 个命中该条件。此前用原始位置直接预测顶点输出时，裁剪坐标分量的最大绝对误差约为 0.215；加入可见性折叠后降到约 $2.34\times10^{-7}$。这将差异定位到了顶点分支，而不是脸部光照或贴图颜色。
-
-折叠影响的是三角形的实际覆盖和深度，后面的眼睛又有独立几何与深度测试。若只恢复脸部 SDF 和底色，却忽略这步，额外的面片仍可能遮住本应可见的眼区。改变瞳孔的深度偏移会改变另一个环节，无法代替已经确认的可见性规则。
-
-| 当前脸部路径中的功能 | 本帧状态 | 对阅读后续算法的影响 |
-|---|---|---|
-| UV 标签驱动的几何折叠 | 启用 | 改变部分眼区几何覆盖 |
-| 风格化透视形变 | 当前关闭 | 不将此帧脸型归因于该分支 |
-| 表情图集叠加 | 当前关闭 | 图集是可用资源，本帧不叠加其中表情瓦片 |
-| 解析阴影平面 | 平面数为零，相关模式不提供有效平面 | 不把这条可选分支解释为本帧动态自阴影 |
-| 主脸部 SDF | 执行 | 纹理阈值与局部光向共同形成明暗控制 |
-
-这些状态由本次常量和分支共同确定。接下来的 SDF、表情与材质说明会分别交代计算能力和当前使用情况。
-
-
-<span id="face"></span>
-
-### 木偶脸部：从局部光方向到 SDF 明暗边界
-
-<div class="rendering-figures">
-<figure><a href="/images/rendering-analysis/genshin/face-base-colour.png"><img src="/images/rendering-analysis/genshin/face-base-colour.png" alt="脸部基础颜色" loading="lazy" width="768" height="768"></a><figcaption>脸部基础颜色</figcaption></figure>
-<figure><a href="/images/rendering-analysis/genshin/face-sdf-red.png"><img src="/images/rendering-analysis/genshin/face-sdf-red.png" alt="脸部 SDF 的红色通道" loading="lazy" width="768" height="768"></a><figcaption>脸部 SDF 的红色通道</figcaption></figure>
-<figure><a href="/images/rendering-analysis/genshin/face-sdf-alpha.png"><img src="/images/rendering-analysis/genshin/face-sdf-alpha.png" alt="同一 SDF 的 alpha 通道" loading="lazy" width="768" height="768"></a><figcaption>同一 SDF 的 alpha 通道</figcaption></figure>
-</div>
-
-基础颜色负责面部图案；后两张以灰度显示数值阈值。它们并不是当前帧脸上的实际阴影，而是供不同光方向查询的控制数据。
-
-#### 先把光转到脸自己的坐标里
-
-角色转头后，世界中的同一光方向相对脸部会改变。顶点处理先把光方向投影到模型局部轴，再分别在两个二维平面中归一化，得到传给像素阶段的方向项。
-
-归一化分母保留 0.0001 的下限，避免光几乎垂直于某个平面时除以接近零的长度。这里的局部方向负责让明暗条件跟随脸部姿态，而不是直接用屏幕左右判断光从哪里来。
-
-#### 红色与 alpha 接成两个阈值区间
-
-读取 SDF 后，采样阈值 $s$ 为：
-
-$$
-s=
-\begin{cases}
-(a+1)/2,&a>0.0001\\
-r/2,&a\le0.0001
-\end{cases}
-$$
-
-红色分量负责较低的半区，alpha 分量可以进入较高的半区。图中的灰度不是“当前有多亮”，而是这个位置在何种方向条件下转入另一侧。
-
-方向项 $l$ 则形成比较阈值：
-
-$$
-q=\operatorname{clamp}(0.5-0.5l+\delta,q_{\min},q_{\max})
-$$
-
-当前 $\delta=0$，上下限为 0.03 与 0.97。阈值没有被允许直接冲到两个极端，有助于保留可控制的分区范围。
-
-#### 阈值差怎样变成明暗权重
-
-程序按边界陡度 $k$ 放大差值，再进行连续的 S 形转换：
-
-$$
-d=(s-q)k,\qquad e=2^{-49.828922|d|}
-$$
-$$
-w_{\text{lit}}=
-\begin{cases}
-1/(1+e),&d\ge0\\
-e/(1+e),&d<0
-\end{cases}
-$$
-
-本次边界陡度为 100，暗端与亮端分别是 0 和 1。这个变换在差值跨过零时由暗侧迅速进入亮侧，边界形状主要由阈值纹理设计，而不是完全由网格弧度决定。
-
-程序也有按光的侧别翻转横向 UV 的逻辑；当前主分支被材质控制强制为不翻转。不能因为存在自动翻转代码，就把这一帧写成已经执行了翻转。
-
-#### 一次 SDF 查询的数值过程
-
-<figure class="rendering-diagram"><a href="/images/rendering-analysis/genshin/face-sdf-flow.svg" target="_blank" rel="noopener"><img src="/images/rendering-analysis/genshin/face-sdf-flow.svg" alt="脸部 SDF 示意：局部光方向生成比较阈值，纹理生成表面阈值，差值决定明暗" loading="lazy" width="1000" height="1050"></a><figcaption>算法示意 · 点击查看大图</figcaption></figure>
-
-*依据本帧脸部路径绘制。下方边界曲线是公式示意；材质控制在本次主分支禁用了横向翻转。*
-
-可以把两个输入看成不同的问题。纹理值 $s$ 回答“脸上这个位置的边界设在哪里”，光方向给出的 $q$ 回答“本次照明推进到哪条边界”。当 $s=q$，上面的 S 形转换恰好给出 0.5；$s>q$ 进入亮侧，$s<q$ 进入暗侧。
-
-用不代表本帧具体像素的数值走一遍：若 $r=0.6,a=0$，则 $s=0.3$；若局部方向项 $l=0.4$ 且偏移为零，则 $q=0.3$，正好落在过渡中心。光方向改变为 $l=0.6$ 后，$q=0.2$，同一个纹理位置便转向亮侧。纹理不需要随光重新绘制，改变查询阈值即可让边界在脸上移动。
-
-alpha 非零时，程序选择 $(a+1)/2$，不是把红色和 alpha 各算一份阴影后混合。例如 $a=0.2$ 会选择 $s=0.6$；此时红色通道不再决定这个主阈值。两张灰图一起展示，才足以理解整个阈值域。
-
-把 $s-q$ 记为 $\Delta$，亮侧权重由 10% 增加到 90% 所需的阈值宽度为：
-
-$$
-\Delta_{10\%\rightarrow90\%}
-=\frac{2\log_2 9}{49.828922\,k}
-$$
-
-本次 $k=100$，宽度约为 0.00127。这个数字描述阈值域中的陡度，**不等于屏幕上 0.00127 个像素**。屏幕边缘有多宽，还取决于 SDF 在表面上的梯度、纹理过滤、投影尺寸及后续抗锯齿。因此非常陡的数值过渡仍不能直接用最终截图测成一个固定像素宽度。
-
-#### 次级控制与最终颜色
-
-当前另一个 SDF 分支使用其余分量，通过局部 UV 选择、缩放、偏移和周期映射形成额外控制。它不是把同一个阈值公式原样再执行一次。
-
-最终脸部还结合阴影颜色、不同区域的高光参数与视角边缘项。因此上式得到的是明暗权重，不是完整脸部颜色。基础贴图、主分区、局部控制和后续照明一起解释了最终面部，而单张 SDF 灰图只展示其中一种输入。
-
-<span id="expressions"></span>
-
-### 表情图集与有序消隐
-
-![木偶脸部路径绑定的表情图集，本帧叠加分支关闭](/images/rendering-analysis/genshin/expression-atlas.png)
-
-图集中可见分散的眼部、嘴部与脸部图案。当前是中性表情状态，叠加门控为零，像素程序跳过整段图集计算。下面说明它启用时的算法；本帧脸部的可见结果不能归因于这张图集已经叠加。
-
-#### 图集选择前仍有局部变换
-
-程序通过表情索引与列数得到行列，行方向另有反序处理。在进入对应单元前，还可以：
-
-- 以纹理中心为基准平移、缩放或镜像。
-- 根据左右区域选择不同局部参数。
-- 用正弦和余弦构造二维旋转，角度可带时间变化。
-- 限制局部 UV，再映射到图集单元。
-
-可选的第二层表情样本按自身 alpha 与第一层混合，最终再以覆盖率进入脸部颜色。表情颜色如何接受阴影也由方向条件控制。因此恢复骨骼与形态变形之后，仍可能需要材质图集才能得到完整表情。
-
-#### 消隐保留不透明深度行为
-
-脸部程序还具有 4×4 有序抖动消隐。它根据屏幕像素位置从固定顺序表取阈值：
-
-~~~text
- 1  13   4  16
- 9   5  12   8
- 3  15   2  14
-11   7  10   6
-~~~
-
-当有效消隐量低于相应开启阈值时，程序根据消隐量与格内阈值的关系决定保留或丢弃像素。比例变化通过空间覆盖实现，仍遵循不透明材质的深度逻辑，而不是把整个人物颜色统一做透明混合。
-
-这是一条可用分支，实际是否丢弃由当前材质和像素输入决定。它与图集换表情属于不同任务。
-
-<span id="eyes"></span>
-
-### 眼睛：解析内部深度、多层颜色与 Matcap
-
-<div class="rendering-figures">
-<figure><a href="/scene-capture-comparison/figures/replay/genshin-eye-before.png"><img src="/scene-capture-comparison/figures/replay/genshin-eye-before.png" alt="眼睛材质写入之前" loading="lazy" width="520" height="460"></a><figcaption>眼睛材质写入之前</figcaption></figure>
-<figure><a href="/scene-capture-comparison/figures/replay/genshin-eye-after.png"><img src="/scene-capture-comparison/figures/replay/genshin-eye-after.png" alt="写入之后：虹膜与眼内亮部" loading="lazy" width="520" height="460"></a><figcaption>写入之后：虹膜与眼内亮部</figcaption></figure>
-<figure><a href="/scene-capture-comparison/figures/replay/genshin-face-final.png"><img src="/scene-capture-comparison/figures/replay/genshin-face-final.png" alt="最终脸部外观" loading="lazy" width="520" height="460"></a><figcaption>最终脸部外观</figcaption></figure>
-</div>
-
-前两张取同一材质颜色目标的相邻阶段。此时头发等后续部件尚未全部完成，额头与最终图的差异不属于眼睛程序本身。
-
-<div class="rendering-figures">
-<figure><a href="/images/rendering-analysis/genshin/pupil-colour.png"><img src="/images/rendering-analysis/genshin/pupil-colour.png" alt="一层瞳孔颜色" loading="lazy" width="512" height="512"></a><figcaption>一层瞳孔颜色</figcaption></figure>
-<figure><a href="/images/rendering-analysis/genshin/pupil-matcap.png"><img src="/images/rendering-analysis/genshin/pupil-matcap.png" alt="视图法线查询的 Matcap 外观" loading="lazy" width="512" height="512"></a><figcaption>视图法线查询的 Matcap 外观</figcaption></figure>
-<figure><a href="/images/rendering-analysis/genshin/pupil-highlight.png"><img src="/images/rendering-analysis/genshin/pupil-highlight.png" alt="眼内亮点的独立输入" loading="lazy" width="512" height="512"></a><figcaption>眼内亮点的独立输入</figcaption></figure>
-</div>
-
-它们是实际被眼睛路径读取的不同纹理。瞳孔图提供内部颜色，Matcap 提供随视图方向变化的外观，亮点又有自己的控制；最终眼睛不是直接显示其中任意一张。
-
-#### 视差来自沿视线的内部落点搜索
-
-眼睛程序以表面法线、相机方向和材质参考轴构造局部坐标系。根据观察角度，搜索步数为：
-
-$$
-n=\left\lceil16-12|N\cdot V|\right\rceil
-$$
-
-正视时约为 4 步，接近掠射角时最多约为 16 步。斜视路径跨过更大的内部范围，因此分配更多步骤。
-
-搜索在局部 UV 平面沿视线推进。每一步由当前位置到瞳孔中心的半径，计算解析定义的内部深度，找到穿越点后再用前后两步插值细化。当前瞳孔中心为 $(0.5,0.5)$，半径参数为 0.5，视差幅度参数约为 0.3，径向轮廓指数为 2。
-
-主循环不是每一步都采样独立高度纹理，所以不能写成标准高度图视差映射的某个固定采样版本。它使用参数化的内部形状；最终得到的位置再用于瞳孔底色和相关图案。
-
-#### 不同层有各自的运动与混合
-
-多层瞳孔纹理可以分别执行 UV 平移、旋转和振荡。打包渐变图中，不同纵向行保存不同混合曲线，程序固定读取若干行，再沿横向查询对应权重。
-
-部分颜色路径还采用多项式转换：
-
-$$
-f(c)=((0.305306c+0.682171)c+0.012523)c
-$$
-
-因此不能将所有层的采样值直接按同一个线性加法相加。不同分支包含加法、乘法或叠加式组合，开关决定哪些路径实际参与。
-
-#### Matcap 的方向是怎样得到的
-
-程序把 UV 相对中心的横向位置解释为球面局部坐标，以：
-
-$$
-z=\sqrt{\max(0,1-x^2-y^2)}
-$$
-
-恢复第三个分量，再与原法线混合。当前相关混合强度约为 0.3。这个方向转入观察空间后映射到纹理坐标，用于查询 Matcap。
-
-这条路径可以产生随观察方向变化的眼球亮部，但它不证明亮点对应场景里某个真实反射物。前后的静态眼睛图展示写入贡献；真实视角变化幅度仍需要多视角画面。
-
-<span id="cloth"></span>
-
-### 裙装：控制分区、细节法线与明暗渐变
-
-<div class="rendering-figures">
-<figure><a href="/images/rendering-analysis/genshin/cloth-base-colour.png"><img src="/images/rendering-analysis/genshin/cloth-base-colour.png" alt="裙装路径的基础颜色" loading="lazy" width="768" height="768"></a><figcaption>裙装路径的基础颜色</figcaption></figure>
-<figure><a href="/images/rendering-analysis/genshin/cloth-control-alpha.png"><img src="/images/rendering-analysis/genshin/cloth-control-alpha.png" alt="材质控制图的 alpha 分区" loading="lazy" width="768" height="768"></a><figcaption>材质控制图的 alpha 分区</figcaption></figure>
-<figure><a href="/images/rendering-analysis/genshin/cloth-detail-normal.png"><img src="/images/rendering-analysis/genshin/cloth-detail-normal.png" alt="独立衣料细节输入" loading="lazy" width="512" height="512"></a><figcaption>独立衣料细节输入</figcaption></figure>
-</div>
-
-颜色图可识别浅色衣片与装饰。控制图的灰度块用于选择参数组；细节图又独立提供局部方向。三者职责不同，不能用底色图替代其余输入。
-
-![裙装不同材质区域在最终画面中的位置](/scene-capture-comparison/figures/replay/genshin-cloth-final.png)
-
-#### 一个网格可以对应多组材质参数
-
-控制图 alpha 通过 0.2、0.4、0.6、0.8 等阈值分成多个区间，再选择对应参数组。这使同一衣片网格内的区域拥有不同阴影色、高光或细节强度，而不必仅靠最终颜色区分材质。
-
-当前基础法线、细节法线、金属响应和明暗渐变共同参与。控制图分区决定“选哪一组”，法线与光向决定“当前如何受光”，两者不能混为同一个遮罩。
-
-#### 用屏幕导数建立局部方向
-
-裙装程序从位置和 UV 的屏幕导数建立局部切线关系。细节纹理的两个横向分量被映射到正负区间，纵向分量按平方根关系重建，再与基础法线组合。
-
-某些细节路径受材质区域标记限制，所以不能把衣料微法线无条件施加到整个身体。这种处理允许局部织物保持自己的受光细节，同时沿用角色共用的几何与输出目标。
-
-#### 明暗不是直接把点积当亮度
-
-光照点积先经过重映射：
-
-$$
-u_L=0.4975(N\cdot L)+0.5
-$$
-
-再与控制图和顶点数据结合，决定明暗分区与渐变查询。阴影渐变本身是实际的颜色资源：
-
-![裙装路径使用的阴影渐变纹理](/images/rendering-analysis/genshin/cloth-shadow-ramp.png)
-
-不同横向位置对应不同受光程度，纵向行可容纳多组规则。图中的窄色带只是输入，实际哪一行被哪种区域使用，要结合程序条件理解；并不是给最终截图沿水平方向盖一道渐变。
-
-#### 控制图 G 怎样变成明暗分界
-
-衣料控制图中的绿色分量 $g$ 先经过带符号平方重映射：
-
-$$
-o=2(g-0.5)|g-0.5|+0.5
-$$
-
-顶点遮蔽参与的变体再将它乘以顶点颜色 R。系数 2 来自原指令对同一个值重复两次求点积；只写一次平方会改变整条曲线。
-
-这个重映射保留两端，并让中间变化更平缓。例如 $g=0.25,0.5,0.75$ 分别得到 $o=0.375,0.5,0.625$。它是作者提供的受光控制，不能从“看起来像 AO”的灰度图直接推断为屏幕空间环境遮蔽。
-
-令前文的半兰伯特值为 $h=0.4975N\cdot L+0.5$，组合量为：
-
-$$
-c=(o+h)/2
-$$
-
-当 $o<0.05$ 时强制进入暗侧，$o>0.95$ 时强制进入亮侧；其余位置与阈值 $\tau$ 比较。暗侧的深度量为：
-
-$$
-d_s=\frac{\tau-c}{\tau},\qquad
-f_{lit}=1-\min\left(\frac{d_s}{w},1\right)
-$$
-
-亮侧直接取 $f_{lit}=1$。若开启顶点过渡控制，$w$ 还乘 $\max(2V_g,0.01)$。本次 ILM 与顶点遮蔽开关均开启，$\tau=0.5$、$w=0.5$，未用顶点 G 再调节过渡宽度。这里保留了两个量：$d_s$ 描述跨入暗侧多深，$f_{lit}$ 描述渐变如何过渡；后面的金属分支还会使用前者，不能只保存最后的渐变坐标。
-
-#### 双面裙装不只是翻转一个法线
-
-当前第一组裙装的背面备用 UV 开关为一。正面读取主 UV，背面可读取另一组 UV，同时几何法线按正反面翻转。材质再用世界位置与所选 UV 的屏幕导数构造局部切线方向。
-
-控制图 alpha 的区间还决定哪些区域能接入衣料微法线。已确认的细节区域为 $0.2\le\alpha<0.4$，并额外要求控制图 B 不大于约 0.95。细节图的 R、G 恢复横向法线，alpha 则独立提供细节遮罩。
-
-满足条件时，程序将恢复并归一化的细节世界法线加到基础世界法线上，再归一化；其他区域保留基础法线。这一步并不是对整个模型无条件替换法线。
-
-背面还有独立的全暗侧选择。本次相关允许开关为零，因此背面条件可将明暗控制强制设为暗侧。这样，同一片薄裙装的内外侧同时具有坐标、方向和受光上的差别。
-
-#### 区域编码不是五等分后的顺序索引
-
-当前 alpha 区间与参数组的关系为：默认组接收其余区间，$[0.8,1]$ 可选第二组，$[0.4,0.6)$ 可选第三组，$[0.2,0.4)$ 可选第四组，$[0.6,0.8)$ 可选第五组。每组还有独立门控；门控关闭时保留先前选择。
-
-因此，直接用 $\lfloor5\alpha\rfloor$ 索引五套参数，不是这条裙装程序的等价形式。保留区间次序和各自开关，才能让颜色、高光、背光色和细节区域选到同一套规则。
-
-<span id="dress-sparkle"></span>
-
-### 衣料闪光：两个随机点簇、相机相位与区域遮罩
-
-裙装的闪光有独立的程序化生成过程。它首先在材质 UV 上建立网格，每个格子生成两组稳定随机数，再按圆斑形状和时间相位决定哪些点发亮；最后才进入颜色与遮罩组合。
-
-<figure class="rendering-diagram"><a href="/images/rendering-analysis/genshin/dress-sparkle-flow.svg" target="_blank" rel="noopener"><img src="/images/rendering-analysis/genshin/dress-sparkle-flow.svg" alt="裙装闪光的数据流示意：格子随机位置、空间圆斑、相位脉冲与材质遮罩。" loading="lazy" width="1120" height="690"></a><figcaption>算法示意 · 点击查看大图</figcaption></figure>
-
-#### 格子坐标保持随机图案稳定
-
-$$
-u_g=k_g u,\qquad i=\lfloor u_g\rfloor,\qquad f=\operatorname{frac}(u_g)
-$$
-
-随机函数分别以重复排列的 $i$ 和 $i+0.5$ 为种子。种子先乘约 0.0973、0.103、0.1031 等不同系数取小数，再混合分量点积和乘法，生成四个零到一的数。前三个控制颜色和圆斑位置／尺度，第四个控制脉冲相位及开启条件。
-
-随机数依赖整数格子坐标，同一格内部不会因为 UV 的细小变化而重新生成一套点位。局部坐标 $f$ 则负责在这个固定图案内移动采样。
-
-#### 圆斑的半径参数作用于距离平方
-
-随机中心为 $c$，第三个随机量为 $r_z$，尺度为 $k_r$：
-
-$$
-\rho=k_r(r_z+0.5),\qquad
-D=\operatorname{saturate}
-\frac{\rho-\|f-c\|^2}{\rho+10^{-5}}
-$$
-
-第一组中心额外偏移 0.5，第二组不偏移。这里 $\rho$ 与距离平方比较，所以圆斑支撑半径约为 $\sqrt{\rho}$，而不是直接等于 $\rho$。把它作为普通线性半径使用，会明显改变亮点大小。
-
-#### 相机与时间共同改变脉冲
-
-设第四个随机量为 $r_w$，活动相位宽度为 $a$，经过缩放的相机位置长度为 $d_c$，帧相位为 $t$：
-
-$$
-P=\max\left(0,\sin\left[2\pi\left(\frac{1-r_w}{a}+d_c\right)+t\,k_t\right]\right)
-\;\mathbf1_{r_w\ge1-a}
-$$
-
-程序中的 $d_c$ 是对传入相机位置按 XY 尺度处理后取长度，不能直接改称“当前像素到相机的距离”。相机变化会调节闪烁相位，格子随机位置本身仍由 UV 决定。
-
-两组贡献分别为随机 RGB 乘圆斑 $D$ 和脉冲 $P$，再相加，乘闪光色与强度。随后按亮度系数 $(0.2125,0.7154,0.0721)$ 形成另一种着色结果，与原随机颜色插值；最后可乘实际材质遮罩。本次传入的遮罩是基础法线纹理的 B 通道：R、G 提供法线横向量，B 在这里另行控制闪光，不能当作已经存好的法线 Z。
-
-<div class="rendering-figures">
-<figure><a href="/images/rendering-analysis/genshin/dress-sparkle-mask.png"><img src="/images/rendering-analysis/genshin/dress-sparkle-mask.png" alt="第一组裙装：基础法线纹理 B 通道中的闪光遮罩；亮处保留更多闪光贡献，暗处抑制。" loading="lazy" width="512" height="512"></a><figcaption>第一组裙装：基础法线纹理 B 通道中的闪光遮罩；亮处保留更多闪光贡献，暗处抑制。</figcaption></figure>
-<figure><a href="/images/rendering-analysis/genshin/dress-secondary-sparkle-mask.png"><img src="/images/rendering-analysis/genshin/dress-secondary-sparkle-mask.png" alt="第二组裙装：同一职责的 B 通道遮罩，使用不同的展开范围与渐变。" loading="lazy" width="512" height="512"></a><figcaption>第二组裙装：同一职责的 B 通道遮罩，使用不同的展开范围与渐变。</figcaption></figure>
-</div>
-
-两图来自各自绘制所用纹理的实际 B 通道，以固定 0–1 范围显示，没有自动拉伸对比度。这里展示的是闪光乘入前的区域权重；点位和闪烁仍由前述程序生成。
-
-#### 两组裙装使用不同的实际参数
-
-| 参数 | 第一组裙装 | 第二组裙装 |
-|---|---:|---:|
-| UV 网格倍率 $k_g$ | 100 | 107.69 |
-| 圆斑尺度 $k_r$ | 0.015 | 0.05 |
-| 帧相位倍率 $k_t$ | 0.5 | 0.87 |
-| 活动相位宽度 $a$ | 0.2 | 0.4 |
-| 强度 | 1.68 | 1.68 |
-| 亮度着色插值量 | 1 | 0 |
-| 闪光颜色 RGB | 约 (1.472, 1.211, 0.944) | 约 (1.052, 0.0068, 0.0497) |
-| 相机 XY 尺度 | 2 | 3 |
-| 材质遮罩 | 参与 | 参与 |
-
-这些值来自两次绘制各自的常量；相机尺度差异还存在于程序本身。第一组偏向以亮度控制统一的暖色闪光，第二组保留更多随机分量并使用偏红的颜色。它们仍会经过区域遮罩、照明组合及后处理，不能把表里的 RGB 直接当成最终屏幕颜色。
-
-按同一随机半径样本比较，第二组圆斑的 UV 支撑半径约为第一组的 $\sqrt{0.05/0.015}\times100/107.69\approx1.70$ 倍。这是由网格和形状公式得到的关系；最终可见点数与尺寸还受遮罩、相位和像素采样影响。
-
-
 <span id="character-environment"></span>
 
-### 角色环境：颜色与阴影分别取样、分别更新
+<span id="角色环境颜色与阴影分别取样分别更新"></span>
+
+### 角色与场景一致的环境受光
+
+角色需要随所在环境得到相应颜色和遮挡条件。当前实现分别取样、保存和更新环境颜色与阴影反馈，再由专用人物材质读取；本节按两条状态链展开其空间采样和时间变化。
 
 角色不是直接从最终截图取一个平均色。当前路径从材质颜色和阴影数据取样，按有效性筛选，再把结果保存在小型浮点纹理中。
 
@@ -1078,9 +780,413 @@ $$
 
 这样的先后顺序，使环境成为跨次使用的输入。一次捕获可以确认读写关系与公式，但不能单独证明更新频率或所有角色的槽位交换方式。
 
+<span id="face-effects"></span>
+
+### 脸部明暗与表情
+
+木偶脸部外观由几何覆盖、按光向控制的明暗边界和可选表情叠加共同组织。下面先确认当前可见性与开关，再说明 SDF 阈值如何形成脸部明暗；表情图集的叠加分支在本帧关闭。
+
+<span id="face-vertex-visibility"></span>
+
+<span id="脸部几何可见性标签在投影之前生效"></span>
+
+#### 几何覆盖：UV 标签与当前分支状态
+
+脸部颜色出现之前，顶点程序已经用材质状态和第二组附加 UV 中的标签决定哪些顶点参与当前形状。当前脸／眼区域的一条规则是：在本次启用条件下，将 $UV_2.x>0.05$ 的顶点位置折叠到局部零点，然后才继续执行物体、观察和投影变换。
+
+这份绘制中，检查到的 2520 个输入顶点有 589 个命中该条件。此前用原始位置直接预测顶点输出时，裁剪坐标分量的最大绝对误差约为 0.215；加入可见性折叠后降到约 $2.34\times10^{-7}$。这将差异定位到了顶点分支，而不是脸部光照或贴图颜色。
+
+折叠影响的是三角形的实际覆盖和深度，后面的眼睛又有独立几何与深度测试。若只恢复脸部 SDF 和底色，却忽略这步，额外的面片仍可能遮住本应可见的眼区。改变瞳孔的深度偏移会改变另一个环节，无法代替已经确认的可见性规则。
+
+| 当前脸部路径中的功能 | 本帧状态 | 对阅读后续算法的影响 |
+|---|---|---|
+| UV 标签驱动的几何折叠 | 启用 | 改变部分眼区几何覆盖 |
+| 风格化透视形变 | 当前关闭 | 不将此帧脸型归因于该分支 |
+| 表情图集叠加 | 当前关闭 | 图集是可用资源，本帧不叠加其中表情瓦片 |
+| 解析阴影平面 | 平面数为零，相关模式不提供有效平面 | 不把这条可选分支解释为本帧动态自阴影 |
+| 主脸部 SDF | 执行 | 纹理阈值与局部光向共同形成明暗控制 |
+
+这些状态由本次常量和分支共同确定。接下来的 SDF、表情与材质说明会分别交代计算能力和当前使用情况。
+
+<span id="face"></span>
+
+<span id="木偶脸部从局部光方向到-sdf-明暗边界"></span>
+
+#### 明暗边界：局部光向与 SDF 阈值
+
+<div class="rendering-figures">
+<figure><a href="/images/rendering-analysis/genshin/face-base-colour.png"><img src="/images/rendering-analysis/genshin/face-base-colour.png" alt="脸部基础颜色" loading="lazy" width="768" height="768"></a><figcaption>脸部基础颜色</figcaption></figure>
+<figure><a href="/images/rendering-analysis/genshin/face-sdf-red.png"><img src="/images/rendering-analysis/genshin/face-sdf-red.png" alt="脸部 SDF 的红色通道" loading="lazy" width="768" height="768"></a><figcaption>脸部 SDF 的红色通道</figcaption></figure>
+<figure><a href="/images/rendering-analysis/genshin/face-sdf-alpha.png"><img src="/images/rendering-analysis/genshin/face-sdf-alpha.png" alt="同一 SDF 的 alpha 通道" loading="lazy" width="768" height="768"></a><figcaption>同一 SDF 的 alpha 通道</figcaption></figure>
+</div>
+
+基础颜色负责面部图案；后两张以灰度显示数值阈值。它们并不是当前帧脸上的实际阴影，而是供不同光方向查询的控制数据。
+
+##### 先把光转到脸自己的坐标里
+
+角色转头后，世界中的同一光方向相对脸部会改变。顶点处理先把光方向投影到模型局部轴，再分别在两个二维平面中归一化，得到传给像素阶段的方向项。
+
+归一化分母保留 0.0001 的下限，避免光几乎垂直于某个平面时除以接近零的长度。这里的局部方向负责让明暗条件跟随脸部姿态，而不是直接用屏幕左右判断光从哪里来。
+
+##### 红色与 alpha 接成两个阈值区间
+
+读取 SDF 后，采样阈值 $s$ 为：
+
+$$
+s=
+\begin{cases}
+(a+1)/2,&a>0.0001\\
+r/2,&a\le0.0001
+\end{cases}
+$$
+
+红色分量负责较低的半区，alpha 分量可以进入较高的半区。图中的灰度不是“当前有多亮”，而是这个位置在何种方向条件下转入另一侧。
+
+方向项 $l$ 则形成比较阈值：
+
+$$
+q=\operatorname{clamp}(0.5-0.5l+\delta,q_{\min},q_{\max})
+$$
+
+当前 $\delta=0$，上下限为 0.03 与 0.97。阈值没有被允许直接冲到两个极端，有助于保留可控制的分区范围。
+
+##### 阈值差怎样变成明暗权重
+
+程序按边界陡度 $k$ 放大差值，再进行连续的 S 形转换：
+
+$$
+d=(s-q)k,\qquad e=2^{-49.828922|d|}
+$$
+$$
+w_{\text{lit}}=
+\begin{cases}
+1/(1+e),&d\ge0\\
+e/(1+e),&d<0
+\end{cases}
+$$
+
+本次边界陡度为 100，暗端与亮端分别是 0 和 1。这个变换在差值跨过零时由暗侧迅速进入亮侧，边界形状主要由阈值纹理设计，而不是完全由网格弧度决定。
+
+程序也有按光的侧别翻转横向 UV 的逻辑；当前主分支被材质控制强制为不翻转。不能因为存在自动翻转代码，就把这一帧写成已经执行了翻转。
+
+##### 一次 SDF 查询的数值过程
+
+<figure class="rendering-diagram"><a href="/images/rendering-analysis/genshin/face-sdf-flow.svg" target="_blank" rel="noopener"><img src="/images/rendering-analysis/genshin/face-sdf-flow.svg" alt="脸部 SDF 示意：局部光方向生成比较阈值，纹理生成表面阈值，差值决定明暗" loading="lazy" width="1000" height="1050"></a><figcaption>算法示意 · 点击查看大图</figcaption></figure>
+
+*依据本帧脸部路径绘制。下方边界曲线是公式示意；材质控制在本次主分支禁用了横向翻转。*
+
+可以把两个输入看成不同的问题。纹理值 $s$ 回答“脸上这个位置的边界设在哪里”，光方向给出的 $q$ 回答“本次照明推进到哪条边界”。当 $s=q$，上面的 S 形转换恰好给出 0.5；$s>q$ 进入亮侧，$s<q$ 进入暗侧。
+
+用不代表本帧具体像素的数值走一遍：若 $r=0.6,a=0$，则 $s=0.3$；若局部方向项 $l=0.4$ 且偏移为零，则 $q=0.3$，正好落在过渡中心。光方向改变为 $l=0.6$ 后，$q=0.2$，同一个纹理位置便转向亮侧。纹理不需要随光重新绘制，改变查询阈值即可让边界在脸上移动。
+
+alpha 非零时，程序选择 $(a+1)/2$，不是把红色和 alpha 各算一份阴影后混合。例如 $a=0.2$ 会选择 $s=0.6$；此时红色通道不再决定这个主阈值。两张灰图一起展示，才足以理解整个阈值域。
+
+把 $s-q$ 记为 $\Delta$，亮侧权重由 10% 增加到 90% 所需的阈值宽度为：
+
+$$
+\Delta_{10\%\rightarrow90\%}
+=\frac{2\log_2 9}{49.828922\,k}
+$$
+
+本次 $k=100$，宽度约为 0.00127。这个数字描述阈值域中的陡度，**不等于屏幕上 0.00127 个像素**。屏幕边缘有多宽，还取决于 SDF 在表面上的梯度、纹理过滤、投影尺寸及后续抗锯齿。因此非常陡的数值过渡仍不能直接用最终截图测成一个固定像素宽度。
+
+##### 次级控制与最终颜色
+
+当前另一个 SDF 分支使用其余分量，通过局部 UV 选择、缩放、偏移和周期映射形成额外控制。它不是把同一个阈值公式原样再执行一次。
+
+最终脸部还结合阴影颜色、不同区域的高光参数与视角边缘项。因此上式得到的是明暗权重，不是完整脸部颜色。基础贴图、主分区、局部控制和后续照明一起解释了最终面部，而单张 SDF 灰图只展示其中一种输入。
+
+<span id="expressions"></span>
+
+<span id="表情图集与有序消隐"></span>
+
+#### 表情叠加与可选消隐的实现
+
+![木偶脸部路径绑定的表情图集，本帧叠加分支关闭](/images/rendering-analysis/genshin/expression-atlas.png)
+
+图集中可见分散的眼部、嘴部与脸部图案。当前是中性表情状态，叠加门控为零，像素程序跳过整段图集计算。下面说明它启用时的算法；本帧脸部的可见结果不能归因于这张图集已经叠加。
+
+##### 图集选择前仍有局部变换
+
+程序通过表情索引与列数得到行列，行方向另有反序处理。在进入对应单元前，还可以：
+
+- 以纹理中心为基准平移、缩放或镜像。
+- 根据左右区域选择不同局部参数。
+- 用正弦和余弦构造二维旋转，角度可带时间变化。
+- 限制局部 UV，再映射到图集单元。
+
+可选的第二层表情样本按自身 alpha 与第一层混合，最终再以覆盖率进入脸部颜色。表情颜色如何接受阴影也由方向条件控制。因此恢复骨骼与形态变形之后，仍可能需要材质图集才能得到完整表情。
+
+##### 消隐保留不透明深度行为
+
+脸部程序还具有 4×4 有序抖动消隐。它根据屏幕像素位置从固定顺序表取阈值：
+
+~~~text
+ 1  13   4  16
+ 9   5  12   8
+ 3  15   2  14
+11   7  10   6
+~~~
+
+当有效消隐量低于相应开启阈值时，程序根据消隐量与格内阈值的关系决定保留或丢弃像素。比例变化通过空间覆盖实现，仍遵循不透明材质的深度逻辑，而不是把整个人物颜色统一做透明混合。
+
+这是一条可用分支，实际是否丢弃由当前材质和像素输入决定。它与图集换表情属于不同任务。
+
+<span id="eyes"></span>
+
+<span id="眼睛解析内部深度多层颜色与-matcap"></span>
+
+### 眼睛的内部层次与高光
+
+眼睛的深度感由视线在内部结构中的落点、多层颜色和方向高光共同建立。本节分别追踪解析视差、各层运动与混合，以及 Matcap 的观察空间方向。
+
+<div class="rendering-figures">
+<figure><a href="/scene-capture-comparison/figures/replay/genshin-eye-before.png"><img src="/scene-capture-comparison/figures/replay/genshin-eye-before.png" alt="眼睛材质写入之前" loading="lazy" width="520" height="460"></a><figcaption>眼睛材质写入之前</figcaption></figure>
+<figure><a href="/scene-capture-comparison/figures/replay/genshin-eye-after.png"><img src="/scene-capture-comparison/figures/replay/genshin-eye-after.png" alt="写入之后：虹膜与眼内亮部" loading="lazy" width="520" height="460"></a><figcaption>写入之后：虹膜与眼内亮部</figcaption></figure>
+<figure><a href="/scene-capture-comparison/figures/replay/genshin-face-final.png"><img src="/scene-capture-comparison/figures/replay/genshin-face-final.png" alt="最终脸部外观" loading="lazy" width="520" height="460"></a><figcaption>最终脸部外观</figcaption></figure>
+</div>
+
+前两张取同一材质颜色目标的相邻阶段。此时头发等后续部件尚未全部完成，额头与最终图的差异不属于眼睛程序本身。
+
+<div class="rendering-figures">
+<figure><a href="/images/rendering-analysis/genshin/pupil-colour.png"><img src="/images/rendering-analysis/genshin/pupil-colour.png" alt="一层瞳孔颜色" loading="lazy" width="512" height="512"></a><figcaption>一层瞳孔颜色</figcaption></figure>
+<figure><a href="/images/rendering-analysis/genshin/pupil-matcap.png"><img src="/images/rendering-analysis/genshin/pupil-matcap.png" alt="视图法线查询的 Matcap 外观" loading="lazy" width="512" height="512"></a><figcaption>视图法线查询的 Matcap 外观</figcaption></figure>
+<figure><a href="/images/rendering-analysis/genshin/pupil-highlight.png"><img src="/images/rendering-analysis/genshin/pupil-highlight.png" alt="眼内亮点的独立输入" loading="lazy" width="512" height="512"></a><figcaption>眼内亮点的独立输入</figcaption></figure>
+</div>
+
+它们是实际被眼睛路径读取的不同纹理。瞳孔图提供内部颜色，Matcap 提供随视图方向变化的外观，亮点又有自己的控制；最终眼睛不是直接显示其中任意一张。
+
+#### 视差来自沿视线的内部落点搜索
+
+眼睛程序以表面法线、相机方向和材质参考轴构造局部坐标系。根据观察角度，搜索步数为：
+
+$$
+n=\left\lceil16-12|N\cdot V|\right\rceil
+$$
+
+正视时约为 4 步，接近掠射角时最多约为 16 步。斜视路径跨过更大的内部范围，因此分配更多步骤。
+
+搜索在局部 UV 平面沿视线推进。每一步由当前位置到瞳孔中心的半径，计算解析定义的内部深度，找到穿越点后再用前后两步插值细化。当前瞳孔中心为 $(0.5,0.5)$，半径参数为 0.5，视差幅度参数约为 0.3，径向轮廓指数为 2。
+
+主循环不是每一步都采样独立高度纹理，所以不能写成标准高度图视差映射的某个固定采样版本。它使用参数化的内部形状；最终得到的位置再用于瞳孔底色和相关图案。
+
+#### 不同层有各自的运动与混合
+
+多层瞳孔纹理可以分别执行 UV 平移、旋转和振荡。打包渐变图中，不同纵向行保存不同混合曲线，程序固定读取若干行，再沿横向查询对应权重。
+
+部分颜色路径还采用多项式转换：
+
+$$
+f(c)=((0.305306c+0.682171)c+0.012523)c
+$$
+
+因此不能将所有层的采样值直接按同一个线性加法相加。不同分支包含加法、乘法或叠加式组合，开关决定哪些路径实际参与。
+
+#### Matcap 的方向是怎样得到的
+
+程序把 UV 相对中心的横向位置解释为球面局部坐标，以：
+
+$$
+z=\sqrt{\max(0,1-x^2-y^2)}
+$$
+
+恢复第三个分量，再与原法线混合。当前相关混合强度约为 0.3。这个方向转入观察空间后映射到纹理坐标，用于查询 Matcap。
+
+这条路径可以产生随观察方向变化的眼球亮部，但它不证明亮点对应场景里某个真实反射物。前后的静态眼睛图展示写入贡献；真实视角变化幅度仍需要多视角画面。
+
+<span id="cloth-effects"></span>
+
+### 衣料的明暗、双面外观与闪光
+
+裙装的基础明暗和细小闪点有各自的控制来源。下面先解释区域参数、法线与正反面采样如何建立衣料，再展开随机点簇、相机相位和遮罩怎样叠加闪光。
+
+<span id="cloth"></span>
+
+<span id="裙装控制分区细节法线与明暗渐变"></span>
+
+#### 基础衣料：控制分区、细节方向与明暗渐变
+
+<div class="rendering-figures">
+<figure><a href="/images/rendering-analysis/genshin/cloth-base-colour.png"><img src="/images/rendering-analysis/genshin/cloth-base-colour.png" alt="裙装路径的基础颜色" loading="lazy" width="768" height="768"></a><figcaption>裙装路径的基础颜色</figcaption></figure>
+<figure><a href="/images/rendering-analysis/genshin/cloth-control-alpha.png"><img src="/images/rendering-analysis/genshin/cloth-control-alpha.png" alt="材质控制图的 alpha 分区" loading="lazy" width="768" height="768"></a><figcaption>材质控制图的 alpha 分区</figcaption></figure>
+<figure><a href="/images/rendering-analysis/genshin/cloth-detail-normal.png"><img src="/images/rendering-analysis/genshin/cloth-detail-normal.png" alt="独立衣料细节输入" loading="lazy" width="512" height="512"></a><figcaption>独立衣料细节输入</figcaption></figure>
+</div>
+
+颜色图可识别浅色衣片与装饰。控制图的灰度块用于选择参数组；细节图又独立提供局部方向。三者职责不同，不能用底色图替代其余输入。
+
+![裙装不同材质区域在最终画面中的位置](/scene-capture-comparison/figures/replay/genshin-cloth-final.png)
+
+##### 一个网格可以对应多组材质参数
+
+控制图 alpha 通过 0.2、0.4、0.6、0.8 等阈值分成多个区间，再选择对应参数组。这使同一衣片网格内的区域拥有不同阴影色、高光或细节强度，而不必仅靠最终颜色区分材质。
+
+当前基础法线、细节法线、金属响应和明暗渐变共同参与。控制图分区决定“选哪一组”，法线与光向决定“当前如何受光”，两者不能混为同一个遮罩。
+
+##### 用屏幕导数建立局部方向
+
+裙装程序从位置和 UV 的屏幕导数建立局部切线关系。细节纹理的两个横向分量被映射到正负区间，纵向分量按平方根关系重建，再与基础法线组合。
+
+某些细节路径受材质区域标记限制，所以不能把衣料微法线无条件施加到整个身体。这种处理允许局部织物保持自己的受光细节，同时沿用角色共用的几何与输出目标。
+
+##### 明暗不是直接把点积当亮度
+
+光照点积先经过重映射：
+
+$$
+u_L=0.4975(N\cdot L)+0.5
+$$
+
+再与控制图和顶点数据结合，决定明暗分区与渐变查询。阴影渐变本身是实际的颜色资源：
+
+![裙装路径使用的阴影渐变纹理](/images/rendering-analysis/genshin/cloth-shadow-ramp.png)
+
+不同横向位置对应不同受光程度，纵向行可容纳多组规则。图中的窄色带只是输入，实际哪一行被哪种区域使用，要结合程序条件理解；并不是给最终截图沿水平方向盖一道渐变。
+
+##### 控制图 G 怎样变成明暗分界
+
+衣料控制图中的绿色分量 $g$ 先经过带符号平方重映射：
+
+$$
+o=2(g-0.5)|g-0.5|+0.5
+$$
+
+顶点遮蔽参与的变体再将它乘以顶点颜色 R。系数 2 来自原指令对同一个值重复两次求点积；只写一次平方会改变整条曲线。
+
+这个重映射保留两端，并让中间变化更平缓。例如 $g=0.25,0.5,0.75$ 分别得到 $o=0.375,0.5,0.625$。它是作者提供的受光控制，不能从“看起来像 AO”的灰度图直接推断为屏幕空间环境遮蔽。
+
+令前文的半兰伯特值为 $h=0.4975N\cdot L+0.5$，组合量为：
+
+$$
+c=(o+h)/2
+$$
+
+当 $o<0.05$ 时强制进入暗侧，$o>0.95$ 时强制进入亮侧；其余位置与阈值 $\tau$ 比较。暗侧的深度量为：
+
+$$
+d_s=\frac{\tau-c}{\tau},\qquad
+f_{lit}=1-\min\left(\frac{d_s}{w},1\right)
+$$
+
+亮侧直接取 $f_{lit}=1$。若开启顶点过渡控制，$w$ 还乘 $\max(2V_g,0.01)$。本次 ILM 与顶点遮蔽开关均开启，$\tau=0.5$、$w=0.5$，未用顶点 G 再调节过渡宽度。这里保留了两个量：$d_s$ 描述跨入暗侧多深，$f_{lit}$ 描述渐变如何过渡；后面的金属分支还会使用前者，不能只保存最后的渐变坐标。
+
+##### 双面裙装不只是翻转一个法线
+
+当前第一组裙装的背面备用 UV 开关为一。正面读取主 UV，背面可读取另一组 UV，同时几何法线按正反面翻转。材质再用世界位置与所选 UV 的屏幕导数构造局部切线方向。
+
+控制图 alpha 的区间还决定哪些区域能接入衣料微法线。已确认的细节区域为 $0.2\le\alpha<0.4$，并额外要求控制图 B 不大于约 0.95。细节图的 R、G 恢复横向法线，alpha 则独立提供细节遮罩。
+
+满足条件时，程序将恢复并归一化的细节世界法线加到基础世界法线上，再归一化；其他区域保留基础法线。这一步并不是对整个模型无条件替换法线。
+
+背面还有独立的全暗侧选择。本次相关允许开关为零，因此背面条件可将明暗控制强制设为暗侧。这样，同一片薄裙装的内外侧同时具有坐标、方向和受光上的差别。
+
+##### 区域编码不是五等分后的顺序索引
+
+当前 alpha 区间与参数组的关系为：默认组接收其余区间，$[0.8,1]$ 可选第二组，$[0.4,0.6)$ 可选第三组，$[0.2,0.4)$ 可选第四组，$[0.6,0.8)$ 可选第五组。每组还有独立门控；门控关闭时保留先前选择。
+
+因此，直接用 $\lfloor5\alpha\rfloor$ 索引五套参数，不是这条裙装程序的等价形式。保留区间次序和各自开关，才能让颜色、高光、背光色和细节区域选到同一套规则。
+
+<span id="dress-sparkle"></span>
+
+<span id="衣料闪光两个随机点簇相机相位与区域遮罩"></span>
+
+#### 衣料闪光：点簇、相机相位与区域遮罩
+
+裙装的闪光有独立的程序化生成过程。它首先在材质 UV 上建立网格，每个格子生成两组稳定随机数，再按圆斑形状和时间相位决定哪些点发亮；最后才进入颜色与遮罩组合。
+
+<figure class="rendering-diagram"><a href="/images/rendering-analysis/genshin/dress-sparkle-flow.svg" target="_blank" rel="noopener"><img src="/images/rendering-analysis/genshin/dress-sparkle-flow.svg" alt="裙装闪光的数据流示意：格子随机位置、空间圆斑、相位脉冲与材质遮罩。" loading="lazy" width="1120" height="690"></a><figcaption>算法示意 · 点击查看大图</figcaption></figure>
+
+##### 格子坐标保持随机图案稳定
+
+$$
+u_g=k_g u,\qquad i=\lfloor u_g\rfloor,\qquad f=\operatorname{frac}(u_g)
+$$
+
+随机函数分别以重复排列的 $i$ 和 $i+0.5$ 为种子。种子先乘约 0.0973、0.103、0.1031 等不同系数取小数，再混合分量点积和乘法，生成四个零到一的数。前三个控制颜色和圆斑位置／尺度，第四个控制脉冲相位及开启条件。
+
+随机数依赖整数格子坐标，同一格内部不会因为 UV 的细小变化而重新生成一套点位。局部坐标 $f$ 则负责在这个固定图案内移动采样。
+
+##### 圆斑的半径参数作用于距离平方
+
+随机中心为 $c$，第三个随机量为 $r_z$，尺度为 $k_r$：
+
+$$
+\rho=k_r(r_z+0.5),\qquad
+D=\operatorname{saturate}
+\frac{\rho-\|f-c\|^2}{\rho+10^{-5}}
+$$
+
+第一组中心额外偏移 0.5，第二组不偏移。这里 $\rho$ 与距离平方比较，所以圆斑支撑半径约为 $\sqrt{\rho}$，而不是直接等于 $\rho$。把它作为普通线性半径使用，会明显改变亮点大小。
+
+##### 相机与时间共同改变脉冲
+
+设第四个随机量为 $r_w$，活动相位宽度为 $a$，经过缩放的相机位置长度为 $d_c$，帧相位为 $t$：
+
+$$
+P=\max\left(0,\sin\left[2\pi\left(\frac{1-r_w}{a}+d_c\right)+t\,k_t\right]\right)
+\;\mathbf1_{r_w\ge1-a}
+$$
+
+程序中的 $d_c$ 是对传入相机位置按 XY 尺度处理后取长度，不能直接改称“当前像素到相机的距离”。相机变化会调节闪烁相位，格子随机位置本身仍由 UV 决定。
+
+两组贡献分别为随机 RGB 乘圆斑 $D$ 和脉冲 $P$，再相加，乘闪光色与强度。随后按亮度系数 $(0.2125,0.7154,0.0721)$ 形成另一种着色结果，与原随机颜色插值；最后可乘实际材质遮罩。本次传入的遮罩是基础法线纹理的 B 通道：R、G 提供法线横向量，B 在这里另行控制闪光，不能当作已经存好的法线 Z。
+
+<div class="rendering-figures">
+<figure><a href="/images/rendering-analysis/genshin/dress-sparkle-mask.png"><img src="/images/rendering-analysis/genshin/dress-sparkle-mask.png" alt="第一组裙装：基础法线纹理 B 通道中的闪光遮罩；亮处保留更多闪光贡献，暗处抑制。" loading="lazy" width="512" height="512"></a><figcaption>第一组裙装：基础法线纹理 B 通道中的闪光遮罩；亮处保留更多闪光贡献，暗处抑制。</figcaption></figure>
+<figure><a href="/images/rendering-analysis/genshin/dress-secondary-sparkle-mask.png"><img src="/images/rendering-analysis/genshin/dress-secondary-sparkle-mask.png" alt="第二组裙装：同一职责的 B 通道遮罩，使用不同的展开范围与渐变。" loading="lazy" width="512" height="512"></a><figcaption>第二组裙装：同一职责的 B 通道遮罩，使用不同的展开范围与渐变。</figcaption></figure>
+</div>
+
+两图来自各自绘制所用纹理的实际 B 通道，以固定 0–1 范围显示，没有自动拉伸对比度。这里展示的是闪光乘入前的区域权重；点位和闪烁仍由前述程序生成。
+
+##### 两组裙装使用不同的实际参数
+
+| 参数 | 第一组裙装 | 第二组裙装 |
+|---|---:|---:|
+| UV 网格倍率 $k_g$ | 100 | 107.69 |
+| 圆斑尺度 $k_r$ | 0.015 | 0.05 |
+| 帧相位倍率 $k_t$ | 0.5 | 0.87 |
+| 活动相位宽度 $a$ | 0.2 | 0.4 |
+| 强度 | 1.68 | 1.68 |
+| 亮度着色插值量 | 1 | 0 |
+| 闪光颜色 RGB | 约 (1.472, 1.211, 0.944) | 约 (1.052, 0.0068, 0.0497) |
+| 相机 XY 尺度 | 2 | 3 |
+| 材质遮罩 | 参与 | 参与 |
+
+这些值来自两次绘制各自的常量；相机尺度差异还存在于程序本身。第一组偏向以亮度控制统一的暖色闪光，第二组保留更多随机分量并使用偏红的颜色。它们仍会经过区域遮罩、照明组合及后处理，不能把表里的 RGB 直接当成最终屏幕颜色。
+
+按同一随机半径样本比较，第二组圆斑的 UV 支撑半径约为第一组的 $\sqrt{0.05/0.015}\times100/107.69\approx1.70$ 倍。这是由网格和形状公式得到的关系；最终可见点数与尺寸还受遮罩、相位和像素采样影响。
+
+<span id="postprocessing"></span>
+
+<span id="运动模糊泛光和显示颜色在历史之前完成"></span>
+
+### 亮部扩散、运动模糊与显示色彩
+
+运动模糊和泛光在当前颜色上组织运动与亮部，再由显示处理完成颜色转换。这份截帧中它们位于边缘处理和历史重建之前，后两者使用的颜色域也由此确定。
+
+当前观察到的运动模糊路径先整理运动相关结果，再输出较低分辨率的颜色与控制。泛光路径从场景亮部开始，经过过滤、下降尺度与组合。最终颜色阶段再将相应结果汇入显示颜色。
+
+<div class="rendering-figures rendering-stages">
+<figure><a href="/images/rendering-analysis/genshin/stage-motion-blur.png"><img src="/images/rendering-analysis/genshin/stage-motion-blur.png" alt="运动模糊阶段输出的颜色预览" loading="lazy" width="1200" height="502"></a><figcaption>运动模糊阶段的颜色输出，仍位于显示转换之前。</figcaption></figure>
+<figure><a href="/images/rendering-analysis/genshin/stage-tonemap.png"><img src="/images/rendering-analysis/genshin/stage-tonemap.png" alt="显示转换之后的颜色" loading="lazy" width="1200" height="502"></a><figcaption>后续亮部组合与显示转换后的颜色。</figcaption></figure>
+</div>
+
+两张图用于定位颜色处理的先后。右图还包含中间的亮部与颜色变换，不能将整体明暗差仅归因于运动模糊；模糊是否明显还取决于本帧实际位移。它们之后的边缘与历史处理接收的是已经完成显示转换的颜色。
+
+这些步骤的输出顺序可以确认，但本篇没有将所有运动模糊与泛光变体展开为完整公式。这些阶段的具体参数需要分别从当前执行路径确认。
+
+这里必须保留的事实是：**当前帧的颜色处理先结束，后面才做边缘与历史重建。** 这决定了历史保存的数值范围，也决定邻域约束应该比较什么颜色。
+
+<span id="image-stability"></span>
+
+### 抗锯齿与画面稳定
+
+这份实现先处理当前帧边缘，再利用表面运动重建并融合历史颜色。两条路径共同服务边缘与时间上的稳定：前者查找边缘形状，后者判断哪些旧结果适合当前表面。
+
 <span id="motion"></span>
 
-### 法线结束使用后，运动覆盖同一张图
+<span id="法线结束使用后运动覆盖同一张图"></span>
+
+#### 表面对应：运动编码与法线存储复用
 
 照明阶段结束后，相机与几何运动重新写入此前保存法线的纹理。运动表示同一表面在当前与旧画面之间的屏幕位移。
 
@@ -1113,26 +1219,11 @@ $$
 
 顺序复用节省了独立存储的需求，但不能在方向消费者结束前改写，也不能在动态几何尚未写完时提前融合历史。
 
-<span id="postprocessing"></span>
-
-### 运动模糊、泛光和显示颜色在历史之前完成
-
-当前观察到的运动模糊路径先整理运动相关结果，再输出较低分辨率的颜色与控制。泛光路径从场景亮部开始，经过过滤、下降尺度与组合。最终颜色阶段再将相应结果汇入显示颜色。
-
-<div class="rendering-figures rendering-stages">
-<figure><a href="/images/rendering-analysis/genshin/stage-motion-blur.png"><img src="/images/rendering-analysis/genshin/stage-motion-blur.png" alt="运动模糊阶段输出的颜色预览" loading="lazy" width="1200" height="502"></a><figcaption>运动模糊阶段的颜色输出，仍位于显示转换之前。</figcaption></figure>
-<figure><a href="/images/rendering-analysis/genshin/stage-tonemap.png"><img src="/images/rendering-analysis/genshin/stage-tonemap.png" alt="显示转换之后的颜色" loading="lazy" width="1200" height="502"></a><figcaption>后续亮部组合与显示转换后的颜色。</figcaption></figure>
-</div>
-
-两张图用于定位颜色处理的先后。右图还包含中间的亮部与颜色变换，不能将整体明暗差仅归因于运动模糊；模糊是否明显还取决于本帧实际位移。它们之后的边缘与历史处理接收的是已经完成显示转换的颜色。
-
-这些步骤的输出顺序可以确认，但本篇没有将所有运动模糊与泛光变体展开为完整公式。这些阶段的具体参数需要分别从当前执行路径确认。
-
-这里必须保留的事实是：**当前帧的颜色处理先结束，后面才做边缘与历史重建。** 这决定了历史保存的数值范围，也决定邻域约束应该比较什么颜色。
-
 <span id="spatial-aa"></span>
 
-### 当前帧抗锯齿：找边缘、求权重、混合邻居
+<span id="当前帧抗锯齿找边缘求权重混合邻居"></span>
+
+#### 当前帧边缘：检测、查表与邻域混合
 
 ![亮度边缘检测结果：显示被选中的横纵边缘](/images/rendering-analysis/genshin/edge-detection.png)
 
@@ -1151,7 +1242,9 @@ $$
 
 <span id="temporal"></span>
 
-### 时序重建：前景运动、重建核与历史状态
+<span id="时序重建前景运动重建核与历史状态"></span>
+
+#### 跨帧稳定：重建核、类别约束与历史状态
 
 <div class="rendering-figures">
 <figure><a href="/scene-capture-comparison/figures/replay/genshin-temporal-before.png"><img src="/scene-capture-comparison/figures/replay/genshin-temporal-before.png" alt="历史融合输入：细碎亮点与栏杆边缘" loading="lazy" width="480" height="509"></a><figcaption>历史融合输入：细碎亮点与栏杆边缘</figcaption></figure>
@@ -1160,13 +1253,13 @@ $$
 
 两张采用相同位置和显示设置。输出中部分亮点与轮廓更平滑，同时也能观察到细节变软；它展示本次空间变化，不等同于连续运动质量测试。
 
-#### 沿前景表面重投影
+##### 沿前景表面重投影
 
 程序比较中心及四个偏移为 $(\pm2,\pm2)$ 像素的位置，剔除越界点，并按当前反向深度约定选较靠前的表面，再读取其运动与附加标记。高位材质类别另外从当前像素位置读取。
 
 细轮廓附近同时存在前景和背景。采用前景运动，可以减少把背景位移用于前景边界的情况。随后按平方关系解码位移，找到旧坐标，并单独取得历史状态与颜色控制。
 
-#### 当前颜色由十六个样本重建
+##### 当前颜色由十六个样本重建
 
 当前颜色不是一次双线性取样。程序显式读取 4×4 的十六个样本，滤波尺度又受状态和采样偏置上限表控制。
 
@@ -1184,13 +1277,13 @@ $$
 
 这个核含有负权重区间，不是普通平均。负瓣可以改变细节锐度，也可能把重建值推到邻域范围之外，因此最后的限幅有实际作用。
 
-#### 历史颜色使用另一套重建
+##### 历史颜色使用另一套重建
 
 旧坐标通常落在像素之间。程序由小数位置构造三次权重，将采样位置合并，以五次颜色读取重建历史 RGB，并做归一化。越界时，旧颜色与状态都不再作为正常历史使用。
 
 新旧颜色的采样核不同：当前侧利用更完整邻域重建，历史侧按重投影位置过滤。只保留一个简单的“当前与旧颜色插值”无法解释前面的取样过程。
 
-#### 五次历史采样怎样近似一个二维重建核
+##### 五次历史采样怎样近似一个二维重建核
 
 <figure class="rendering-diagram"><a href="/images/rendering-analysis/genshin/temporal-sampling.svg" target="_blank" rel="noopener"><img src="/images/rendering-analysis/genshin/temporal-sampling.svg" alt="原神时序采样示意：当前侧十六点，历史侧五次过滤采样，状态输出另行保存" loading="lazy" width="1000" height="1120"></a><figcaption>算法示意 · 点击查看大图</figcaption></figure>
 
@@ -1228,7 +1321,7 @@ $$
 
 此外，RGB 重建完成后，程序仍在原始旧坐标单独采样历史状态，以及颜色图中的 alpha 控制量。高阶颜色重建与离散／状态信息有不同读取方式，不能把 RGB 的负瓣滤波直接施加给全部控制字段。
 
-#### 十六点当前核的负瓣在哪里
+##### 十六点当前核的负瓣在哪里
 
 前面的核可用 $u=d^2$ 表示：
 
@@ -1240,13 +1333,13 @@ $$
 
 这也给出两种必须分开的限制：一是当前重建色夹到十六点的逐通道范围，抑制重建本身的过冲；二是后续按类别和历史状态限制旧颜色，处理旧内容与当前内容不一致。把两个限幅合并，会改变它们所约束的对象。
 
-#### 类别决定何时限制历史
+##### 类别决定何时限制历史
 
 雪等材质保存的高位状态在这里被提取，参与分支选择。一类路径采用逐通道最大值保留规则；其他路径在状态到期后，用当前对角邻居构造颜色区间，将历史限制进去。区间还随运动与亮度差变化。
 
 类别、历史保留状态和颜色约束共同工作。这也说明材质输出里的附加位不是只服务当下照明，它们会持续影响最终细节。
 
-#### 混合比例来自权重和与累积状态
+##### 混合比例来自权重和与累积状态
 
 记当前有效权重和为 $W$，已受控制的历史累积量为 $H$：
 
@@ -1266,7 +1359,7 @@ $$
 
 静止时上限为 12，较快运动时降到 2。它是累积状态的上限，不是直接把颜色乘十二或乘二。完整状态更新还包含当前覆盖控制。
 
-#### 两张历史结果分别保存什么
+##### 两张历史结果分别保存什么
 
 | 保存位置 | 含义 | 对下一次的作用 |
 |---|---|---|
@@ -1279,7 +1372,7 @@ $$
 
 本次采样偏置换算到像素约为 $(0.375,0.222222)$。一帧只能给出这个取值，无法单独恢复完整抖动序列。
 
-#### 从雪材质到历史输出的一条完整数据路径
+##### 从雪材质到历史输出的一条完整数据路径
 
 取一个覆雪栏杆像素，其数据会依次经过以下环节：
 
@@ -1296,7 +1389,9 @@ $$
 
 <span id="conclusion"></span>
 
-### 这份雪城实现的关键连接
+<span id="这份雪城实现的关键连接"></span>
+
+### 本帧效果的配合与分析范围
 
 积雪从两套材质和顶点控制形成表面，静态阴影经解压进入统一深度查询，木偶通过专用脸部、眼睛和衣料规则产生角色颜色，再选择性读取场景环境反馈。照明结束后，法线存储转为运动，颜色映射后的画面最后进入边缘与历史重建。
 
