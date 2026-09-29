@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="690" viewBox="0 0 1120 690" role="img" aria-label="木偶裙装：闪光由位置、形状、脉冲和遮罩共同生成">
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10" fill="#59738f"/></marker></defs>
+<style>text{font-family:Microsoft YaHei,Segoe UI,sans-serif;fill:#23354c}.title{font-size:27px;font-weight:700}.sub{font-size:16px;fill:#587087}.head{font-size:20px;font-weight:700}.body{font-size:17px}.note{font-size:15px;fill:#5d7187}.arrow{fill:none;stroke:#59738f;stroke-width:2.5;marker-end:url(#arrow)}</style>
+<rect width="1120" height="690" fill="#f7f9fc"/>
+<text x="38" y="47" class="title">木偶裙装：闪光由位置、形状、脉冲和遮罩共同生成</text>
+<text x="38" y="79" class="sub">算法示意 · 每个 UV 格子生成两组随机数，图中连接表示计算依赖</text>
+<rect x="38" y="117" width="306" height="130" rx="11" fill="#e9f1fa" stroke="#ccd8e5"/>
+<text x="56" y="149" class="head">材质 UV</text>
+<text x="56" y="181" class="body">网格倍率 × UV</text>
+<text x="56" y="208" class="body">整数格子 i ／ 局部坐标 f</text>
+<rect x="401" y="117" width="306" height="130" rx="11" fill="#e9f1fa" stroke="#ccd8e5"/>
+<text x="419" y="149" class="head">两组稳定随机数</text>
+<text x="419" y="181" class="body">种子 A：i + 0.5</text>
+<text x="419" y="208" class="body">种子 B：i</text>
+<rect x="764" y="117" width="316" height="130" rx="11" fill="#e9f1fa" stroke="#ccd8e5"/>
+<text x="782" y="149" class="head">随机分量分工</text>
+<text x="782" y="181" class="body">XYZ：颜色、位置、尺度</text>
+<text x="782" y="208" class="body">W：脉冲相位与开启条件</text>
+<path d="M344 181 H396" class="arrow"/>
+<path d="M707 181 H759" class="arrow"/>
+<rect x="38" y="313" width="306" height="142" rx="11" fill="#e8f4ef" stroke="#ccd8e5"/>
+<text x="56" y="345" class="head">圆斑形状 D</text>
+<text x="56" y="377" class="body">ρ = 尺度 × (随机 Z + 0.5)</text>
+<text x="56" y="404" class="body">以局部距离平方构造圆斑</text>
+<text x="56" y="431" class="body">两组中心偏移不同</text>
+<rect x="401" y="313" width="306" height="142" rx="11" fill="#fff2e5" stroke="#ccd8e5"/>
+<text x="419" y="345" class="head">相位脉冲 P</text>
+<text x="419" y="377" class="body">相机位置项 + 帧相位</text>
+<text x="419" y="404" class="body">取正的正弦段</text>
+<text x="419" y="431" class="body">随机 W 控制活动区间</text>
+<rect x="764" y="313" width="316" height="142" rx="11" fill="#e9f1fa" stroke="#ccd8e5"/>
+<text x="782" y="345" class="head">两组 RGB 累加</text>
+<text x="782" y="377" class="body">随机 RGB × D × P</text>
+<text x="782" y="404" class="body">相加后乘颜色与强度</text>
+<text x="782" y="431" class="body">再做亮度着色插值</text>
+<path d="M921 247 V275 H192 V308" class="arrow"/>
+<path d="M556 247 V308" class="arrow"/>
+<path d="M344 385 H367 V480 H742 V430 H759" class="arrow"/>
+<path d="M707 385 H759" class="arrow"/>
+<rect x="38" y="516" width="1042" height="100" rx="11" fill="#e9f1fa" stroke="#ccd8e5"/>
+<text x="56" y="548" class="head">区域遮罩 → 与衣料光照组合 → 后处理</text>
+<text x="56" y="580" class="body">本次两组裙装都应用遮罩；网格、半径、活动宽度、颜色和相机尺度分别设置。</text>
+<path d="M922 455 V511" class="arrow"/>
+<text x="38" y="654" class="note">闪光是材质求值的一部分；单帧最终高亮同时受到相位、遮罩、采样与后续显示影响。</text>
+</svg>

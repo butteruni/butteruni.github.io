@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="690" viewBox="0 0 1120 690" role="img" aria-label="终末地：从压缩顶点到当前与历史表面">
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10" fill="#59738f"/></marker></defs>
+<style>text{font-family:Microsoft YaHei,Segoe UI,sans-serif;fill:#23354c}.title{font-size:27px;font-weight:700}.sub{font-size:16px;fill:#587087}.head{font-size:20px;font-weight:700}.body{font-size:17px}.note{font-size:15px;fill:#5d7187}.arrow{fill:none;stroke:#59738f;stroke-width:2.5;marker-end:url(#arrow)}</style>
+<rect width="1120" height="690" fill="#f7f9fc"/>
+<text x="38" y="47" class="title">终末地：从压缩顶点到当前与历史表面</text>
+<text x="38" y="79" class="sub">数据布局与算法示意 · 只描述已核对为相同程序的竹林人物路径</text>
+<rect x="38" y="120" width="268" height="55" fill="#e5edf8" stroke="#aebfd3"/>
+<text x="172.0" y="153" class="body" text-anchor="middle">法线坐标 X · 10 位</text>
+<rect x="306" y="120" width="268" height="55" fill="#e5edf8" stroke="#aebfd3"/>
+<text x="440.0" y="153" class="body" text-anchor="middle">法线坐标 Y · 10 位</text>
+<rect x="574" y="120" width="268" height="55" fill="#e5edf8" stroke="#aebfd3"/>
+<text x="708.0" y="153" class="body" text-anchor="middle">切线参数 · 10 位</text>
+<rect x="842" y="120" width="119" height="55" fill="#e5edf8" stroke="#aebfd3"/>
+<text x="901.5" y="153" class="body" text-anchor="middle">压缩标志</text>
+<rect x="961" y="120" width="119" height="55" fill="#e5edf8" stroke="#aebfd3"/>
+<text x="1020.5" y="153" class="body" text-anchor="middle">切线手性</text>
+<text x="850" y="198" class="note">各 1 位；框宽不按位数比例绘制</text>
+<rect x="38" y="230" width="314" height="141" rx="11" fill="#e9f1fa" stroke="#ccd8e5"/>
+<text x="56" y="262" class="head">恢复局部方向</text>
+<text x="56" y="294" class="body">法线投影展开并归一化</text>
+<text x="56" y="321" class="body">切线参数 + 参考基</text>
+<text x="56" y="348" class="body">手性决定副切线方向</text>
+<rect x="402" y="230" width="314" height="141" rx="11" fill="#e9f1fa" stroke="#ccd8e5"/>
+<text x="420" y="262" class="head">当前／旧骨骼行</text>
+<text x="420" y="294" class="body">按标记选一、二或四影响</text>
+<text x="420" y="321" class="body">混合矩阵行，再变换顶点</text>
+<text x="420" y="348" class="body">位置含平移，方向不含平移</text>
+<rect x="766" y="230" width="314" height="141" rx="11" fill="#e9f1fa" stroke="#ccd8e5"/>
+<text x="784" y="262" class="head">当前／旧物体与相机</text>
+<text x="784" y="294" class="body">各自的物体变换与原点</text>
+<text x="784" y="321" class="body">各自的投影</text>
+<text x="784" y="348" class="body">保留两套裁剪坐标</text>
+<path d="M195 175 V225" class="arrow"/>
+<path d="M352 301 H397" class="arrow"/>
+<path d="M716 301 H761" class="arrow"/>
+<rect x="38" y="447" width="500" height="135" rx="11" fill="#e8f4ef" stroke="#ccd8e5"/>
+<text x="56" y="479" class="head">当前表面位置</text>
+<text x="56" y="511" class="body">光栅位置加入采样抖动</text>
+<text x="56" y="538" class="body">建立深度、颜色和法线</text>
+<text x="56" y="565" class="body">实体标记按 10 / 10 / 10 / 2 位保存</text>
+<rect x="580" y="447" width="500" height="135" rx="11" fill="#fff2e5" stroke="#ccd8e5"/>
+<text x="598" y="479" class="head">表面运动</text>
+<text x="598" y="511" class="body">未抖动的当前／旧裁剪位置作差</text>
+<text x="598" y="538" class="body">以两次平方根压缩位移</text>
+<text x="598" y="565" class="body">运动与类别供后续历史验证</text>
+<path d="M923 371 V411 H289 V442" class="arrow"/>
+<path d="M923 371 V411 H831 V442" class="arrow"/>
+<text x="38" y="646" class="note">材质法线随后再编码到屏幕目标；顶点压缩方向与 G-buffer 法线是不同的接口。</text>
+</svg>

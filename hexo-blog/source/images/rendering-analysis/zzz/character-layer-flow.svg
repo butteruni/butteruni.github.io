@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="690" viewBox="0 0 1120 690" role="img" aria-label="蕾米：同一角色的颜色与可见性分层">
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10" fill="#59738f"/></marker></defs>
+<style>text{font-family:Microsoft YaHei,Segoe UI,sans-serif;fill:#23354c}.title{font-size:27px;font-weight:700}.sub{font-size:16px;fill:#587087}.head{font-size:20px;font-weight:700}.body{font-size:17px}.note{font-size:15px;fill:#5d7187}.arrow{fill:none;stroke:#59738f;stroke-width:2.5;marker-end:url(#arrow)}</style>
+<rect width="1120" height="690" fill="#f7f9fc"/>
+<text x="38" y="47" class="title">蕾米：同一角色的颜色与可见性分层</text>
+<text x="38" y="79" class="sub">算法与固定状态示意 · 各分支依据当前截帧，框图不是效果截图</text>
+<rect x="38" y="118" width="314" height="128" rx="11" fill="#e9f1fa" stroke="#ccd8e5"/>
+<text x="56" y="150" class="head">不透明人物材质</text>
+<text x="56" y="182" class="body">头发、身体、翼部与脸部</text>
+<text x="56" y="209" class="body">建立颜色、运动、法线及深度</text>
+<rect x="402" y="118" width="314" height="128" rx="11" fill="#e9f1fa" stroke="#ccd8e5"/>
+<text x="420" y="150" class="head">不透明描边与脸部重绘</text>
+<text x="420" y="182" class="body">扩张外壳、剔除正面</text>
+<text x="420" y="209" class="body">脸部按已有模板条件重绘</text>
+<rect x="766" y="118" width="314" height="128" rx="11" fill="#e9f1fa" stroke="#ccd8e5"/>
+<text x="784" y="150" class="head">眼睛独立合成</text>
+<text x="784" y="182" class="body">RGB 已预乘覆盖</text>
+<text x="784" y="209" class="body">辅助目标分别保留或覆盖</text>
+<path d="M352 182 H397" class="arrow"/>
+<path d="M716 182 H761" class="arrow"/>
+<rect x="38" y="304" width="500" height="143" rx="11" fill="#e8f4ef" stroke="#ccd8e5"/>
+<text x="56" y="336" class="head">后续头发层</text>
+<text x="56" y="368" class="body">深度／模板准备 → 颜色 → 描边</text>
+<text x="56" y="395" class="body">颜色层仍写深度</text>
+<text x="56" y="422" class="body">RGB：a × S + (1 − a) × B</text>
+<rect x="580" y="304" width="500" height="143" rx="11" fill="#fff2e5" stroke="#ccd8e5"/>
+<text x="598" y="336" class="head">较晚的透明衣料层</text>
+<text x="598" y="368" class="body">保色但写深度 → 透明颜色 → 描边</text>
+<text x="598" y="395" class="body">颜色层不写深度，描边写深度</text>
+<text x="598" y="422" class="body">RGB：S + a × B</text>
+<path d="M925 246 V271 H290 V299" class="arrow"/>
+<path d="M538 376 H575" class="arrow"/>
+<rect x="38" y="502" width="1042" height="110" rx="11" fill="#e9f1fa" stroke="#ccd8e5"/>
+<text x="56" y="534" class="head">运动和类别继续交给整帧历史</text>
+<text x="56" y="566" class="body">描边分别计算当前与旧外壳位置；颜色混合不等于可以忽略深度和辅助目标。</text>
+<text x="56" y="593" class="body">眼睛的 RGB：S + (1 − a) × B；透明衣料的 a 则进入背景保留因子。</text>
+<path d="M830 447 V497" class="arrow"/>
+<text x="38" y="654" class="note">S 为输出 RGB，B 为已有颜色，a 为该路径输出 alpha；三个公式的 alpha 语义不能互换。</text>
+</svg>
