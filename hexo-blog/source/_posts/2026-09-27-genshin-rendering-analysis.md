@@ -47,7 +47,7 @@ mathjax: true
 
 ### 样本条件
 
-本帧主视图与输出均为 3440×1440，接口为 D3D11。它展示木偶位于雪城阶梯和建筑前的状态；没有用其他地区、其他人物或参考文章中的测试数字代替本帧资源。
+本帧主视图与输出均为 3440×1440，接口为 D3D11。它展示木偶位于雪城阶梯和建筑前的状态。文中数值描述这一视角下的实际资源与提交，尚未测量不同画质档位、硬件或观察距离下的变化。
 
 下文的阶段图帮助读者在没有截帧文件的情况下定位变化。贴图表保存实际尺寸，预览按版面缩小；算法图则解释本帧已确认的数据流，不能当作游戏输出图。
 
@@ -111,7 +111,7 @@ mathjax: true
 | 第一组身体／裙装 | 底色、法线、控制均为 1024×1024 | <a href="/images/rendering-analysis/genshin/cloth-base-colour.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/cloth-base-colour.png" alt="本行资源的实际贴图预览" loading="lazy" width="768" height="768"></a> |
 | 第一组身体控制 alpha | 与上行同一控制图，区间值选择参数组 | <a href="/images/rendering-analysis/genshin/cloth-control-a.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/cloth-control-a.png" alt="本行资源的实际贴图预览" loading="lazy" width="512" height="512"></a> |
 
-头发路径的底色图能直接看到发束和浅色腿部衣料共享图集，与上面的几何范围一致。这比只展示一张名为 Hair 的贴图更能解释资源怎样对应到人物。
+头发路径的底色图能直接看到发束和浅色腿部衣料共享图集，与上面的几何范围一致。同一材质将这些区域放进一次提交，共享纹理输入，再由 UV 和区域控制决定各处的外观。
 
 第一组身体与裙装使用同一批底色、法线和控制输入，但通过不同程序处理覆盖区域。另一组裙装使用第二套 1K 图集。它们还共享金属响应、细节和渐变资源；某张细节图的资产名来自其他角色，当前确实被这套材质读取，不能凭名字把它排除。
 
