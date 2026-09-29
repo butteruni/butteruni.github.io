@@ -38,6 +38,33 @@
   line-height: 1.8;
 }
 
+.rendering-article .rendering-diagram {
+  margin: 1.8em 0 0.5em;
+}
+
+.rendering-article .rendering-diagram a {
+  display: block;
+  border: 0;
+}
+
+.rendering-article .rendering-diagram img {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  background: #fff;
+  border: 1px solid #e1e7ee;
+}
+
+.rendering-article .rendering-diagram figcaption {
+  padding-top: 0.4em;
+  color: #63738b;
+  font-size: 0.8em;
+  text-align: right;
+}
+
 .rendering-article th,
 .rendering-article td {
   vertical-align: top;
@@ -57,6 +84,19 @@
 }
 
 @media (max-width: 560px) {
+  .rendering-article .rendering-diagram a {
+    overflow-x: auto;
+  }
+
+  .rendering-article .rendering-diagram img {
+    min-width: 680px;
+    max-width: none;
+  }
+
+  .rendering-article .rendering-diagram figcaption::before {
+    content: "可横向滑动 · ";
+  }
+
   .rendering-article .rendering-figures {
     grid-template-columns: 1fr;
     gap: 24px;
