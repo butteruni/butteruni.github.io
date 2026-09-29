@@ -1,7 +1,7 @@
 ---
 title: "终末地渲染实现分析：竹林光照、角色着色与 HDR 后处理"
 date: "2026-09-27T18:44:00+08:00"
-updated: "2026-09-29T18:31:09+08:00"
+updated: "2026-09-29T19:23:00+08:00"
 permalink: 2026/09/27/endfield-rendering-analysis/
 categories:
   - 图形学
@@ -26,7 +26,7 @@ mathjax: true
 
 ## 美术资源与渲染概况
 
-![竹林最终画面：岩壁、石阶、人物与左侧金色效果](/scene-capture-comparison/endfield/e6531_rt0.png)
+![竹林最终画面：岩壁、石阶、人物与左侧金色效果](/images/rendering-analysis/endfield/final-output.png)
 
 ### 美术资源概况
 
@@ -229,7 +229,7 @@ BC5 法线预览只展示实际存储的两个通道，外观偏黄绿；它不�
 <figure><a href="/images/rendering-analysis/endfield/stage-material.png"><img src="/images/rendering-analysis/endfield/stage-material.png" alt="主材质颜色：可以辨认人物、石阶与植被的表面色。" loading="lazy" width="1200" height="502"></a><figcaption>主材质颜色：可以辨认人物、石阶与植被的表面色。</figcaption></figure>
 <figure><a href="/images/rendering-analysis/endfield/stage-lighting.png"><img src="/images/rendering-analysis/endfield/stage-lighting.png" alt="场景照明之后：部分人物区域仍未完成专用颜色。" loading="lazy" width="1200" height="502"></a><figcaption>场景照明之后：部分人物区域仍未完成专用颜色。</figcaption></figure>
 <figure><a href="/images/rendering-analysis/endfield/stage-character.png"><img src="/images/rendering-analysis/endfield/stage-character.png" alt="后续人物几何着色之后；人物接入既有环境输入。" loading="lazy" width="1200" height="502"></a><figcaption>后续人物几何着色之后；人物接入既有环境输入。</figcaption></figure>
-<figure><a href="/scene-capture-comparison/endfield/e6531_rt0.png"><img src="/scene-capture-comparison/endfield/e6531_rt0.png" alt="最终输出：透明、历史、泛光与显示处理均已完成。" loading="lazy" width="3440" height="1440"></a><figcaption>最终输出：透明、历史、泛光与显示处理均已完成。</figcaption></figure>
+<figure><a href="/images/rendering-analysis/endfield/final-output.png"><img src="/images/rendering-analysis/endfield/final-output.png" alt="最终输出：透明、历史、泛光与显示处理均已完成。" loading="lazy" width="3440" height="1440"></a><figcaption>最终输出：透明、历史、泛光与显示处理均已完成。</figcaption></figure>
 </div>
 
 场景照明和人物着色两张图都以 0 到 0.2 的 HDR 范围并作显示伽马转换。材质色与最终图各有自己的颜色含义，不用它们的直接亮度差反推单项光照强度。
