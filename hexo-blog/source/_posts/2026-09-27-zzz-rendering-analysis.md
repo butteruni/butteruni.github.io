@@ -1,7 +1,7 @@
 ---
 title: "绝区零渲染实现分析：大厅材质、蕾米角色与整帧合成"
 date: "2026-09-27T18:44:00+08:00"
-updated: "2026-09-30T17:32:06+08:00"
+updated: "2026-09-30T21:27:16+08:00"
 permalink: 2026/09/27/zzz-rendering-analysis/
 categories:
   - 图形学
@@ -96,20 +96,118 @@ mathjax: true
 
 黄色线框是回放工具对该次几何提交的辅助显示。底图停留在对应绘制完成时，未出现的场景或部件将在后面加入；黑色背景不属于人物贴图。
 
+<span id="character-textures"></span>
+
 #### 身体与头发：颜色、方向和控制各自保存
 
-| 资源 | 本次尺寸、格式与用途 | 贴图预览 |
-|---|---|---|
-| 身体底色 | 2048×2048，BC7 sRGB；衣料、皮肤与饰件的颜色图集 | <a href="/images/rendering-analysis/zzz/body-colour.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/zzz/body-colour.png" alt="本行资源的实际贴图预览" loading="lazy" width="768" height="768"></a> |
-| 身体法线 | 1024×1024，RGBA8；提供局部方向细节 | <a href="/images/rendering-analysis/zzz/body-normal.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/zzz/body-normal.png" alt="本行资源的实际贴图预览" loading="lazy" width="768" height="768"></a> |
-| 身体材质控制 M | 2048×2048，BC6 无符号浮点 RGB；多种区域控制共用图集 | <a href="/images/rendering-analysis/zzz/body-control.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/zzz/body-control.png" alt="本行资源的实际贴图预览" loading="lazy" width="768" height="768"></a> |
-| 头发底色 | 2048×2048，BC7 sRGB；不同发束共享展开区域 | <a href="/images/rendering-analysis/zzz/hair-colour.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/zzz/hair-colour.png" alt="本行资源的实际贴图预览" loading="lazy" width="768" height="768"></a> |
-| 头发法线 | 1024×1024，RGBA8；方向数据与底色分开 | <a href="/images/rendering-analysis/zzz/hair-normal.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/zzz/hair-normal.png" alt="本行资源的实际贴图预览" loading="lazy" width="768" height="768"></a> |
-| 头发材质控制 M | 2048×2048，BC6 无符号浮点 RGB | <a href="/images/rendering-analysis/zzz/hair-control.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/zzz/hair-control.png" alt="本行资源的实际贴图预览" loading="lazy" width="768" height="768"></a> |
+下面完整列出**蕾米在这份截帧中绑定的 23 份去重材质纹理**：两套身体图集各四张、头发四张、翼部五张、脸与眼部三张、共享输入三份。已合并核对主视图、镜像、阴影、描边及后续透明层；同一纹理在多个阶段复用时只列一次。八层纹理数组是一份资源，所有层都展示。范围限定于蕾米当前绑定的资源，不包含大厅其他人物或未载入的角色形态。
 
-两组材质还各自绑定一张 2048×2048 的 BC6 浮点辅助控制 A；身体另外读取 256×256 的颜色纹理数组。M、A 在此仅保留资产中的区分名称，不把它们自动解释成 metallic 和 alpha。
+[第一套身体](#body-primary-textures) · [第二套身体](#body-secondary-textures) · [头发](#hair-textures) · [翼部](#wing-textures) · [脸与眼睛](#face-eye-textures) · [共享输入](#shared-character-textures) · [运行时输入](#character-runtime-textures)
 
-身体底色能看出衣料、肤色与装饰的分块，法线图保留相同 UV 展开位置的表面方向变化。两者分辨率相差一倍：本次身体颜色为 2K，法线为 1K，说明颜色细节和方向细节分别配置资源，并非所有角色贴图统一采用相同尺寸。
+预览均来自本次截帧，保持完整 UV 展开，按 RGB 显示；贴图的 alpha 数据不作为网页透明度。控制纹理按零到一范围显示，浮点格式仍可能保存范围之外的数据。小型控制图按最近邻放大，窄条查色表纵向放大，表中保留实际尺寸。
+
+<div class="rendering-figures">
+<figure><a href="/images/rendering-analysis/zzz/characters/character-final.png"><img src="/images/rendering-analysis/zzz/characters/character-final.png" alt="蕾米在本帧最终画面中的局部，左右垂落翼片也属于下表资源范围。" loading="lazy" width="225" height="460"></a><figcaption>蕾米在本帧最终画面中的局部，左右垂落翼片也属于下表资源范围。</figcaption></figure>
+</div>
+
+<span id="body-primary-textures"></span>
+
+##### 第一套身体：主身体、衣料与饰件
+
+| 输入 | 本次规格 | 职责与使用范围 | 贴图预览 |
+|---|---|---|---|
+| 第一套身体底色 D | 2048×2048，BC7 sRGB | 主身体与服饰路径的颜色图集；对应上方主身体几何。 | <a href="/images/rendering-analysis/zzz/characters/body-primary-colour.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/zzz/characters/body-primary-colour.png" alt="第一套身体底色 D的实际纹理预览" loading="lazy" width="600" height="600"></a> |
+| 第一套身体方向 N | 1024×1024，RGBA8 | 同组局部方向与附加控制，实际尺寸为底色的一半。 | <a href="/images/rendering-analysis/zzz/characters/body-primary-normal.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/zzz/characters/body-primary-normal.png" alt="第一套身体方向 N的实际纹理预览" loading="lazy" width="600" height="600"></a> |
+| 第一套身体控制 M | 2048×2048，BC6 无符号浮点 RGB | 同一 UV 图集内划分材质响应与控制区域。 | <a href="/images/rendering-analysis/zzz/characters/body-primary-control-m.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/zzz/characters/body-primary-control-m.png" alt="第一套身体控制 M的实际纹理预览" loading="lazy" width="600" height="600"></a> |
+| 第一套身体辅助控制 A | 2048×2048，BC6 无符号浮点 RGB | 与 M 同时绑定的独立辅助控制；BC6 只有 RGB，不含 alpha 通道。 | <a href="/images/rendering-analysis/zzz/characters/body-primary-control-a.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/zzz/characters/body-primary-control-a.png" alt="第一套身体辅助控制 A的实际纹理预览" loading="lazy" width="600" height="600"></a> |
+
+<span id="body-secondary-textures"></span>
+
+##### 第二套身体：颈部、腿部与另一组服装区域
+
+这条独立身体绘制覆盖颈部、腿部和部分衣装，具有自己的 D、N、M、A 四张图。下面用几何定位它与主身体、翼部之间的区别。
+
+<div class="rendering-figures">
+<figure><a href="/images/rendering-analysis/zzz/characters/body-secondary-geometry.png"><img src="/images/rendering-analysis/zzz/characters/body-secondary-geometry.png" alt="第二套身体的实际提交范围；黄色线框覆盖颈部、腿部及部分服饰。" loading="lazy" width="155" height="335"></a><figcaption>第二套身体的实际提交范围；黄色线框覆盖颈部、腿部及部分服饰。</figcaption></figure>
+<figure><a href="/images/rendering-analysis/zzz/characters/wing-geometry.png"><img src="/images/rendering-analysis/zzz/characters/wing-geometry.png" alt="翼部是另一条提交，覆盖两侧垂落翼片。" loading="lazy" width="155" height="335"></a><figcaption>翼部是另一条提交，覆盖两侧垂落翼片。</figcaption></figure>
+</div>
+
+两图均停留在主材质阶段，黄色线框由回放工具辅助显示；黑色背景与尚未着色的部件不属于最终画面。
+
+| 输入 | 本次规格 | 职责与使用范围 | 贴图预览 |
+|---|---|---|---|
+| 第二套身体底色 D | 2048×2048，BC7 sRGB | 与颈部、腿部及另一组服装区域对应的独立颜色图集。 | <a href="/images/rendering-analysis/zzz/characters/body-secondary-colour.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/zzz/characters/body-secondary-colour.png" alt="第二套身体底色 D的实际纹理预览" loading="lazy" width="600" height="600"></a> |
+| 第二套身体方向 N | 1024×1024，RGBA8 | 第二套 UV 展开上的方向输入。 | <a href="/images/rendering-analysis/zzz/characters/body-secondary-normal.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/zzz/characters/body-secondary-normal.png" alt="第二套身体方向 N的实际纹理预览" loading="lazy" width="600" height="600"></a> |
+| 第二套身体控制 M | 2048×2048，BC6 无符号浮点 RGB | 与第二套底色配对的多区域控制。 | <a href="/images/rendering-analysis/zzz/characters/body-secondary-control-m.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/zzz/characters/body-secondary-control-m.png" alt="第二套身体控制 M的实际纹理预览" loading="lazy" width="600" height="600"></a> |
+| 第二套身体辅助控制 A | 2048×2048，BC6 无符号浮点 RGB | 本组独立辅助控制，与第一套 A 图不可互换。 | <a href="/images/rendering-analysis/zzz/characters/body-secondary-control-a.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/zzz/characters/body-secondary-control-a.png" alt="第二套身体辅助控制 A的实际纹理预览" loading="lazy" width="600" height="600"></a> |
+
+<span id="hair-textures"></span>
+
+##### 头发：主材质与透明分层复用同套输入
+
+| 输入 | 本次规格 | 职责与使用范围 | 贴图预览 |
+|---|---|---|---|
+| 头发底色 D | 2048×2048，BC7 sRGB | 粉色发束图集，后续分层路径继续复用。 | <a href="/images/rendering-analysis/zzz/characters/hair-colour.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/zzz/characters/hair-colour.png" alt="头发底色 D的实际纹理预览" loading="lazy" width="600" height="600"></a> |
+| 头发方向 N | 1024×1024，RGBA8 | XY 恢复细节法线，另一控制分量继续参与高光形状。 | <a href="/images/rendering-analysis/zzz/characters/hair-normal.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/zzz/characters/hair-normal.png" alt="头发方向 N的实际纹理预览" loading="lazy" width="600" height="600"></a> |
+| 头发控制 M | 2048×2048，BC6 无符号浮点 RGB | R 分段选择区域参数，其他分量参与表面颜色与高光响应。 | <a href="/images/rendering-analysis/zzz/characters/hair-control-m.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/zzz/characters/hair-control-m.png" alt="头发控制 M的实际纹理预览" loading="lazy" width="600" height="600"></a> |
+| 头发辅助控制 A | 2048×2048，BC6 无符号浮点 RGB | B、G 等分量参与边缘光及高光，按当前变体解释。 | <a href="/images/rendering-analysis/zzz/characters/hair-control-a.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/zzz/characters/hair-control-a.png" alt="头发辅助控制 A的实际纹理预览" loading="lazy" width="600" height="600"></a> |
+
+M、A 保留材质输入的区分名称。头发的已确认计算见[分区明暗与高光](#character-material-routing)，包括五档区域选择、正反面法线与实体受光。
+
+<span id="wing-textures"></span>
+
+##### 翼部：五张输入共同形成花纹和背向受光
+
+| 输入 | 本次规格 | 职责与使用范围 | 贴图预览 |
+|---|---|---|---|
+| 翼部底色 D | 2048×2048，BC7 sRGB | 翼片颜色与展开形状；覆盖由几何和材质计算共同决定。 | <a href="/images/rendering-analysis/zzz/characters/wing-colour.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/zzz/characters/wing-colour.png" alt="翼部底色 D的实际纹理预览" loading="lazy" width="600" height="600"></a> |
+| 翼部方向 N | 1024×1024，RGBA8 | 翼片局部方向细节，与底色使用对应展开。 | <a href="/images/rendering-analysis/zzz/characters/wing-normal.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/zzz/characters/wing-normal.png" alt="翼部方向 N的实际纹理预览" loading="lazy" width="600" height="600"></a> |
+| 翼部控制 M | 32×32，BC6 无符号浮点 RGB | 32×32 的材质控制，本次预览接近常量红色。 | <a href="/images/rendering-analysis/zzz/characters/wing-control-m.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/zzz/characters/wing-control-m.png" alt="翼部控制 M的实际纹理预览" loading="lazy" width="192" height="80"></a> |
+| 翼部辅助控制 A | 32×32，BC6 无符号浮点 RGB | 32×32 的辅助控制，本次预览接近常量橙色。 | <a href="/images/rendering-analysis/zzz/characters/wing-control-a.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/zzz/characters/wing-control-a.png" alt="翼部辅助控制 A的实际纹理预览" loading="lazy" width="192" height="80"></a> |
+| 翼部花纹 T | 2048×2048，BC7 sRGB | R 控制指数颜色调制，G 控制背向响应强度，B 控制其集中程度。 | <a href="/images/rendering-analysis/zzz/characters/wing-pattern.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/zzz/characters/wing-pattern.png" alt="翼部花纹 T的实际纹理预览" loading="lazy" width="600" height="600"></a> |
+
+翼部 M、A 只有 32×32，不能套用身体的 2K 规格。T 是参与[翼部受光公式](#wing-shading)的三通道输入，橙色预览不表示最终翼片也是橙色。
+
+<span id="face-eye-textures"></span>
+
+##### 脸与眼睛：共用底色，增加独立控制
+
+| 输入 | 本次规格 | 职责与使用范围 | 贴图预览 |
+|---|---|---|---|
+| 脸与眼睛底色 | 2048×2048，BC7 sRGB | 面部与紫色眼部图案放在同一张图集；脸和晚期眼睛绘制均读取它。 | <a href="/images/rendering-analysis/zzz/characters/face-eye-colour.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/zzz/characters/face-eye-colour.png" alt="脸与眼睛底色的实际纹理预览" loading="lazy" width="600" height="600"></a> |
+| 脸部光照控制 | 256×256，RGBA16F | 独立浮点面部控制输入，脸和眼睛路径共享。 | <a href="/images/rendering-analysis/zzz/characters/face-lighting-control.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/zzz/characters/face-lighting-control.png" alt="脸部光照控制的实际纹理预览" loading="lazy" width="256" height="256"></a> |
+| 眼部顶点控制 | 16×16，RGBA8 | 16×16，小型纹理在眼部顶点阶段读取；不是另一张虹膜底色。 | <a href="/images/rendering-analysis/zzz/characters/eye-vertex-control.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/zzz/characters/eye-vertex-control.png" alt="眼部顶点控制的实际纹理预览" loading="lazy" width="192" height="80"></a> |
+
+晚期眼睛另外读取角色颜色查找表，并以预乘方式合成。脸与眼睛共享纹理并不代表共享全部着色步骤，见[脸部受光](#face)与[眼睛层次](#eyes)。
+
+<span id="shared-character-textures"></span>
+
+##### 共享数组、叠加图与默认输入
+
+| 输入 | 本次规格 | 职责与使用范围 | 贴图预览 |
+|---|---|---|---|
+| 身体颜色纹理数组 | 256×256×8 层，BC7 sRGB | 两套身体路径绑定；预览按层序展示全部八层，层号只表示数组位置。 | <a href="/images/rendering-analysis/zzz/characters/body-colour-array.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/zzz/characters/body-colour-array.png" alt="身体颜色纹理数组的实际纹理预览" loading="lazy" width="1072" height="596"></a> |
+| 角色叠加输入 | 256×256，BC1 | 多个身体、翼部、脸与眼部路径共享；当前 RGB 接近灰色，贡献还受分支参数控制。 | <a href="/images/rendering-analysis/zzz/characters/character-overlay.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/zzz/characters/character-overlay.png" alt="角色叠加输入的实际纹理预览" loading="lazy" width="256" height="256"></a> |
+| 默认白纹理 | 4×4，RGBA8 sRGB | 部分镜像及重复身体路径绑定的常量输入；本来没有图案。 | <a href="/images/rendering-analysis/zzz/characters/default-white.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/zzz/characters/default-white.png" alt="默认白纹理的实际纹理预览" loading="lazy" width="192" height="80"></a> |
+
+数组中的八张图案共享一份数组资源，通过层选择定位。它们没有各自独立的八份资源计数；后续透明层复用的头发和脸部纹理也不重复列入清单。
+
+<span id="character-runtime-textures"></span>
+
+##### 运行时调色与阴影：另外四份输入
+
+下表是这批人物绘制绑定的动态结果与深度默认输入，单独列出。预览取同帧眼部绘制时的内容；深度按零到一灰度显示，黑色表示低值，不能理解成透明或丢图。
+
+| 输入 | 本次规格 | 职责与使用范围 | 贴图预览 |
+|---|---|---|---|
+| 角色颜色查找表 | 1024×32，RGBA16F | 运行时生成的角色颜色映射；脸、眼睛及相关路径按颜色坐标查询。 | <a href="/images/rendering-analysis/zzz/characters/character-colour-lut.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/zzz/characters/character-colour-lut.png" alt="角色颜色查找表的实际纹理预览" loading="lazy" width="1024" height="80"></a> |
+| 四层阴影缓存 | 2048×2048×4 层，R16 UNORM | 人物路径绑定的光源空间深度数组，四层全部展示。 | <a href="/images/rendering-analysis/zzz/characters/shadow-cache.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/zzz/characters/shadow-cache.png" alt="四层阴影缓存的实际纹理预览" loading="lazy" width="536" height="596"></a> |
+| 人物阴影深度 | 2048×2048，R16 UNORM | 主视图人物着色读取的另一张光源深度；当前有效几何仅占局部。 | <a href="/images/rendering-analysis/zzz/characters/character-shadow-depth.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/zzz/characters/character-shadow-depth.png" alt="人物阴影深度的实际纹理预览" loading="lazy" width="600" height="600"></a> |
+| 默认阴影输入 | 2×2，R16 UNORM | 2×2 的默认深度，本次为黑色常量；部分视图用它占据阴影输入。 | <a href="/images/rendering-analysis/zzz/characters/shadow-default.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/zzz/characters/shadow-default.png" alt="默认阴影输入的实际纹理预览" loading="lazy" width="192" height="192"></a> |
+
+这里的四份输入未计入前面的 23 份材质纹理。人物使用的实体、叠加记录和形变数据还包含缓冲区，它们没有二维贴图预览，也不混进纹理数量。
+
+##### 第一套身体控制图的三个分量
 
 <div class="rendering-figures">
 <figure><a href="/images/rendering-analysis/zzz/body-control-r.png"><img src="/images/rendering-analysis/zzz/body-control-r.png" alt="身体 M 图的 R 通道。" loading="lazy" width="512" height="512"></a><figcaption>身体 M 图的 R 通道。</figcaption></figure>

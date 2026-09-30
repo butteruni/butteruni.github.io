@@ -1,7 +1,7 @@
 ---
 title: "原神渲染实现分析：雪城资源、木偶材质与时序重建"
 date: "2026-09-27T18:44:00+08:00"
-updated: "2026-09-30T17:32:06+08:00"
+updated: "2026-09-30T21:27:16+08:00"
 permalink: 2026/09/27/genshin-rendering-analysis/
 categories:
   - 图形学
@@ -101,16 +101,124 @@ mathjax: true
 
 各组可能在阴影和运动阶段再次绘制。上表用于比较这些主材质提交的规模，不将它们与其他阶段的重复提交相加来推断独立人物资源量。
 
+<span id="character-textures"></span>
+
 #### 角色贴图按部件与材质区域组织
 
-| 资源组 | 尺寸、格式与用途 | 代表预览 |
-|---|---|---|
-| 头发路径底色 | 1024×1024，BC7 sRGB；同一图集包含发束和腿部衣料 | <a href="/images/rendering-analysis/genshin/hair-colour.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/hair-colour.png" alt="本行资源的实际贴图预览" loading="lazy" width="768" height="768"></a> |
-| 同组法线 | 1024×1024，BC7；方向与附加数据按当前程序解码 | <a href="/images/rendering-analysis/genshin/hair-normal.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/hair-normal.png" alt="本行资源的实际贴图预览" loading="lazy" width="768" height="768"></a> |
-| 同组控制图 | 1024×1024，BC7；材质分区及受光控制 | <a href="/images/rendering-analysis/genshin/hair-control.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/hair-control.png" alt="本行资源的实际贴图预览" loading="lazy" width="768" height="768"></a> |
-| 第一组身体／裙装 | 底色、法线、控制均为 1024×1024 | <a href="/images/rendering-analysis/genshin/cloth-base-colour.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/cloth-base-colour.png" alt="本行资源的实际贴图预览" loading="lazy" width="768" height="768"></a> |
-| 第二组裙装底色 | 1024×1024，BC7 sRGB；与第二组裙装几何对应，不能用第一套图集代替 | <a href="/images/rendering-analysis/genshin/dress-secondary-base.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/dress-secondary-base.png" alt="第二组裙装的独立底色：红色内衬与黑金区域。" loading="lazy" width="700" height="700"></a> |
-| 第一组身体控制 alpha | 对应第一组身体／裙装的控制图，区间值选择参数组 | <a href="/images/rendering-analysis/genshin/cloth-control-a.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/cloth-control-a.png" alt="本行资源的实际贴图预览" loading="lazy" width="512" height="512"></a> |
+下面是**木偶在这份截帧中绑定的 32 份去重材质纹理**，包括两套身体／裙装图集、头发与腿部图集、脸部、眼睛、晶体和共享查表。主材质、描边、阴影及运动阶段合并核对；同一资源反复绑定只列一次。六面立方体按一份资源计数，默认白／灰输入也保留。范围限定于木偶的当前绑定，不包含周围 NPC、界面头像或未载入的换装资源。
+
+[第一套身体／裙装](#body-primary-textures) · [第二套裙装](#body-secondary-textures) · [头发与腿部](#hair-textures) · [脸与表情](#face-textures) · [眼睛](#eye-textures) · [晶体](#crystal-textures) · [共享输入](#shared-character-textures)
+
+所有预览直接来自本次截帧，保持原有 UV 朝向，按 RGB 显示完整内容；贴图中的 alpha 数据不会作为网页透明度。法线与控制图的彩色用于展示数值分布，实际职责要结合通道解码。窄条渐变纵向放大，小型常量图按最近邻放大；表中尺寸始终是原始规格。
+
+<div class="rendering-figures">
+<figure><a href="/images/rendering-analysis/genshin/characters/character-final.png"><img src="/images/rendering-analysis/genshin/characters/character-final.png" alt="木偶在本帧最终画面中的局部；下表纹理属于这一角色。" loading="lazy" width="240" height="492"></a><figcaption>木偶在本帧最终画面中的局部；下表纹理属于这一角色。</figcaption></figure>
+</div>
+
+<span id="body-primary-textures"></span>
+
+##### 第一套身体与裙装：三张配套图集
+
+这套资源同时进入躯干、手臂与服饰的身体路径，以及第一组裙装路径。底色、法线和控制图共享展开布局，但程序按部件选择不同的受光与细节计算。
+
+| 输入 | 本次规格 | 职责与使用范围 | 贴图预览 |
+|---|---|---|---|
+| 第一套身体底色 | 1024×1024，BC7 sRGB | 衣料、皮肤与饰件颜色；与上方身体和第一组裙装几何对应。 | <a href="/images/rendering-analysis/genshin/characters/body-primary-colour.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/characters/body-primary-colour.png" alt="第一套身体底色的实际纹理预览" loading="lazy" width="600" height="600"></a> |
+| 第一套身体法线 | 1024×1024，BC7 | 方向与附加控制输入，按本材质的分量约定解码。 | <a href="/images/rendering-analysis/genshin/characters/body-primary-normal.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/characters/body-primary-normal.png" alt="第一套身体法线的实际纹理预览" loading="lazy" width="600" height="600"></a> |
+| 第一套身体控制 | 1024×1024，BC7 | 控制明暗、响应与材质区域；alpha 分段选择区域参数，见下方通道图。 | <a href="/images/rendering-analysis/genshin/characters/body-primary-control.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/characters/body-primary-control.png" alt="第一套身体控制的实际纹理预览" loading="lazy" width="600" height="600"></a> |
+
+<span id="body-secondary-textures"></span>
+
+##### 第二套裙装：独立图集，也被晶体路径复用
+
+红色内衬、黑金衣片等来自另一套展开。第二组裙装和晶体路径均绑定这三张图，晶体还增加后表中的专用反射与图案输入。两套身体图集分辨率相同，内容和绑定对象各自独立。
+
+| 输入 | 本次规格 | 职责与使用范围 | 贴图预览 |
+|---|---|---|---|
+| 第二套裙装底色 | 1024×1024，BC7 sRGB | 红色内衬与黑金区域；由第二组裙装及晶体材质读取。 | <a href="/images/rendering-analysis/genshin/characters/body-secondary-colour.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/characters/body-secondary-colour.png" alt="第二套裙装底色的实际纹理预览" loading="lazy" width="600" height="600"></a> |
+| 第二套裙装法线 | 1024×1024，BC7 | 对应第二套 UV 的方向输入。 | <a href="/images/rendering-analysis/genshin/characters/body-secondary-normal.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/characters/body-secondary-normal.png" alt="第二套裙装法线的实际纹理预览" loading="lazy" width="600" height="600"></a> |
+| 第二套裙装控制 | 1024×1024，BC7 | 同组材质区域和受光控制；不可用第一套身体控制图替代。 | <a href="/images/rendering-analysis/genshin/characters/body-secondary-control.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/characters/body-secondary-control.png" alt="第二套裙装控制的实际纹理预览" loading="lazy" width="600" height="600"></a> |
+
+<span id="hair-textures"></span>
+
+##### 头发与腿部：一套图集承载不同材质区域
+
+| 输入 | 本次规格 | 职责与使用范围 | 贴图预览 |
+|---|---|---|---|
+| 头发与腿部底色 | 1024×1024，BC7 sRGB | 发束与浅色腿部衣料共享图集，与上方 Hair 路径的几何范围一致。 | <a href="/images/rendering-analysis/genshin/characters/hair-colour.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/characters/hair-colour.png" alt="头发与腿部底色的实际纹理预览" loading="lazy" width="600" height="600"></a> |
+| 头发与腿部方向／闪点 | 1024×1024，BC7 | RG 保存方向相关分量，B 是闪点覆盖，alpha 参与附加闪点档位。 | <a href="/images/rendering-analysis/genshin/characters/hair-normal.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/characters/hair-normal.png" alt="头发与腿部方向／闪点的实际纹理预览" loading="lazy" width="600" height="600"></a> |
+| 头发与腿部控制 | 1024×1024，BC7 | 区域划分及受光控制，与方向／闪点图分开绑定。 | <a href="/images/rendering-analysis/genshin/characters/hair-control.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/characters/hair-control.png" alt="头发与腿部控制的实际纹理预览" loading="lazy" width="600" height="600"></a> |
+
+<span id="face-textures"></span>
+
+##### 脸与表情：底色、方向阈值和覆盖分别组织
+
+| 输入 | 本次规格 | 职责与使用范围 | 贴图预览 |
+|---|---|---|---|
+| 脸部底色 | 1024×1024，BC7 sRGB | 肤色与面部图案，预览保留纹理展开的朝向。 | <a href="/images/rendering-analysis/genshin/characters/face-colour.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/characters/face-colour.png" alt="脸部底色的实际纹理预览" loading="lazy" width="600" height="600"></a> |
+| 脸部 SDF | 1024×1024，BC7 | 按光向查询明暗阈值，参与风格化阴影边界。 | <a href="/images/rendering-analysis/genshin/characters/face-sdf.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/characters/face-sdf.png" alt="脸部 SDF的实际纹理预览" loading="lazy" width="600" height="600"></a> |
+| 脸部阴影控制 | 512×512，BC7 | 面部独立受光控制输入；与 SDF 配合，见脸部算法。 | <a href="/images/rendering-analysis/genshin/characters/face-shadow-control.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/characters/face-shadow-control.png" alt="脸部阴影控制的实际纹理预览" loading="lazy" width="512" height="512"></a> |
+| 脸部显隐遮罩 | 128×128，BC7 | 脸部路径绑定的覆盖／显隐控制输入；是否影响输出由当前分支决定。 | <a href="/images/rendering-analysis/genshin/characters/face-appearance-mask.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/characters/face-appearance-mask.png" alt="脸部显隐遮罩的实际纹理预览" loading="lazy" width="192" height="192"></a> |
+| 眼口表情图集 | 1024×1024，BC7 sRGB | 多格眼口图案供局部 UV 选取；当前表情叠加开关关闭。 | <a href="/images/rendering-analysis/genshin/characters/face-expression-atlas.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/characters/face-expression-atlas.png" alt="眼口表情图集的实际纹理预览" loading="lazy" width="600" height="600"></a> |
+
+SDF 保存阈值，表情图集保存可选图案，两者不会直接成为最终脸部颜色。后文[脸部明暗](#face)继续展开光向、几何覆盖和表情开关。
+
+<span id="eye-textures"></span>
+
+##### 眼睛：四层图案、Matcap、亮点与两条渐变
+
+| 输入 | 本次规格 | 职责与使用范围 | 贴图预览 |
+|---|---|---|---|
+| 瞳孔基础层 | 256×256，BC7 sRGB | 蓝色层次图，经过视差得到的局部坐标查询。 | <a href="/images/rendering-analysis/genshin/characters/pupil-base.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/characters/pupil-base.png" alt="瞳孔基础层的实际纹理预览" loading="lazy" width="256" height="256"></a> |
+| 瞳孔环形图案 | 256×256，BC7 sRGB | 白色环状／齿形图案层，独立于基础瞳孔图。 | <a href="/images/rendering-analysis/genshin/characters/pupil-symbol.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/characters/pupil-symbol.png" alt="瞳孔环形图案的实际纹理预览" loading="lazy" width="256" height="256"></a> |
+| 瞳孔内部亮暗层 | 256×256，BC7 sRGB | 蓝色内部形状，参与多层瞳孔组合。 | <a href="/images/rendering-analysis/genshin/characters/pupil-inner.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/characters/pupil-inner.png" alt="瞳孔内部亮暗层的实际纹理预览" loading="lazy" width="256" height="256"></a> |
+| 瞳孔小图案层 | 128×128，BC7 sRGB | 128×128 的局部亮形图案，单独绑定。 | <a href="/images/rendering-analysis/genshin/characters/pupil-small.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/characters/pupil-small.png" alt="瞳孔小图案层的实际纹理预览" loading="lazy" width="192" height="192"></a> |
+| 眼睛 Matcap／遮罩 | 512×512，BC7 sRGB | 随观察相关方向查询的高光外观。 | <a href="/images/rendering-analysis/genshin/characters/eye-matcap.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/characters/eye-matcap.png" alt="眼睛 Matcap／遮罩的实际纹理预览" loading="lazy" width="512" height="512"></a> |
+| 眼睛亮点控制 | 256×256，BC7 sRGB | 独立亮点图案；预览红色是输入数据，不等于最终亮点颜色。 | <a href="/images/rendering-analysis/genshin/characters/eye-highlight.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/characters/eye-highlight.png" alt="眼睛亮点控制的实际纹理预览" loading="lazy" width="256" height="256"></a> |
+| 瞳孔打包渐变 | 256×8，RGBA8 sRGB | 不同行提供多层组合所用的权重曲线。 | <a href="/images/rendering-analysis/genshin/characters/pupil-packed-ramp.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/characters/pupil-packed-ramp.png" alt="瞳孔打包渐变的实际纹理预览" loading="lazy" width="256" height="80"></a> |
+| 瞳孔混合渐变 | 256×8，RGBA8 sRGB | 为图案混合提供另一组多行查询输入。 | <a href="/images/rendering-analysis/genshin/characters/pupil-blend-ramp.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/characters/pupil-blend-ramp.png" alt="瞳孔混合渐变的实际纹理预览" loading="lazy" width="256" height="80"></a> |
+
+八张资源在同一眼部路径中共同绑定。它们分别控制内部层次、观察方向响应和混合权重；[眼睛算法](#eyes)说明这些输入怎样接到解析深度搜索与 UV 变换。
+
+<span id="crystal-textures"></span>
+
+##### 晶体饰件：六面环境、方向图案和附加反射输入
+
+| 输入 | 本次规格 | 职责与使用范围 | 贴图预览 |
+|---|---|---|---|
+| 晶体环境立方体 | 256×256×6 面，BC6 无符号浮点 RGB | 六面全部展示，按 +X、−X、+Y、−Y、+Z、−Z 排列；按反射方向查询环境颜色。 | <a href="/images/rendering-analysis/genshin/characters/crystal-cube.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/characters/crystal-cube.png" alt="晶体环境立方体的实际纹理预览" loading="lazy" width="804" height="596"></a> |
+| 晶体方向图案 | 256×256，BC7 sRGB | 法线经观察相关投影后读取的独立图案。 | <a href="/images/rendering-analysis/genshin/characters/crystal-pattern.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/characters/crystal-pattern.png" alt="晶体方向图案的实际纹理预览" loading="lazy" width="256" height="256"></a> |
+| 皮革命名的反射输入 | 256×256，BC7 sRGB | 当前晶体路径实际绑定的球状高光图；仅凭资产名不能推定所有皮革区域都读取它。 | <a href="/images/rendering-analysis/genshin/characters/leather-reflection.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/characters/leather-reflection.png" alt="皮革命名的反射输入的实际纹理预览" loading="lazy" width="256" height="256"></a> |
+
+晶体还复用第二套裙装的三张图，以及金属响应、高光渐变、身体阴影渐变和默认白图。当前启用的高光、环境颜色与方向图案分支详见[晶体饰件](#crystal-material)。
+
+<span id="shared-character-textures"></span>
+
+##### 共享细节、渐变与默认输入
+
+| 输入 | 本次规格 | 职责与使用范围 | 贴图预览 |
+|---|---|---|---|
+| 衣料细节方向 | 256×256，RGBA8 | 身体、裙装与头发路径共享；为选定区域提供更细的表面变化。 | <a href="/images/rendering-analysis/genshin/characters/fabric-detail.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/characters/fabric-detail.png" alt="衣料细节方向的实际纹理预览" loading="lazy" width="256" height="256"></a> |
+| 金属响应图 | 256×256，BC7 sRGB | 身体、裙装、头发和晶体路径共享的视角／高光响应输入。 | <a href="/images/rendering-analysis/genshin/characters/metal-response.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/characters/metal-response.png" alt="金属响应图的实际纹理预览" loading="lazy" width="256" height="256"></a> |
+| 高光渐变 | 256×2，RGBA8 sRGB | 两行窄条，供身体、裙装、头发及晶体的高光计算查询。 | <a href="/images/rendering-analysis/genshin/characters/specular-ramp.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/characters/specular-ramp.png" alt="高光渐变的实际纹理预览" loading="lazy" width="256" height="80"></a> |
+| 身体阴影渐变 | 256×20，RGBA8 sRGB | 身体、两组裙装与晶体路径共用的多行明暗配色。 | <a href="/images/rendering-analysis/genshin/characters/body-shadow-ramp.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/characters/body-shadow-ramp.png" alt="身体阴影渐变的实际纹理预览" loading="lazy" width="256" height="80"></a> |
+| 头发阴影渐变 | 256×20，RGBA8 sRGB | 头发与腿部路径使用的明暗配色，与身体渐变分开。 | <a href="/images/rendering-analysis/genshin/characters/hair-shadow-ramp.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/characters/hair-shadow-ramp.png" alt="头发阴影渐变的实际纹理预览" loading="lazy" width="256" height="80"></a> |
+| 默认白纹理 | 4×4，RGBA8 sRGB | 常量白色输入，复用于多个颜色、描边和阴影路径；本来没有图案。 | <a href="/images/rendering-analysis/genshin/characters/default-white.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/characters/default-white.png" alt="默认白纹理的实际纹理预览" loading="lazy" width="192" height="80"></a> |
+| 默认灰纹理 | 4×4，RGBA8 sRGB | 身体、裙装与头发路径绑定的常量灰输入。 | <a href="/images/rendering-analysis/genshin/characters/default-grey.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/characters/default-grey.png" alt="默认灰纹理的实际纹理预览" loading="lazy" width="192" height="80"></a> |
+
+衣料细节图的资产名来自另一角色，但这份截帧确实绑定到木偶的多个材质中。资源归属以当前绑定为依据。默认白、灰图只统计各一份，不因多次提交重复计数。
+
+<span id="character-runtime-textures"></span>
+
+##### 运行时环境反馈：另外一份动态输入
+
+| 输入 | 本次规格 | 职责与使用范围 | 贴图预览 |
+|---|---|---|---|
+| 角色环境采样结果 | 70×1，RGBA16F | 顶点阶段读取当前环境颜色与阴影相关状态，后续人物材质继续使用；这是运行时结果，未计入上述 32 份材质纹理。 | <a href="/images/rendering-analysis/genshin/characters/ambient-sensor.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/characters/ambient-sensor.png" alt="角色环境采样结果的实际纹理预览" loading="lazy" width="192" height="80"></a> |
+
+这里展示同帧眼部绘制时的 RGB 内容，窄条纵向放大。它的元素是环境状态记录，不沿角色 UV 展开；具体更新与采样见[角色环境受光](#character-environment)。
+
+##### 已确认的通道分工
 
 头发路径的底色图能直接看到发束和浅色腿部衣料共享图集，与上面的几何范围一致。同一材质将这些区域放进一次提交，共享纹理输入，再由 UV 和区域控制决定各处的外观。
 
@@ -125,14 +233,6 @@ mathjax: true
 
 第一组身体与裙装使用同一批底色、法线和控制输入，但通过不同程序处理覆盖区域。另一组裙装使用第二套 1K 图集。它们还共享金属响应、细节和渐变资源；某张细节图的资产名来自其他角色，当前确实被这套材质读取，不能凭名字把它排除。贴图应按绘制绑定配对，不能因同为 1K 或图案相似而互换。
 
-| 共享输入 | 本次规格 | 具体用途 |
-|---|---|---|
-| 衣料细节 | 256×256，RGBA8 | 为部分区域提供更细的法线变化 |
-| 金属响应 | 256×256，BC7 sRGB | 参与视角和高光响应 |
-| 高光渐变 | 256×2，RGBA8 sRGB | 窄条查表输入 |
-| 身体阴影渐变 | 256×20，RGBA8 sRGB | 多行保存不同明暗颜色设计 |
-| 头发阴影渐变 | 256×20，RGBA8 sRGB | 对应头发材质的渐变 |
-
 <div class="rendering-figures">
 <figure><a href="/images/rendering-analysis/genshin/cloth-control-r.png"><img src="/images/rendering-analysis/genshin/cloth-control-r.png" alt="同一身体控制图的 R。" loading="lazy" width="512" height="512"></a><figcaption>同一身体控制图的 R。</figcaption></figure>
 <figure><a href="/images/rendering-analysis/genshin/cloth-control-g.png"><img src="/images/rendering-analysis/genshin/cloth-control-g.png" alt="同一身体控制图的 G。" loading="lazy" width="512" height="512"></a><figcaption>同一身体控制图的 G。</figcaption></figure>
@@ -142,13 +242,7 @@ mathjax: true
 
 这些都是第一套身体／裙装控制图的真实通道，与上面的第一套底色对应；第二套裙装另用自己的图集。alpha 中分段的灰度配合 0.2、0.4、0.6、0.8 等阈值选择多组材质参数，因此同一网格上的不同区域可以有不同阴影色、细节法线和高光。RGB 的分区外观不能单独代替采样公式；后文继续展开已确认的控制计算。
 
-#### 脸、表情与眼睛
-
-脸部绑定 1024×1024 底色、1024×1024 SDF、512×512 阴影控制和 1024×1024 表情图集；本帧表情图集的叠加分支关闭。SDF 存的是光向对应的明暗阈值，不是最终阴影颜色；表情图集则按材质参数选格并变换局部 UV。
-
-眼睛另外绑定多张 128 或 256 边长的瞳孔图、512×512 的 Matcap，以及 256×8 的多行渐变。这里的 Matcap 通过视角方向查询，渐变提供不同混合曲线，瞳孔图负责内部层次。它们不是“同一个眼睛底图”的重复备份。
-
-这些资源的图示放在后面的脸部、表情和眼睛算法旁：读者可以先看到实际通道，再跟随光向、UV 或视线一步步得到对应结果。
+<span id="脸表情与眼睛"></span>
 
 #### 有效顶点输入
 
