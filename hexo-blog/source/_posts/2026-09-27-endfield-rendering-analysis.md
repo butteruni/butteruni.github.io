@@ -1,7 +1,7 @@
 ---
 title: "终末地渲染实现分析：竹林光照、角色着色与 HDR 后处理"
 date: "2026-09-27T18:44:00+08:00"
-updated: "2026-09-30T00:58:25+08:00"
+updated: "2026-09-30T17:32:06+08:00"
 permalink: 2026/09/27/endfield-rendering-analysis/
 categories:
   - 图形学
@@ -90,11 +90,13 @@ mathjax: true
 最后一行在整帧中再次发生，不能与第一行相加当作面部模型面数。上表也没有覆盖每个人物的全部头发、配饰与透明部件。
 
 <div class="rendering-figures">
-<figure><a href="/images/rendering-analysis/endfield/face-geometry.png"><img src="/images/rendering-analysis/endfield/face-geometry.png" alt="主材质阶段的脸部范围；此时还未画入身体和场景。" loading="lazy" width="800" height="902"></a><figcaption>主材质阶段的脸部范围；此时还未画入身体和场景。</figcaption></figure>
-<figure><a href="/images/rendering-analysis/endfield/body-geometry.png"><img src="/images/rendering-analysis/endfield/body-geometry.png" alt="中央角色的一组身体部件；黄色仅定位这一提交。" loading="lazy" width="800" height="902"></a><figcaption>中央角色的一组身体部件；黄色仅定位这一提交。</figcaption></figure>
+<figure><a href="/images/rendering-analysis/endfield/face-geometry.png"><img src="/images/rendering-analysis/endfield/face-geometry.png" alt="脸部主材质几何，放大到可辨认的范围。" loading="lazy" width="700" height="758"></a><figcaption>脸部主材质几何，放大到可辨认的范围。</figcaption></figure>
+<figure><a href="/images/rendering-analysis/endfield/face-final.png"><img style="max-height:420px;object-fit:contain" src="/images/rendering-analysis/endfield/face-final.png" alt="相同位置的最终脸部与头饰；头发和饰件另行绘制。" loading="lazy" width="700" height="758"></a><figcaption>相同位置的最终脸部与头饰；头发和饰件另行绘制。</figcaption></figure>
+<figure><a href="/images/rendering-analysis/endfield/body-geometry.png"><img src="/images/rendering-analysis/endfield/body-geometry.png" alt="身体这一组部件的几何范围，不包含人物全部部件。" loading="lazy" width="700" height="894"></a><figcaption>身体这一组部件的几何范围，不包含人物全部部件。</figcaption></figure>
+<figure><a href="/images/rendering-analysis/endfield/body-final.png"><img style="max-height:420px;object-fit:contain" src="/images/rendering-analysis/endfield/body-final.png" alt="同一局部的最终人物外观。" loading="lazy" width="700" height="894"></a><figcaption>同一局部的最终人物外观。</figcaption></figure>
 </div>
 
-黄色线框是工具提供的几何辅助显示，黑色区域表示当前目标尚未建立完整场景颜色。脸和身体的贴图与下列各行一一对应。
+黄色线框只标出这次提交。脸部图与身体图各自保持与最终图一致的位置和裁切；早期尚未出现的头发、衣片或场景背景，不代表纹理丢失。下表贴图按这两组真实绑定说明。
 
 #### 脸部、身体与其他角色的图集
 
@@ -119,16 +121,9 @@ BC5 法线预览只展示实际存储的两个通道，外观偏黄绿；它不�
 
 ### 地表与石质场景资源
 
-#### 石质表面图集
+#### 地表资源需要按实际表面定位
 
-一条场景提交包含 11000 个三角形、1 个实例，读取 2048×2048 的颜色图和两张同尺寸数值纹理。底色中可辨认石砖、灰色表面和小块装饰区，说明这些面片共享图集布局。
-
-| 输入 | 本次格式 | 预览与解释 |
-|---|---|---|
-| 石质场景颜色 | 2048×2048，BC7 sRGB | <a href="/images/rendering-analysis/endfield/scene-surface-colour.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/endfield/scene-surface-colour.png" alt="本行资源的实际贴图预览" loading="lazy" width="768" height="768"></a> |
-| 同组数值输入 | 两张 2048×2048，BC7 | 与颜色图同时被该材质读取；尚未将所有通道命名为统一的粗糙度、金属度或遮蔽 |
-
-这类图集通过不同 UV 区域复用石质和饰面外观。最终石阶缝隙的暗部还叠加了环境遮蔽、直接光与空气效果，不能把底色里较暗的图案全部称为动态 AO。
+前景石阶、远处石质构件与复用地表数据的小几何不是同一个资源对象。远景提交读取的石砖图集不能用来说明整片前景石阶的材质。下面以已经定位的共享地表路径说明其图集、数组与屏幕输入；仍未确认全部前景表面各自使用哪一块图集。
 
 #### 共享地表输入并不局限于一整块地形
 
@@ -170,15 +165,17 @@ BC5 法线预览只展示实际存储的两个通道，外观偏黄绿；它不�
 
 三张线框来自各自的实际提交，底图随主材质绘制逐步补齐。低面数树冠用很少的三角形承载一簇叶冠图案，另一组竹叶则使用更多几何描述细节。本帧能确认两种资源形式同时参与画面；它们是否属于同一植被资产的不同 LOD，以及切换阈值是多少，需要其他距离或连续帧验证。
 
-#### 贴图中的轮廓层次与几何规模相互对应
+#### 植被图必须结合覆盖通道显示
 
 | 植被资源 | 颜色与控制尺寸 | 颜色预览 |
 |---|---|---|
-| 树冠组 A | 两张 512×512，颜色为 BC7 sRGB，控制为 BC7 | <a href="/images/rendering-analysis/endfield/foliage-a-colour.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/endfield/foliage-a-colour.png" alt="本行资源的实际贴图预览" loading="lazy" width="512" height="512"></a> |
-| 竹叶几何 | 两张 1024×1024，颜色为 BC7 sRGB，控制为 BC7 | <a href="/images/rendering-analysis/endfield/foliage-b-colour.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/endfield/foliage-b-colour.png" alt="本行资源的实际贴图预览" loading="lazy" width="768" height="768"></a> |
-| 树冠组 B | 两张 512×512，颜色为 BC7 sRGB，控制为 BC7 | <a href="/images/rendering-analysis/endfield/foliage-c-colour.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/endfield/foliage-c-colour.png" alt="本行资源的实际贴图预览" loading="lazy" width="512" height="512"></a> |
+| 树冠组 A | 两张 512×512，颜色为 BC7 sRGB，控制为 BC7 | <a href="/images/rendering-analysis/endfield/foliage-a-colour.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/endfield/foliage-a-colour.png" alt="本行资源的实际贴图预览" loading="lazy" width="700" height="700"></a> |
+| 竹叶几何 | 两张 1024×1024，颜色为 BC7 sRGB，控制为 BC7 | <a href="/images/rendering-analysis/endfield/foliage-b-colour.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/endfield/foliage-b-colour.png" alt="本行资源的实际贴图预览" loading="lazy" width="700" height="700"></a> |
+| 树冠组 B | 两张 512×512，颜色为 BC7 sRGB，控制为 BC7 | <a href="/images/rendering-analysis/endfield/foliage-c-colour.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/endfield/foliage-c-colour.png" alt="本行资源的实际贴图预览" loading="lazy" width="700" height="700"></a> |
 
-树冠图直接包含较完整的枝叶簇轮廓，叶片图则把细小叶片组织到一张图集。二者承担的表示尺度不同：细模型依靠较多几何表达轮廓与摆放，低面数模型把更多轮廓细节交给图案和材质。
+上表以同一颜色纹理的 alpha 显示覆盖，灰色是预览背景，图集方向按纹理坐标保留。原先只显示 RGB 时，轮廓外无覆盖区域的 RGB 也出现了，看起来像整块矩形或破碎色块；那些区域不等于最终叶片。
+
+树冠图包含较完整的枝叶簇轮廓，叶片图则把细小叶片组织到一张图集。二者承担的表示尺度不同：细模型依靠较多几何表达轮廓与摆放，低面数模型把更多轮廓细节交给图案和材质。
 
 两组主要叶片调用采用相等深度测试并关闭深度写入，复用之前建立的可见性；另一树冠变体仍写深度。由此可见，植被也不能作为一个固定状态的统一 Pass：可见性准备、叶片材质和远处冠层分别有自己的处理规则。
 
@@ -212,6 +209,7 @@ BC5 法线预览只展示实际存储的两个通道，外观偏黄绿；它不�
 
 | 画面效果 | 本文展开的实现与证据 |
 |---|---|
+| [植被轮廓与方向](#vegetation-coverage) | 前置 alpha 剪裁、颜色覆盖复用、方向编码与双面处理 |
 | [方向性环境受光](#environment-volume) | 三层空间覆盖、一阶系数与表面方向查询 |
 | [光源遮挡](#shadows) | 阴影图集同时进入表面照明与雾更新 |
 | [接触暗部](#ao) | 方向搜索、角度积分、历史稳定与保边过滤 |
@@ -427,6 +425,35 @@ $$
 辅助颜色有独立的深度测试和分类条件，采用预乘式颜色合成，并只更新 RGB。写入范围、深度是否更新和哪些分量保留，需要与辅助程序一起理解。
 
 当前尚未可靠确认这条路径对应的具体部位，因此本篇不将其直接命名为头发或脸部专用算法。可以确认的是反馈关系与合成接口，而不是未得到验证的业务归属。
+
+<span id="vegetation-coverage"></span>
+
+### 植被轮廓与双面方向
+
+树冠与竹叶的外观需要把颜色、覆盖和方向解码放在一起理解。资源表已按颜色图自身 alpha 显示轮廓：灰色背景处没有对应的可见叶片颜色，原始 RGB 在这些位置仍可能有填充值。
+
+#### 叶缘先进入深度，颜色复用同一覆盖
+
+已核对的树冠前置程序读取颜色图 alpha，并与一个随观察方向调整的阈值比较；低于阈值的片元被丢弃。几何面片因此只在叶簇轮廓内建立深度。后面的树冠颜色路径使用相等深度测试、关闭深度写入，复用已经建立的覆盖。
+
+这是剪裁得到的叶缘。预览把颜色图按 alpha 显示，只用于让读者看到对应图案；它不是把深度剪裁改成整张面片的透明混合，也不代表每个半透明预览像素最终保留相同比例。
+
+#### 方向图 RG 需要按该材质的编码恢复
+
+树冠代表颜色程序读取另一张数值图。其 RG 并不是直接把 $z=\sqrt{1-x^2-y^2}$ 接到两个解码分量之后。令 $x=2R-1$、$y=2G-1$，本路径先算：
+
+$$
+h=1-x^2-y^2,\qquad
+n=(2x\sqrt h,\;2y\sqrt h,\;2h-1)
+$$
+
+上式描述编码的有效范围。随后调整方向强度、归一化，再用模型的切线、切线副方向与几何法线转到世界空间。相同一张 RG 纹理若按另一种常见法线格式读取，会得到不同方向，进而改变叶片上的明暗和反射。
+
+#### 背面方向与材质控制分开处理
+
+程序根据材质／顶点条件决定是否启用双面调整。启用时，正反面符号参与局部方向的横向分量变换，也参与世界方向的最后处理，使背面不能简单沿用正面朝向。这个条件来自实际材质与几何输入，并不等于整片竹林都使用一个固定的双面开关。
+
+同张数值图的 B、A 还参与材质响应、局部遮蔽及分类相关控制；颜色纹理的 alpha 则服务前置轮廓。这是两张纹理里的不同 alpha，不能把它们统一称为叶片透明度。细竹叶与低面数树冠采用不同几何和变体，资源规模与当前状态仍需按各自提交理解。
 
 <span id="environment-volume"></span>
 

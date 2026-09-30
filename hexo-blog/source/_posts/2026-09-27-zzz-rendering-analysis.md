@@ -1,7 +1,7 @@
 ---
 title: "绝区零渲染实现分析：大厅材质、蕾米角色与整帧合成"
 date: "2026-09-27T18:44:00+08:00"
-updated: "2026-09-30T01:37:15+08:00"
+updated: "2026-09-30T17:32:06+08:00"
 permalink: 2026/09/27/zzz-rendering-analysis/
 categories:
   - 图形学
@@ -142,22 +142,32 @@ mathjax: true
 
 ### 大厅建筑与地表资源
 
-#### 重复表面使用图集，摆放后的照明使用另一套坐标
+#### 柜台图集与摆放后的烘焙照明
 
-大厅墙板、地面、装饰和小型设施并非都使用一张整场景底色。代表建筑提交使用一组 1024×1024 的底色、法线与控制纹理；小型通风口使用另一组 512×256 纹理。两者共享同一张 4096×4096 的压缩烘焙光图集。
-
-| 代表绘制 | 单实例三角形数 | 实例数 | 资源组织 |
-|---|---:|---:|---|
-| 一组大厅背景建筑 | 9177 | 1 | 1K 颜色、方向与控制图集 |
-| 通风口 | 228 | 1 | 512×256 的独立小型材质 |
-| 中央圆形设备的一条显示材质路径 | 4896 | 1 | 专用显示材质，绑定 2K 法线输入 |
+大厅墙面、地面、柜台和设备各自选用材质。这里采用主视图中可明确定位的圆形柜台作为资源示例：这次提交为 2,266 个三角形、1 个实例，底色、法线和控制纹理均为 2048×1024，并读取 4096×4096 的压缩烘焙光图集。
 
 <div class="rendering-figures">
-<figure><a href="/images/rendering-analysis/zzz/architecture-colour.png"><img src="/images/rendering-analysis/zzz/architecture-colour.png" alt="背景建筑的底色图集：墙板、边框和饰面共享展开区域。" loading="lazy" width="768" height="768"></a><figcaption>背景建筑的底色图集：墙板、边框和饰面共享展开区域。</figcaption></figure>
-<figure><a href="/images/rendering-analysis/zzz/architecture-normal.png"><img src="/images/rendering-analysis/zzz/architecture-normal.png" alt="同一建筑材质的方向纹理；不是照明结果。" loading="lazy" width="768" height="768"></a><figcaption>同一建筑材质的方向纹理；不是照明结果。</figcaption></figure>
+<figure><a href="/images/rendering-analysis/zzz/counter-located.png"><img src="/images/rendering-analysis/zzz/counter-located.png" alt="圆形柜台的实际提交范围。" loading="lazy" width="700" height="518"></a><figcaption>圆形柜台的实际提交范围。</figcaption></figure>
+<figure><a href="/images/rendering-analysis/zzz/counter-final.png"><img src="/images/rendering-analysis/zzz/counter-final.png" alt="相同位置的最终柜台与大厅环境。" loading="lazy" width="700" height="517"></a><figcaption>相同位置的最终柜台与大厅环境。</figcaption></figure>
 </div>
 
-建筑图集中细长条带适合被多块墙面或边框重复使用。与此同时，摆放在不同位置的几何仍可以得到不同烘焙光，因为光照采样使用另一套 UV 与缩放偏移。底色图集负责“表面是什么”，光照图集负责该摆放位置已经得到的照明信息。
+两图范围一致。线框只定位这一组柜台几何，人物、座椅、柜台上的终端和背景分别由其他提交形成。最终外观叠加了光照、空气和显示处理。
+
+<div class="rendering-figures">
+<figure><a href="/images/rendering-analysis/zzz/counter-colour.png"><img src="/images/rendering-analysis/zzz/counter-colour.png" alt="柜台底色，2048×1024。" loading="lazy" width="900" height="450"></a><figcaption>柜台底色，2048×1024。</figcaption></figure>
+<figure><a href="/images/rendering-analysis/zzz/counter-normal.png"><img src="/images/rendering-analysis/zzz/counter-normal.png" alt="与柜台底色同次绑定的法线编码图。" loading="lazy" width="900" height="450"></a><figcaption>与柜台底色同次绑定的法线编码图。</figcaption></figure>
+<figure><a href="/images/rendering-analysis/zzz/counter-control.png"><img src="/images/rendering-analysis/zzz/counter-control.png" alt="与柜台底色同次绑定的材质控制图。" loading="lazy" width="900" height="450"></a><figcaption>与柜台底色同次绑定的材质控制图。</figcaption></figure>
+</div>
+
+三张纹理是上述柜台绘制实际绑定的一组输入，图案共享 UV。控制图的 R、G 等分量影响材质响应；法线编码则需要按该路径解码，不能把数值图预览的粉色、绿色当成表面颜色。
+
+柜台的底色图集负责表面细节，烘焙光使用另一套坐标对应它在大厅里的摆放。多种物件可以共享光照图集，但不会因此共用同一张底色或同一套材质参数。
+
+| 代表绘制 | 单实例三角形数 | 实例数 | 对应资源 |
+|---|---:|---:|---|
+| 圆形柜台 | 2266 | 1 | 2048×1024 底色、法线与控制 |
+| 小型通风口 | 228 | 1 | 512×256 材质；后文用于解释具体照明公式 |
+| 中央圆形设备 | 4896 | 1 | 专用显示材质，颜色阶段另读外壳与序列图 |
 
 | 同一通风口绘制的输入 | 尺寸与格式 | 在材质中的职责 |
 |---|---|---|
@@ -168,7 +178,7 @@ mathjax: true
 | 湿润噪声 | 512×512 | 按空间位置提供变化 |
 | 环境高度 | 509×512，R16 | 将表面位置联系到环境高度条件 |
 
-后文的压缩光照与湿润公式来自这条通风口材质。大厅墙面阶段图用于说明整帧颜色发生了什么；具体到每一种墙板、设备或地面，还要以各自的材质分支为准。共享一张光照图集并不意味着全部表面使用完全相同的像素程序。
+后文的压缩光照与湿润公式来自这条通风口材质；上面的资源图则对应柜台，不将通风口参数套到柜台。大厅阶段图用于说明整帧颜色发生了什么；具体到每一种墙板、设备或地面，还要以各自的材质分支为准。共享一张光照图集并不意味着全部表面使用完全相同的像素程序。
 
 #### 显示设备有单独的材质路径
 

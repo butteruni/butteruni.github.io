@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="680" viewBox="0 0 1120 680" role="img" aria-labelledby="title desc">
+<title id="title">原神局部遮蔽的两条输出路径</title><desc id="desc">屏幕采样、形状代理和局部遮蔽体依次组成标量遮蔽；距离场另行输出开放方向和程度，进入空间照明。两条路径最终共同参与受光。</desc>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8" fill="#587a91"/></marker></defs>
+<rect width="1120" height="680" rx="18" fill="#f4f7fb"/>
+<g font-family="Microsoft YaHei, sans-serif" fill="#20354a">
+<text x="42" y="48" font-size="27" font-weight="700">局部遮蔽：同一帧里，数据来源与输出职责不同</text>
+<text x="42" y="82" font-size="18">依据当前程序、参数和回放结果整理；白色开放度为 1。</text>
+<g fill="white" stroke="#b3cbda" stroke-width="2">
+<rect x="40" y="116" width="500" height="105" rx="10"/>
+<rect x="40" y="260" width="500" height="105" rx="10"/>
+<rect x="40" y="404" width="500" height="105" rx="10"/>
+<rect x="580" y="116" width="500" height="105" rx="10"/>
+<rect x="580" y="260" width="500" height="105" rx="10"/>
+<rect x="580" y="404" width="500" height="105" rx="10"/>
+<rect x="300" y="577" width="520" height="65" rx="10" fill="#e5f0f7"/>
+</g>
+<g font-size="22" font-weight="700">
+<text x="64" y="151">屏幕深度与法线 → 18 点采样</text>
+<text x="64" y="295">形状代理 → 分块列表与查找表</text>
+<text x="64" y="439">小型三维遮蔽体 → 方向与强度</text>
+<text x="604" y="151">三维距离场 → 六层空间覆盖</text>
+<text x="604" y="295">表面附近六方向查询</text>
+<text x="604" y="439">空间照明查询与颜色重建</text>
+<text x="414" y="618">表面照明与最终画面</text>
+</g>
+<g font-size="18" fill="#53677a">
+<text x="64" y="184">本帧强度为零，提供初始开放度 1。</text>
+<text x="64" y="328">实际改变人物附近的标量遮蔽。</text>
+<text x="64" y="472">继续相乘；本帧只影响少量像素。</text>
+<text x="604" y="184">保存几何距离，不保存照明颜色。</text>
+<text x="604" y="328">输出开放程度 + 更开放的方向。</text>
+<text x="604" y="472">消费方向和程度，生成环境颜色输入。</text>
+</g>
+<g fill="none" stroke="#587a91" stroke-width="3" marker-end="url(#arrow)">
+<path d="M290 223V253"/><path d="M290 367V397"/>
+<path d="M830 223V253"/><path d="M830 367V397"/>
+<path d="M290 511V543H450V570"/><path d="M830 511V543H670V570"/>
+</g></g></svg>

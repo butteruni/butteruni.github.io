@@ -1,7 +1,7 @@
 ---
 title: "原神渲染实现分析：雪城资源、木偶材质与时序重建"
 date: "2026-09-27T18:44:00+08:00"
-updated: "2026-09-30T01:37:15+08:00"
+updated: "2026-09-30T17:32:06+08:00"
 permalink: 2026/09/27/genshin-rendering-analysis/
 categories:
   - 图形学
@@ -109,11 +109,21 @@ mathjax: true
 | 同组法线 | 1024×1024，BC7；方向与附加数据按当前程序解码 | <a href="/images/rendering-analysis/genshin/hair-normal.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/hair-normal.png" alt="本行资源的实际贴图预览" loading="lazy" width="768" height="768"></a> |
 | 同组控制图 | 1024×1024，BC7；材质分区及受光控制 | <a href="/images/rendering-analysis/genshin/hair-control.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/hair-control.png" alt="本行资源的实际贴图预览" loading="lazy" width="768" height="768"></a> |
 | 第一组身体／裙装 | 底色、法线、控制均为 1024×1024 | <a href="/images/rendering-analysis/genshin/cloth-base-colour.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/cloth-base-colour.png" alt="本行资源的实际贴图预览" loading="lazy" width="768" height="768"></a> |
-| 第一组身体控制 alpha | 与上行同一控制图，区间值选择参数组 | <a href="/images/rendering-analysis/genshin/cloth-control-a.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/cloth-control-a.png" alt="本行资源的实际贴图预览" loading="lazy" width="512" height="512"></a> |
+| 第二组裙装底色 | 1024×1024，BC7 sRGB；与第二组裙装几何对应，不能用第一套图集代替 | <a href="/images/rendering-analysis/genshin/dress-secondary-base.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/dress-secondary-base.png" alt="第二组裙装的独立底色：红色内衬与黑金区域。" loading="lazy" width="700" height="700"></a> |
+| 第一组身体控制 alpha | 对应第一组身体／裙装的控制图，区间值选择参数组 | <a href="/images/rendering-analysis/genshin/cloth-control-a.png"><img class="rendering-texture-preview" src="/images/rendering-analysis/genshin/cloth-control-a.png" alt="本行资源的实际贴图预览" loading="lazy" width="512" height="512"></a> |
 
 头发路径的底色图能直接看到发束和浅色腿部衣料共享图集，与上面的几何范围一致。同一材质将这些区域放进一次提交，共享纹理输入，再由 UV 和区域控制决定各处的外观。
 
-第一组身体与裙装使用同一批底色、法线和控制输入，但通过不同程序处理覆盖区域。另一组裙装使用第二套 1K 图集。它们还共享金属响应、细节和渐变资源；某张细节图的资产名来自其他角色，当前确实被这套材质读取，不能凭名字把它排除。
+法线图的 RGB 合并预览也包含额外数据。将同一纹理拆开，可看到方向与闪点控制分别放在哪里；四图保持与上方底色相同的 UV 朝向。后文[头发与腿部高光](#hair-shading)使用这些分量展开计算。
+
+<div class="rendering-figures">
+<figure><a href="/images/rendering-analysis/genshin/hair-normal-r.png"><img src="/images/rendering-analysis/genshin/hair-normal-r.png" alt="R：方向相关分量。" loading="lazy" width="700" height="700"></a><figcaption>R：方向相关分量。</figcaption></figure>
+<figure><a href="/images/rendering-analysis/genshin/hair-normal-g.png"><img src="/images/rendering-analysis/genshin/hair-normal-g.png" alt="G：另一方向分量，本图大部分接近中值。" loading="lazy" width="700" height="700"></a><figcaption>G：另一方向分量，本图大部分接近中值。</figcaption></figure>
+<figure><a href="/images/rendering-analysis/genshin/hair-normal-b.png"><img src="/images/rendering-analysis/genshin/hair-normal-b.png" alt="B：闪点覆盖遮罩，不是法线 Z。" loading="lazy" width="700" height="700"></a><figcaption>B：闪点覆盖遮罩，不是法线 Z。</figcaption></figure>
+<figure><a href="/images/rendering-analysis/genshin/hair-normal-a.png"><img src="/images/rendering-analysis/genshin/hair-normal-a.png" alt="Alpha：附加闪点档位所用的区域控制。" loading="lazy" width="700" height="700"></a><figcaption>Alpha：附加闪点档位所用的区域控制。</figcaption></figure>
+</div>
+
+第一组身体与裙装使用同一批底色、法线和控制输入，但通过不同程序处理覆盖区域。另一组裙装使用第二套 1K 图集。它们还共享金属响应、细节和渐变资源；某张细节图的资产名来自其他角色，当前确实被这套材质读取，不能凭名字把它排除。贴图应按绘制绑定配对，不能因同为 1K 或图案相似而互换。
 
 | 共享输入 | 本次规格 | 具体用途 |
 |---|---|---|
@@ -130,7 +140,7 @@ mathjax: true
 <figure><a href="/images/rendering-analysis/genshin/cloth-control-a.png"><img src="/images/rendering-analysis/genshin/cloth-control-a.png" alt="同一身体控制图的 alpha。" loading="lazy" width="512" height="512"></a><figcaption>同一身体控制图的 alpha。</figcaption></figure>
 </div>
 
-这些都是同一 UV 空间的真实通道。alpha 中分段的灰度配合 0.2、0.4、0.6、0.8 等阈值选择多组材质参数，因此同一网格上的不同区域可以有不同阴影色、细节法线和高光。RGB 的分区外观不能单独代替采样公式；后文继续展开已确认的控制计算。
+这些都是第一套身体／裙装控制图的真实通道，与上面的第一套底色对应；第二套裙装另用自己的图集。alpha 中分段的灰度配合 0.2、0.4、0.6、0.8 等阈值选择多组材质参数，因此同一网格上的不同区域可以有不同阴影色、细节法线和高光。RGB 的分区外观不能单独代替采样公式；后文继续展开已确认的控制计算。
 
 #### 脸、表情与眼睛
 
@@ -185,17 +195,16 @@ mathjax: true
 
 多层输入允许在同一个岩石轮廓上组织基础石质、局部表面变化和雪层，而不是为每一种积雪量制作完全独立的模型。这里可以确认资源组合与混合材质路径；每张控制图所有通道的对应关系仍需逐分支确认。
 
-#### 中央装饰物的雪层有独立资源
+#### 建筑覆盖层有自己的颜色与方向输入
 
-这条装饰物绘制为 770 个三角形，底色、法线和控制均为 256×256；它还读取 512×512 雪颜色／遮罩及 1024×1024 雪法线。底色中的金色几何纹样对应装饰物图集，不能把它当作普通门窗贴图。
+后文积雪公式对应[通用建筑的这组可见实例](#snow-material)。本次材质同时读取 2K 建筑底色、2K 建筑法线、1K 材质控制，以及 512×512 雪颜色／遮罩、1024×1024 雪法线。两层资源分别计算，再按覆盖量组合。
 
 <div class="rendering-figures">
-<figure><a href="/images/rendering-analysis/genshin/prop-base-colour.png"><img src="/images/rendering-analysis/genshin/prop-base-colour.png" alt="中央装饰物的底色。" loading="lazy" width="512" height="512"></a><figcaption>中央装饰物的底色。</figcaption></figure>
-<figure><a href="/images/rendering-analysis/genshin/prop-normal.png"><img src="/images/rendering-analysis/genshin/prop-normal.png" alt="同一物件的方向输入。" loading="lazy" width="512" height="512"></a><figcaption>同一物件的方向输入。</figcaption></figure>
-<figure><a href="/images/rendering-analysis/genshin/prop-material-control.png"><img src="/images/rendering-analysis/genshin/prop-material-control.png" alt="同一物件的材质控制。" loading="lazy" width="512" height="512"></a><figcaption>同一物件的材质控制。</figcaption></figure>
+<figure><a href="/images/rendering-analysis/genshin/snow-layer-colour.png"><img src="/images/rendering-analysis/genshin/snow-layer-colour.png" alt="建筑材质的雪层颜色／遮罩输入，512×512。" loading="lazy" width="512" height="512"></a><figcaption>建筑材质的雪层颜色／遮罩输入，512×512。</figcaption></figure>
+<figure><a href="/images/rendering-analysis/genshin/snow-layer-normal.png"><img src="/images/rendering-analysis/genshin/snow-layer-normal.png" alt="同次建筑绘制读取的雪层方向输入，1024×1024。" loading="lazy" width="700" height="700"></a><figcaption>同次建筑绘制读取的雪层方向输入，1024×1024。</figcaption></figure>
 </div>
 
-后文雪层公式来自这条实际绘制。阶梯与栏杆的前后图则用于展示整幅场景在材质和最终显示之间的变化。二者分别说明具体算法和整体外观，不把一张广角截图当成所有表面都执行相同公式的证据。
+这些是同一次建筑材质实际读取的覆盖层。它们与下一节的建筑图集组成一组；不再把另一件装饰物的金色纹样放在这里解释栏杆或建筑上的雪。
 
 ### 建筑资源
 
@@ -213,6 +222,11 @@ mathjax: true
 <figure><a href="/images/rendering-analysis/genshin/window-colour.png"><img src="/images/rendering-analysis/genshin/window-colour.png" alt="另一组 2048×2048 窗体颜色输入。" loading="lazy" width="768" height="768"></a><figcaption>另一组 2048×2048 窗体颜色输入。</figcaption></figure>
 </div>
 
+<div class="rendering-figures">
+<figure><a href="/images/rendering-analysis/genshin/window-located.png"><img src="/images/rendering-analysis/genshin/window-located.png" alt="窗体绘制的线框范围；固定同一局部视角。" loading="lazy" width="700" height="651"></a><figcaption>窗体绘制的线框范围；固定同一局部视角。</figcaption></figure>
+<figure><a href="/images/rendering-analysis/genshin/window-final.png"><img src="/images/rendering-analysis/genshin/window-final.png" alt="同一区域的最终画面，便于对应塔楼上的窗体。" loading="lazy" width="700" height="651"></a><figcaption>同一区域的最终画面，便于对应塔楼上的窗体。</figcaption></figure>
+</div>
+
 通用建筑和窗体各自配有 2K 法线、1K 材质控制。通用建筑材质还读取雪层颜色与方向数据，因此积雪并非只属于地形系统：建筑表面也在自己的材质求值中接入覆盖层。
 
 底色图集由立面纹样、边框和连续条带组成，多个实例复用同一组图案。实例数量说明这次重复提交了多少份几何；它不能说明纹理在整个城市场景中的复用总次数，也不等同于独立建筑数量。
@@ -223,16 +237,20 @@ mathjax: true
 <figure><a href="/images/rendering-analysis/genshin/distant-building-atlas.png"><img src="/images/rendering-analysis/genshin/distant-building-atlas.png" alt="远处建筑提交读取的 2048×2048 颜色图集，多个表面拼在一起。" loading="lazy" width="768" height="768"></a><figcaption>远处建筑提交读取的 2048×2048 颜色图集，多个表面拼在一起。</figcaption></figure>
 </div>
 
+<div class="rendering-figures">
+<figure><a href="/images/rendering-analysis/genshin/distant-location.png"><img src="/images/rendering-analysis/genshin/distant-location.png" alt="远处建筑部件位于画面中上方，黄色标出本次几何范围。" loading="lazy" width="1200" height="502"></a><figcaption>远处建筑部件位于画面中上方，黄色标出本次几何范围。</figcaption></figure>
+</div>
+
 这条 338 个三角形的提交只绑定一张颜色图作为像素纹理输入，比上面的通用建筑路径简化。图集整合了砖石、墙面、窗体与饰边；本次资源与调用可以支持“存在简化绘制路径”，但单帧无法给出各级模型的切换距离或所有 LOD 档位。
 
 ### 植被资源
 
 <div class="rendering-figures">
 <figure><a href="/images/rendering-analysis/genshin/vegetation-geometry.png"><img src="/images/rendering-analysis/genshin/vegetation-geometry.png" alt="一组植物几何的提交范围；线框显示承载纹理的面片范围。" loading="lazy" width="1280" height="536"></a><figcaption>一组植物几何的提交范围；线框显示承载纹理的面片范围。</figcaption></figure>
-<figure><a href="/images/rendering-analysis/genshin/grass-packed.png"><img src="/images/rendering-analysis/genshin/grass-packed.png" alt="1024×1024 的植物打包纹理，包含叶片、草茎和小簇形状。" loading="lazy" width="768" height="768"></a><figcaption>1024×1024 的植物打包纹理，包含叶片、草茎和小簇形状。</figcaption></figure>
+<figure><a href="/images/rendering-analysis/genshin/grass-packed.png"><img src="/images/rendering-analysis/genshin/grass-packed.png" alt="植物数值图的 RGB 合并预览；蓝绿色不是叶片底色。" loading="lazy" width="768" height="768"></a><figcaption>植物数值图的 RGB 合并预览；蓝绿色不是叶片底色。</figcaption></figure>
 </div>
 
-该提交的单实例几何为 1312 个三角形，一次绘制包含 23 个实例，合计 30176 个三角形。实际输入为 BC3 格式的植物打包图、默认颜色与共享雪闪光控制。程序名字含树木路径，但这份资源可见的是草叶及小型植物图案，不应将它描述为一棵完整树的模型。
+该提交的单实例几何为 1312 个三角形，一次绘制包含 23 个实例，合计 30176 个三角形。实际输入为 BC3 格式的植物打包图、默认颜色与共享雪闪光控制。这组实例分布在阶梯两侧的植物带，数值图包含草叶与小簇形状。B 控制剪裁，R、G、A 参与配色和受光，完整分工见[植物覆盖与配色](#vegetation-shading)。
 
 线框会显示承载纹理的矩形或长条面片，最终轮廓还由材质决定；因此线框中的大块范围不等于最终每个像素都会显示植物颜色。本次调用还采用与普通实体材质不同的深度状态，复用先前建立的可见性。
 
@@ -252,10 +270,12 @@ mathjax: true
 | 画面效果 | 本文展开的实现与证据 |
 |---|---|
 | [积雪覆盖与亮点](#snow-material) | 双层材质、方向覆盖、导数约束和历史控制 |
+| [植物轮廓与配色](#vegetation-shading) | B 通道剪裁、R／G／A 配色与受光、植物覆雪和双次闪光采样 |
+| [窗体材质](#window-material) | 颜色衰减、漫反射／镜面参数拆分及本帧角度分支状态 |
 | [投影阴影](#shadows) | 静态／动态深度汇合、四叉树与量化解码 |
 | [环境照明与反射](#environment) | 反射候选、探针权重与盒投影、低分辨率表面对应及照明重建 |
 | [特定材质的屏幕扩散](#screen-diffusion) | 材质选择、RGB 距离权重；本帧参与区域极少 |
-| [局部遮蔽](#environment-occlusion) | 六层距离场、六方向查询、开放程度与开放方向 |
+| [局部遮蔽](#environment-occlusion) | 屏幕采样状态、分块形状代理、局部遮蔽体、距离场开放方向与单项回放 |
 | [天空背景](#sky-layers) | 大气、星空与染色层的输入和混合 |
 | [雾与空气](#fog) | 介质与光照分离、体积历史与修复、非均匀分层、双项积分和透射合成 |
 | [天气、云片与粒子](#weather-particles) | 形状输入、空间遮挡、HDR 混合与阶段对照 |
@@ -512,34 +532,33 @@ $$
 
 ### 积雪覆盖与细碎亮点
 
-栏杆、台阶与场景表面的覆雪同时改变配色、方向和受光响应。本节先看材质阶段与最终外观的对应，再展开双层混合、闪点细节及交给抗锯齿的材质状态。
+栏杆、台阶与场景表面的覆雪同时改变配色、方向和受光响应。本节以可见的建筑实例为例，先对齐几何、材质阶段与最终外观，再展开双层混合、闪点细节及交给抗锯齿的材质状态。
 
 <div class="rendering-figures">
-<figure><a href="/scene-capture-comparison/figures/replay/genshin-snow-material.png"><img src="/scene-capture-comparison/figures/replay/genshin-snow-material.png" alt="光照前：雪覆盖已经进入材质颜色" loading="lazy" width="640" height="402"></a><figcaption>光照前：雪覆盖已经进入材质颜色</figcaption></figure>
-<figure><a href="/scene-capture-comparison/figures/replay/genshin-snow-final.png"><img src="/scene-capture-comparison/figures/replay/genshin-snow-final.png" alt="最终画面：覆盖再接受环境与遮挡" loading="lazy" width="640" height="402"></a><figcaption>最终画面：覆盖再接受环境与遮挡</figcaption></figure>
+<figure><a href="/images/rendering-analysis/genshin/architecture-located.png"><img src="/images/rendering-analysis/genshin/architecture-located.png" alt="本节公式对应的建筑实例；黄色线框定位几何。" loading="lazy" width="700" height="469"></a><figcaption>本节公式对应的建筑实例；黄色线框定位几何。</figcaption></figure>
+<figure><a href="/images/rendering-analysis/genshin/architecture-material.png"><img src="/images/rendering-analysis/genshin/architecture-material.png" alt="同一局部的材质阶段颜色，尚未完成场景照明。" loading="lazy" width="700" height="469"></a><figcaption>同一局部的材质阶段颜色，尚未完成场景照明。</figcaption></figure>
+<figure><a href="/images/rendering-analysis/genshin/architecture-final.png"><img src="/images/rendering-analysis/genshin/architecture-final.png" alt="同一局部的最终外观；天空、人物和其他建筑由各自路径加入。" loading="lazy" width="700" height="469"></a><figcaption>同一局部的最终外观；天空、人物和其他建筑由各自路径加入。</figcaption></figure>
 </div>
 
-观察栏杆顶面、阶梯和上方覆雪区域。第一张已有覆盖分区；第二张的蓝灰色与阴影还来自后续照明。这是阶段对照，不是积雪开关实验。
+观察建筑外缘与上方的覆雪。三图使用相同位置和裁切，分别定位几何、材质和最终外观；它们不是积雪开关实验。以下覆盖参数也来自这次有实际颜色写入的建筑绘制。
 
 #### 两层材质分别计算，再组合输出
 
 基础表面与覆盖表面分别处理 UV 缩放偏移、颜色调制、法线强度和材质参数。随后各类数据按覆盖控制组合。因此雪覆盖不仅改变颜色，也会改变表面方向和受光响应。
 
-当前覆盖方向为世界向上。几何法线为 $N_g$，第二层世界法线为 $N_s$，顶点颜色的蓝色分量为 $b$，参考方向为：
+当前覆盖方向为世界向上。第二层法线先转到世界空间，得到 $N_s$；方向参考混合系数为一，因此本例直接使用 $N_s$。覆盖控制读取的是**顶点颜色 alpha**，记为 $a$：
 
 $$
-N_r=\operatorname{lerp}(N_g,N_s,0.499)
+t=\operatorname{saturate}\left(\frac{N_s\cdot(0,1,0)+a-0.53}{0.34}\right)
 $$
 $$
-t=\operatorname{saturate}(N_r\cdot(0,1,0)+b-0.75)
-$$
-$$
-w_{\text{direction}}=b\,t^2(3-2t)
+w_{direction}=a\,t^2(3-2t),\qquad
+w_{layer}=a\,w_{direction}=a^2t^2(3-2t)
 $$
 
-当前另一个遮罩分支又乘一次 $b$，所以已确认的混合因子中包含 $b^2t^2(3-2t)$。顶点控制既影响过渡阈值，也影响最终许可量。
+第二个 $a$ 来自后续图层遮罩选择：当前这一步完全选用顶点 alpha，未采用覆盖层控制纹理的该遮罩分量。材质没有翻转方向权重，颜色、方向和响应的图层混合倍率也都为一。
 
-这解释了为何朝向相近的表面仍能拥有不同覆盖。作者可以在顶点上绘制控制值；细节法线又参与参考朝向，使覆盖边界不只跟随低精度几何轮廓。
+因此，朝向决定哪里更容易覆盖，顶点 alpha 同时改变阈值和允许量。这里的通道、0.53 阈值和 0.34 过渡宽度都属于这组建筑；不能把另一件物体使用的蓝通道、法线混合系数和阈值移过来。建筑法线和雪层法线分别参与材质求值，最终方向还要按对应路径归一化。
 
 #### 细碎亮点为什么要受屏幕导数约束
 
@@ -558,6 +577,112 @@ $$
 雪相关状态被放入类别字节的高两位，普通材质类别保留在低位。后面的历史程序正好读取这两个高位，选择颜色约束与状态更新。
 
 因此，雪的设计并未止于当前颜色。材质阶段还告诉后面的历史处理：当前表面应该怎样保留或限制旧结果。这是一条从具体雪材质延伸到整帧显示的直接联系。
+
+<span id="vegetation-shading"></span>
+
+### 植物轮廓、配色与表面覆雪
+
+阶梯两侧的植物带使用成组几何和数值图。面片提供大致空间形状，纹理决定细碎轮廓；叶片的颜色由材质调色、顶点控制、背向受光和覆盖层共同构造。下面用同一裁切范围将提交与最终位置对齐。
+
+<div class="rendering-figures">
+<figure><a href="/images/rendering-analysis/genshin/plants-location.png"><img src="/images/rendering-analysis/genshin/plants-location.png" alt="阶梯两侧植物带的几何提交范围。" loading="lazy" width="700" height="377"></a><figcaption>阶梯两侧植物带的几何提交范围。</figcaption></figure>
+<figure><a href="/images/rendering-analysis/genshin/plants-final.png"><img src="/images/rendering-analysis/genshin/plants-final.png" alt="相同位置的最终植物带与覆雪环境。" loading="lazy" width="700" height="377"></a><figcaption>相同位置的最终植物带与覆雪环境。</figcaption></figure>
+</div>
+
+线框显示整组几何，部分面片会被剪裁或被后续几何遮挡。最终图中能够看到的植物带，还叠加了积雪和场景照明；不能把每一条黄色线都当作最终可见的叶缘。
+
+#### R、G、B、A 分工不同
+
+<div class="rendering-figures">
+<figure><a href="/images/rendering-analysis/genshin/plants-control-r.png"><img src="/images/rendering-analysis/genshin/plants-control-r.png" alt="植物控制图 R 通道，保持与原图集一致的方向。" loading="lazy" width="700" height="700"></a><figcaption>植物控制图 R 通道，保持与原图集一致的方向。</figcaption></figure>
+<figure><a href="/images/rendering-analysis/genshin/plants-control-g.png"><img src="/images/rendering-analysis/genshin/plants-control-g.png" alt="植物控制图 G 通道，保持与原图集一致的方向。" loading="lazy" width="700" height="700"></a><figcaption>植物控制图 G 通道，保持与原图集一致的方向。</figcaption></figure>
+<figure><a href="/images/rendering-analysis/genshin/plants-control-b.png"><img src="/images/rendering-analysis/genshin/plants-control-b.png" alt="植物控制图 B 通道，保持与原图集一致的方向。" loading="lazy" width="700" height="700"></a><figcaption>植物控制图 B 通道，保持与原图集一致的方向。</figcaption></figure>
+<figure><a href="/images/rendering-analysis/genshin/plants-control-a.png"><img src="/images/rendering-analysis/genshin/plants-control-a.png" alt="植物控制图 A 通道，保持与原图集一致的方向。" loading="lazy" width="700" height="700"></a><figcaption>植物控制图 A 通道，保持与原图集一致的方向。</figcaption></figure>
+</div>
+
+| 通道 | 已确认的消费方式 |
+|---|---|
+| R | 在两种材质颜色间插值，提供图案内部的深浅变化 |
+| G | 与 A 相乘，调节局部颜色／受光分量；也进入雪层覆盖条件 |
+| B | 前置深度程序的轮廓剪裁值，叶片形状主要在这里 |
+| A | 在图案色与另一基础颜色之间插值，并限制部分受光贡献；不是这一程序的叶片剪裁通道 |
+
+这解释了原 RGB 预览为何呈蓝绿色：它把配色权重、受光控制与剪裁值当成了三个颜色分量显示。该图没有直接保存最终植物的 RGB 底色。
+
+#### 先剪裁深度，再按相同表面写材质
+
+前置路径以 B 做阈值测试，并结合距离、表面朝向与材质阈值调整保留范围。后续本组颜色路径采用相等深度测试、关闭深度写入，复用已剪裁过的可见性。颜色 shader 中没有再次丢弃每个叶片背景，也不意味着整张承载面片都会被填成颜色。
+
+这两步需要使用一致的形状与位置。若只看后面的颜色程序，很容易漏掉叶片轮廓真正产生的位置。
+
+#### 颜色先由调色参数生成
+
+设采样的控制分量为 $(R,G,B,A)$，三种基色为 $C_0,C_1,C_2$，基础配色先计算：
+
+$$
+C_b=\operatorname{lerp}\left(C_2,\operatorname{lerp}(C_0,C_1,R),A\right)
+$$
+
+本帧另绑定的颜色纹理为白色，因此不会再提供一张普通叶片底图的细节。当前三种颜色约为 $(0.0048,0.0350,0.0539)$、$(0.0883,0.1527,0.3050)$ 与 $(0.0499,0.0552,0.0777)$，均是 shader 中的线性数值。
+
+接下来用 $GA$ 与顶点传入的光照控制调节颜色，并按顶点 alpha 混合局部色；背向主光的表面还可获得单独的颜色调制。用于后续受光的附加颜色与主体颜色分开写入，不能把材质目标当作最终已经完整受光的叶片。
+
+#### 覆雪使用植物自己的方向与遮罩规则
+
+植物雪层不是直接复用上一节建筑的顶点 alpha 公式。将本路径表面方向记为 $N$、顶点 alpha 记为 $a_v$，实例覆盖偏移为 $b_i$，当前方向为世界向上：
+
+$$
+u=\operatorname{saturate}\left(\frac{N_y+G+b_i}{0.45}\right)
+$$
+$$
+w_s=\operatorname{saturate}\left[1.2u^2(3-2u)\right]
+\operatorname{saturate}(1.8a_v-0.8)
+$$
+
+已读取的当前实例参数记录中 $b_i=-1.2$。图案 G 改变覆盖阈值，顶点 alpha 控制哪些部分允许覆盖；单靠“朝上的面都变白”不能描述这条路径。
+
+亮点来自同一张雪闪光纹理的两次 B 通道取样，其中一次 UV 带有视线在表面方向基上的偏移。两个样本相乘后取 0.71 次幂：
+
+$$
+q=(s_1s_2)^{0.71},\qquad C_s=C_{snow,base}+qC_{snow,bright}
+$$
+
+随后以 $w_s$ 混合植物颜色与 $C_s$，并同步组织材质响应。两次取样具有不同坐标缩放，并使用偏细节的层级偏置；最终细碎亮点仍会受到后续显示与历史处理影响。当前输出方向来自这条几何的方向基，不是从植物数值图的 RGB 恢复一张法线。
+
+<span id="window-material"></span>
+
+### 窗体颜色与环境反射参数
+
+塔楼窗体由独立材质写入主表面数据，读取底色、法线与材质控制图。它与通用建筑共享场景位置，却有不同的颜色衰减和镜面参数，不能用同一张立面图集代替。
+
+<div class="rendering-figures">
+<figure><a href="/images/rendering-analysis/genshin/window-control.png"><img src="/images/rendering-analysis/genshin/window-control.png" alt="窗体控制图：G 与金属混合、R 与光滑量相关；RGB 预览不是底色。" loading="lazy" width="700" height="700"></a><figcaption>窗体控制图：G 与金属混合、R 与光滑量相关；RGB 预览不是底色。</figcaption></figure>
+</div>
+
+#### 法线决定表面方向，控制图拆分漫反射与镜面
+
+法线从三分量方向输入恢复，经过强度调整与方向基变换后归一化。控制图 G 调节金属混合 $m$，R 调节光滑量 $s$。设经过局部颜色控制的窗体颜色为 $C'$，则本路径计算：
+
+$$
+C_{diffuse}=0.96(1-m)C',\qquad
+F_0=0.04(1-m)+mC'
+$$
+
+这两项分别供后面的照明与环境反射使用。窗体颜色蓝、反射较亮，不意味着材质已经在此读到了窗后的真实室内场景。
+
+#### 有视角调制分支，当前参数使它退化为常量
+
+程序先由 $x=\operatorname{saturate}(N\cdot V)$ 计算 $x2^{k(x-1)}$，其中当前 $k=3.4$；然后在两个系数之间插值。但本帧用于这次插值的两个端点均为 0.281，所以角度变化在这一项中被抵消。
+
+将传入的局部控制记为 $h$、底色 alpha 记为 $a$，当前颜色衰减可以整理为：
+
+$$
+C'=C\,[1-0.281(1-h)a]
+$$
+
+之后仍会基于方向查询环境反射，所以这个局部系数退化为常量不等于最终窗体与视角完全无关。它只是说明不能把当前这条颜色衰减解释成正在变化的视角效果。
+
+本次绘制没有启用透明 RGB 混合，也没有在像素程序中执行房间盒投影或穿过窗口的射线查询。当前能确认的是窗体的方向、配色、材质参数与延迟照明连接；仅凭程序名称包含玻璃或室内字样，无法再补出房间视差算法。
 
 <span id="shadows"></span>
 
@@ -760,7 +885,78 @@ RGB 分别累加加权照明、分别除以权重和；没有有效邻居时退�
 
 ### 场景局部遮蔽
 
-邻近建筑与地表会遮住一部分环境方向，使接缝、台阶和墙边的环境受光改变。本帧除屏幕深度遮蔽及其过滤外，还执行一条读取三维距离场的路径。下面展开这条路径的实际计算；屏幕遮蔽的完整搜索内核仍需分别分析。
+局部遮蔽并不是一张图对应一种算法。本帧先得到半分辨率标量遮蔽，再在后续空间照明中另算距离场的开放方向。下面按各自的输入、当前状态与消费位置分开说明。
+
+| 路径 | 输入与输出 | 本帧状态 |
+|---|---|---|
+| 18 点屏幕采样 | 深度与法线 → 标量开放度 | 程序执行，但强度为零，输出为一 |
+| 形状代理遮蔽 | 局部变换、分块列表和查找表 → 乘到标量遮蔽 | 在人物附近形成实际非白结果 |
+| 局部遮蔽体 | 预存三维方向／强度 → 继续乘到标量遮蔽 | 本次影响范围很小 |
+| 距离场查询 | 三维几何距离 → 开放程度和开放方向 | 进入之后的空间照明，不是前述标量目标的另一个颜色通道 |
+
+<figure class="rendering-diagram"><a href="/images/rendering-analysis/genshin/occlusion-paths.svg" target="_blank" rel="noopener"><img src="/images/rendering-analysis/genshin/occlusion-paths.svg" alt="标量遮蔽和距离场开放方向的两条路径" loading="lazy" width="1120" height="680"></a><figcaption>本帧遮蔽数据流 · 点击查看大图</figcaption></figure>
+
+<span id="screen-ao-status"></span>
+
+#### 屏幕采样做了什么，为何本帧没有暗化
+
+这条路径先恢复观察空间位置，并将表面法线转到相同空间。噪声决定方向旋转和采样间隔，随后遍历 18 个预存方向，逐步向外扩展取样半径。
+
+每个深度样本恢复为观察空间位置，形成相对向量 $\Delta P_i$。遮挡候选使用：
+
+$$
+o_i=\operatorname{saturate}\left(N\cdot\frac{\Delta P_i}{\lVert\Delta P_i\rVert}-0.075\right)
+\operatorname{saturate}\left(1+\frac{\lVert\Delta P_i\rVert^2}{c z^2}\right)
+$$
+
+当前距离系数 $c\approx-0.0325521$，因此远处样本的权重会降低。程序最后以强度参数 $s$ 输出 $A=\max(A_{min},1+s\sum_i o_i/18)$。**本帧 $s=0$、$A_{min}=0$，这次输出为一。** 它保留了后续乘法遮蔽的初始值，没有给当前画面增加这一种屏幕采样暗部。
+
+<span id="proxy-occlusion"></span>
+
+#### 人物附近的暗部来自另一组形状代理
+
+后面的计算使用 64 字节的局部变换记录表示遮蔽代理。先把屏幕按 8×8 个半分辨率像素分块，形成 215×90 个格子；利用分级深度和局部范围筛选每格需要检查的代理，每格最多保留 32 个索引。
+
+逐像素计算只遍历自己的列表。深度恢复表面位置，法线结合光方向形成查询方向，两者再转到代理局部空间。设局部位置为 $p$、归一化查询方向为 $n$：
+
+$$
+d=\lVert p\rVert,\quad
+\mu=n\cdot\frac{-p}{d},\quad r=\frac{0.5}{d}
+$$
+
+程序以 $(\mu,r)$ 读取一张 128×64 查找表的 alpha，得到 $Q$。这里的 0.5 是代理局部尺度；局部变换含有缩放时，世界中的影响形状也会随之改变，不能把它当成半径固定为半米的球。
+
+$$
+f=\max\left(0,1-\frac{d^2}{56.25}\right)^2,
+\qquad A_i=1+f[(1-r^2)Q-1]
+$$
+$$
+A_{out}=A_{in}\prod_i A_i
+$$
+
+远离代理后 $f$ 回到零，对应因子回到一。列表只保留可能相关的代理，查找表和距离衰减再决定实际贡献。这条路径没有沿屏幕深度做 18 次搜索；将它命名为前一条 SSAO 会混淆数据来源。
+
+<div class="rendering-figures">
+<figure><a href="/images/rendering-analysis/genshin/ao-compute.png"><img src="/images/rendering-analysis/genshin/ao-compute.png" alt="形状代理处理后的半分辨率开放度，灰度范围 0—1。" loading="lazy" width="1200" height="502"></a><figcaption>形状代理处理后的半分辨率开放度，灰度范围 0—1。</figcaption></figure>
+<figure><a href="/images/rendering-analysis/genshin/ao-normal-final.png"><img src="/images/rendering-analysis/genshin/ao-normal-final.png" alt="原始回放的最终人物局部。" loading="lazy" width="700" height="1135"></a><figcaption>原始回放的最终人物局部。</figcaption></figure>
+<figure><a href="/images/rendering-analysis/genshin/ao-without-proxy-final.png"><img src="/images/rendering-analysis/genshin/ao-without-proxy-final.png" alt="仅旁路形状代理计算后的同一最终局部；不是关闭全部 AO。" loading="lazy" width="700" height="1135"></a><figcaption>仅旁路形状代理计算后的同一最终局部；不是关闭全部 AO。</figcaption></figure>
+</div>
+
+开放度图显示代理计算后的标量结果，白色为一；非白区域主要落在人物附近。两张人物局部图在同一裁切范围比较原始最终输出和仅旁路这次代理计算的回放。差异较弱：这组 8 位显示图最大通道差为 6，不能把木偶的全部脸部和衣料阴影都归给它。角色专用着色、其他遮蔽及历史仍参与最后颜色。
+
+#### 小型三维遮蔽体保存方向与强度
+
+后面两次局部绘制读取 16×16×16 和 16×16×8 的三维纹理。位置先沿表面法线偏移，再转到局部盒中，盒外片元丢弃；纹理 RGB 解码为方向，alpha 提供强度相关数据。查询还使用表面法线，故该体积并非只有一个与朝向无关的暗度。
+
+在 alpha 非零的样本处，将体积强度记为 $a$，恢复的方向为 $D$，则本组参数对应：
+
+$$
+F=1-0.3a\operatorname{saturate}\left(\frac12+\frac{N\cdot D}{2a}\right)
+$$
+
+局部坐标最大绝对分量记为 $m$，边缘权重为 $e=1-\operatorname{saturate}(2.5-5m)$，最终输出 $\operatorname{lerp}(F,1,e)$。靠近盒边缘时逐渐回到一，再以乘法合并到已有遮蔽，避免在盒边界出现突然的暗边。
+
+本帧两次局部体积合计只改变半分辨率目标的 94 个像素；形状代理阶段则产生了 69,092 个非白像素。二者都有执行，但对这帧的影响范围不同。下面的距离场开放方向又是另一条空间照明输入。
 
 <span id="distance-field-occlusion"></span>
 
@@ -1787,6 +1983,6 @@ $$
 
 头发与腿部的双高光和闪点、晶体饰件的高光与环境反射、天空分层、天气及晚期粒子也分别进入上述流程。屏幕扩散确有执行，但当前分类只覆盖极少像素；晶体的折射方向没有进入本帧启用的颜色分支。这些状态决定了什么能够作为本帧可见效果来解释。
 
-环境部分已补充探针筛选与权重补足、受表面约束的照明重建、距离场遮蔽和开放方向；雾已展开体积历史、无效位置修复、非均匀分层及双项积分。仍需进一步确认的是空间间接光与反射最前端的完整追踪、屏幕遮蔽搜索的全部内核、雾的各类局部光注入、其他材质及粒子的全部分支、泛光与运动模糊的全部参数、环境槽位分配和跨帧更新频率。已说明输入与接入顺序的阶段，不等于其内部算法都已还原。
+环境部分已补充探针筛选与权重补足、受表面约束的照明重建、距离场遮蔽和开放方向；局部遮蔽现已分开说明屏幕采样、形状代理与小型遮蔽体，植物和窗体也按当前通道及参数展开。雾已展开体积历史、无效位置修复、非均匀分层及双项积分。仍需进一步确认的是空间间接光与反射最前端的完整追踪、形状代理与角色具体骨骼的逐一对应、雾的各类局部光注入、其他材质及粒子的全部分支、泛光与运动模糊的全部参数、环境槽位分配和跨帧更新频率。已说明输入与接入顺序的阶段，不等于其内部算法都已还原。
 
 </div>
