@@ -99,6 +99,8 @@ ignore:
 ## Themes: https://hexo.io/themes/
 theme: next
 theme_config:
+  motion:
+    enable: false
   math:
     per_page: true
     mathjax:
